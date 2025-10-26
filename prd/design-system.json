@@ -1,0 +1,564 @@
+{
+  "metadata": {
+    "name": "Medium-Inspired Design System",
+    "version": "1.0.0",
+    "description": "디자인 시스템은 Medium 스타일 인터페이스를 기반으로 추출된 일관된 UI/UX 패턴을 정의합니다.",
+    "baseUnit": "8px",
+    "note": "이 디자인 시스템은 스크린샷에서 추출된 패턴을 바탕으로 하며, 특정 컨텐츠나 이미지는 포함하지 않습니다."
+  },
+
+  "colors": {
+    "primary": {
+      "black": "#000000",
+      "white": "#FFFFFF",
+      "description": "주요 브랜드 색상"
+    },
+    "accent": {
+      "gold": "#FFC017",
+      "green": "#03A87C",
+      "lightBlue": "#E8F3FF",
+      "description": "강조 및 인터랙션 색상"
+    },
+    "gray": {
+      "50": "#FAFAFA",
+      "100": "#F7F7F7",
+      "200": "#F2F2F2",
+      "300": "#E6E6E6",
+      "400": "#CCCCCC",
+      "500": "#999999",
+      "600": "#757575",
+      "700": "#4A4A4A",
+      "800": "#242424",
+      "description": "중립 회색 팔레트"
+    },
+    "text": {
+      "primary": "#000000",
+      "secondary": "#757575",
+      "tertiary": "#999999",
+      "inverse": "#FFFFFF",
+      "description": "텍스트 색상 계층"
+    },
+    "background": {
+      "default": "#FFFFFF",
+      "subtle": "#F7F7F7",
+      "hover": "#F2F2F2",
+      "banner": "#FFF9E6",
+      "cardHover": "#FAFAFA",
+      "description": "배경 색상 변형"
+    },
+    "border": {
+      "default": "#E6E6E6",
+      "subtle": "#F2F2F2",
+      "strong": "#CCCCCC",
+      "inverse": "#000000",
+      "description": "테두리 색상"
+    },
+    "semantic": {
+      "success": "#03A87C",
+      "warning": "#FFC017",
+      "error": "#C94A3C",
+      "info": "#5B8DEF",
+      "description": "의미론적 상태 색상"
+    }
+  },
+
+  "typography": {
+    "fontFamilies": {
+      "serif": "Charter, Georgia, 'Times New Roman', serif",
+      "sansSerif": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif",
+      "description": "세리프는 컨텐츠용, 산세리프는 UI 요소용"
+    },
+    "fontSizes": {
+      "xs": "13px",
+      "sm": "14px",
+      "base": "16px",
+      "md": "18px",
+      "lg": "20px",
+      "xl": "24px",
+      "2xl": "32px",
+      "3xl": "40px",
+      "4xl": "48px",
+      "description": "폰트 크기 스케일"
+    },
+    "fontWeights": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700,
+      "extrabold": 800,
+      "black": 900,
+      "description": "폰트 굵기"
+    },
+    "lineHeights": {
+      "tight": 1.2,
+      "snug": 1.4,
+      "normal": 1.5,
+      "relaxed": 1.6,
+      "loose": 1.8,
+      "description": "행간"
+    },
+    "letterSpacing": {
+      "tight": "-0.02em",
+      "normal": "0",
+      "wide": "0.02em",
+      "description": "자간"
+    },
+    "styles": {
+      "h1": {
+        "fontFamily": "serif",
+        "fontSize": "40px",
+        "fontWeight": 700,
+        "lineHeight": 1.2,
+        "color": "black",
+        "description": "아티클 제목"
+      },
+      "h2": {
+        "fontFamily": "serif",
+        "fontSize": "24px",
+        "fontWeight": 700,
+        "lineHeight": 1.3,
+        "color": "black",
+        "description": "카드 제목"
+      },
+      "h3": {
+        "fontFamily": "sansSerif",
+        "fontSize": "16px",
+        "fontWeight": 700,
+        "lineHeight": 1.4,
+        "color": "black",
+        "description": "섹션 헤딩"
+      },
+      "body": {
+        "fontFamily": "serif",
+        "fontSize": "21px",
+        "fontWeight": 400,
+        "lineHeight": 1.6,
+        "color": "black",
+        "description": "본문 텍스트"
+      },
+      "bodySmall": {
+        "fontFamily": "serif",
+        "fontSize": "18px",
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "color": "black",
+        "description": "작은 본문 텍스트"
+      },
+      "caption": {
+        "fontFamily": "sansSerif",
+        "fontSize": "14px",
+        "fontWeight": 400,
+        "lineHeight": 1.4,
+        "color": "gray.600",
+        "description": "메타데이터, 부가 정보"
+      },
+      "label": {
+        "fontFamily": "sansSerif",
+        "fontSize": "14px",
+        "fontWeight": 500,
+        "lineHeight": 1.4,
+        "color": "gray.700",
+        "description": "라벨 및 UI 텍스트"
+      }
+    }
+  },
+
+  "spacing": {
+    "scale": {
+      "0": "0",
+      "1": "8px",
+      "2": "12px",
+      "3": "16px",
+      "4": "24px",
+      "5": "32px",
+      "6": "48px",
+      "7": "64px",
+      "8": "80px",
+      "description": "8px 기반 스페이싱 스케일"
+    },
+    "usage": {
+      "xxs": "8px",
+      "xs": "12px",
+      "sm": "16px",
+      "md": "24px",
+      "lg": "32px",
+      "xl": "48px",
+      "2xl": "64px",
+      "3xl": "80px",
+      "description": "시맨틱 스페이싱 네이밍"
+    }
+  },
+
+  "layout": {
+    "grid": {
+      "columns": 12,
+      "gutter": "32px",
+      "description": "12컬럼 그리드 시스템"
+    },
+    "containers": {
+      "sidebar": {
+        "width": "230px",
+        "description": "좌측 네비게이션 사이드바"
+      },
+      "content": {
+        "maxWidth": "728px",
+        "description": "메인 컨텐츠 영역 최대 너비"
+      },
+      "rightSidebar": {
+        "width": "360px",
+        "description": "우측 사이드바"
+      },
+      "page": {
+        "maxWidth": "1400px",
+        "padding": "0 24px",
+        "description": "전체 페이지 래퍼"
+      }
+    },
+    "breakpoints": {
+      "mobile": "0px",
+      "tablet": "768px",
+      "desktop": "1024px",
+      "wide": "1440px",
+      "description": "반응형 브레이크포인트"
+    },
+    "zIndex": {
+      "base": 0,
+      "dropdown": 100,
+      "sticky": 200,
+      "fixed": 300,
+      "modalBackdrop": 400,
+      "modal": 500,
+      "popover": 600,
+      "tooltip": 700,
+      "description": "레이어 순서"
+    }
+  },
+
+  "borderRadius": {
+    "none": "0",
+    "sm": "4px",
+    "md": "8px",
+    "lg": "12px",
+    "pill": "24px",
+    "full": "9999px",
+    "description": "테두리 반경 값"
+  },
+
+  "shadows": {
+    "none": "none",
+    "xs": "0 1px 2px rgba(0, 0, 0, 0.05)",
+    "sm": "0 1px 4px rgba(0, 0, 0, 0.05)",
+    "md": "0 2px 8px rgba(0, 0, 0, 0.1)",
+    "lg": "0 4px 16px rgba(0, 0, 0, 0.15)",
+    "xl": "0 8px 24px rgba(0, 0, 0, 0.2)",
+    "description": "그림자 효과 (최소한으로 사용)"
+  },
+
+  "transitions": {
+    "fast": "0.1s ease",
+    "base": "0.2s ease",
+    "slow": "0.3s ease",
+    "description": "애니메이션 전환 속도"
+  },
+
+  "components": {
+    "button": {
+      "variants": {
+        "primary": {
+          "backgroundColor": "black",
+          "color": "white",
+          "border": "1px solid transparent",
+          "borderRadius": "pill",
+          "padding": "8px 16px",
+          "fontSize": "14px",
+          "fontWeight": 500,
+          "transition": "base",
+          "hover": {
+            "backgroundColor": "gray.800"
+          },
+          "description": "주요 액션 버튼"
+        },
+        "secondary": {
+          "backgroundColor": "white",
+          "color": "black",
+          "border": "1px solid black",
+          "borderRadius": "pill",
+          "padding": "8px 16px",
+          "fontSize": "14px",
+          "fontWeight": 500,
+          "transition": "base",
+          "hover": {
+            "backgroundColor": "gray.50"
+          },
+          "description": "보조 액션 버튼 (Follow)"
+        },
+        "ghost": {
+          "backgroundColor": "transparent",
+          "color": "gray.700",
+          "border": "none",
+          "borderRadius": "md",
+          "padding": "8px 12px",
+          "fontSize": "14px",
+          "fontWeight": 400,
+          "transition": "base",
+          "hover": {
+            "backgroundColor": "gray.100"
+          },
+          "description": "고스트 버튼"
+        },
+        "icon": {
+          "backgroundColor": "transparent",
+          "border": "none",
+          "borderRadius": "full",
+          "padding": "8px",
+          "transition": "base",
+          "hover": {
+            "backgroundColor": "gray.100"
+          },
+          "description": "아이콘 버튼"
+        }
+      }
+    },
+
+    "card": {
+      "default": {
+        "backgroundColor": "white",
+        "border": "none",
+        "borderRadius": "md",
+        "padding": "24px",
+        "transition": "base",
+        "hover": {
+          "backgroundColor": "background.cardHover"
+        },
+        "description": "기본 카드 컴포넌트"
+      },
+      "article": {
+        "backgroundColor": "white",
+        "border": "none",
+        "borderRadius": "md",
+        "padding": "16px 0",
+        "gap": "12px",
+        "layout": "vertical",
+        "elements": {
+          "avatar": "32px circular",
+          "title": "h2 style",
+          "description": "bodySmall style",
+          "metadata": "caption style with separators",
+          "thumbnail": "200x134px, borderRadius md"
+        },
+        "description": "아티클 프리뷰 카드"
+      }
+    },
+
+    "input": {
+      "search": {
+        "backgroundColor": "gray.200",
+        "border": "none",
+        "borderRadius": "pill",
+        "padding": "8px 16px 8px 40px",
+        "fontSize": "14px",
+        "color": "gray.700",
+        "iconPosition": "left",
+        "iconSize": "20px",
+        "transition": "base",
+        "focus": {
+          "outline": "none",
+          "backgroundColor": "gray.100"
+        },
+        "description": "검색 입력 필드"
+      },
+      "text": {
+        "backgroundColor": "white",
+        "border": "1px solid gray.300",
+        "borderRadius": "sm",
+        "padding": "12px 16px",
+        "fontSize": "16px",
+        "color": "black",
+        "transition": "base",
+        "focus": {
+          "outline": "2px solid black",
+          "borderColor": "black"
+        },
+        "description": "일반 텍스트 입력"
+      }
+    },
+
+    "avatar": {
+      "sizes": {
+        "sm": "24px",
+        "md": "40px",
+        "lg": "64px",
+        "xl": "80px"
+      },
+      "borderRadius": "full",
+      "border": "optional 1px white",
+      "description": "프로필 이미지"
+    },
+
+    "icon": {
+      "sizes": {
+        "sm": "16px",
+        "md": "20px",
+        "lg": "24px",
+        "xl": "32px"
+      },
+      "style": "outline",
+      "color": "currentColor",
+      "description": "아이콘 컴포넌트"
+    },
+
+    "badge": {
+      "default": {
+        "padding": "4px 8px",
+        "fontSize": "13px",
+        "fontWeight": 500,
+        "borderRadius": "sm",
+        "display": "inline-flex",
+        "alignItems": "center",
+        "gap": "4px",
+        "description": "뱃지 컴포넌트"
+      },
+      "variants": {
+        "memberOnly": {
+          "backgroundColor": "transparent",
+          "color": "gray.600",
+          "icon": "star gold"
+        },
+        "verified": {
+          "backgroundColor": "transparent",
+          "color": "green",
+          "icon": "checkmark green"
+        }
+      }
+    },
+
+    "navigation": {
+      "item": {
+        "padding": "12px 16px",
+        "borderRadius": "md",
+        "fontSize": "14px",
+        "fontWeight": 400,
+        "color": "gray.700",
+        "display": "flex",
+        "alignItems": "center",
+        "gap": "12px",
+        "transition": "base",
+        "hover": {
+          "backgroundColor": "gray.100"
+        },
+        "active": {
+          "fontWeight": 700,
+          "color": "black"
+        },
+        "icon": {
+          "size": "24px",
+          "color": "currentColor"
+        },
+        "description": "네비게이션 항목"
+      },
+      "topBar": {
+        "height": "64px",
+        "backgroundColor": "white",
+        "borderBottom": "1px solid gray.300",
+        "padding": "0 24px",
+        "display": "flex",
+        "alignItems": "center",
+        "justifyContent": "space-between",
+        "description": "상단 네비게이션 바"
+      }
+    },
+
+    "banner": {
+      "default": {
+        "backgroundColor": "background.banner",
+        "padding": "12px 24px",
+        "display": "flex",
+        "alignItems": "center",
+        "justifyContent": "center",
+        "gap": "8px",
+        "fontSize": "14px",
+        "borderBottom": "1px solid gray.300",
+        "description": "공지 배너"
+      }
+    },
+
+    "divider": {
+      "horizontal": {
+        "height": "1px",
+        "backgroundColor": "gray.300",
+        "margin": "24px 0",
+        "description": "수평 구분선"
+      },
+      "vertical": {
+        "width": "1px",
+        "backgroundColor": "gray.300",
+        "margin": "0 12px",
+        "description": "수직 구분선"
+      }
+    },
+
+    "dropdown": {
+      "menu": {
+        "backgroundColor": "white",
+        "border": "1px solid gray.300",
+        "borderRadius": "md",
+        "padding": "8px 0",
+        "minWidth": "180px",
+        "boxShadow": "md",
+        "description": "드롭다운 메뉴"
+      },
+      "item": {
+        "padding": "12px 16px",
+        "fontSize": "14px",
+        "color": "gray.700",
+        "transition": "base",
+        "hover": {
+          "backgroundColor": "gray.100"
+        },
+        "description": "드롭다운 항목"
+      }
+    }
+  },
+
+  "patterns": {
+    "articleFeed": {
+      "layout": "vertical stack",
+      "gap": "32px",
+      "itemStructure": [
+        "avatar + author info (horizontal)",
+        "article title (h2)",
+        "article excerpt",
+        "metadata row (date, read time, engagement)",
+        "thumbnail (optional, right-aligned)"
+      ],
+      "description": "아티클 피드 레이아웃 패턴"
+    },
+    "sidebar": {
+      "position": "fixed left",
+      "width": "230px",
+      "padding": "24px 16px",
+      "backgroundColor": "white",
+      "borderRight": "1px solid gray.300",
+      "items": "vertical stack with 16px gap",
+      "description": "사이드바 레이아웃"
+    },
+    "metadata": {
+      "display": "horizontal",
+      "gap": "8px",
+      "separator": "• (middle dot)",
+      "items": ["date", "readTime", "engagement metrics"],
+      "fontSize": "13px",
+      "color": "gray.600",
+      "description": "메타데이터 표시 패턴"
+    },
+    "engagementActions": {
+      "display": "horizontal",
+      "gap": "16px",
+      "items": ["clap/like", "comment", "bookmark", "share", "more"],
+      "iconSize": "24px",
+      "color": "gray.600",
+      "hover": "gray.700",
+      "description": "참여 액션 버튼 패턴"
+    }
+  }
+}
