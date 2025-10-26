@@ -1,0 +1,126 @@
+'use client';
+
+import { useState } from 'react';
+
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const isLoggedIn = false; // TODO: 실제 로그인 상태 확인 로직 구현
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: 검색 기능 구현
+    console.log('검색:', searchQuery);
+  };
+
+  const handleMyPageClick = () => {
+    if (!isLoggedIn) {
+      // TODO: 로그인 페이지로 이동
+      console.log('로그인 페이지로 이동');
+    } else {
+      // TODO: 마이페이지로 이동
+      console.log('마이페이지로 이동');
+    }
+  };
+
+  const handleLogoClick = () => {
+    // TODO: 홈으로 이동
+    window.location.href = '/';
+  };
+
+  return (
+    <header className="sticky top-0 z-[300] bg-white border-b border-[var(--color-border-default)]">
+      <div className="h-16 max-w-[1400px] mx-auto px-4 md:px-6 flex items-center justify-between">
+        {/* 햄버거 메뉴 버튼 (모바일만) */}
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-2 rounded-[var(--radius-md)] hover:bg-[var(--color-gray-100)]
+                   transition-[background-color] duration-[var(--transition-base)]"
+          aria-label="메뉴 열기"
+        >
+          <svg
+            className="w-6 h-6 text-black"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+
+        {/* Logo */}
+        <div className="flex items-center flex-1 md:flex-initial justify-center md:justify-start">
+          <h1
+            onClick={handleLogoClick}
+            className="font-[family-name:var(--font-montserrat)] font-bold text-lg md:text-2xl tracking-tight
+                     cursor-pointer text-black transition-opacity duration-[var(--transition-base)]
+                     hover:opacity-80"
+          >
+            Techtaurant
+          </h1>
+        </div>
+
+        {/* Search Bar (데스크탑만) */}
+        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-[600px] mx-8">
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[var(--color-gray-200)] border-none rounded-[var(--radius-pill)]
+                       py-2 pl-10 pr-4 text-sm text-[var(--color-gray-700)]
+                       transition-[background-color] duration-[var(--transition-base)]
+                       focus:bg-[var(--color-gray-100)] focus:outline-none"
+            />
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-gray-600)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+        </form>
+
+        {/* MyPage Button */}
+        <button
+          onClick={handleMyPageClick}
+          className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-[var(--radius-pill)]
+                   bg-black text-white text-sm font-medium
+                   transition-[background-color] duration-[var(--transition-base)]
+                   hover:bg-[var(--color-gray-800)]"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+          <span className="hidden md:inline">{isLoggedIn ? '마이페이지' : '로그인'}</span>
+        </button>
+      </div>
+    </header>
+  );
+}
