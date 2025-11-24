@@ -1,34 +1,67 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { useUser } from "../hooks/useUser";
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const isLoggedIn = false; // TODO: 실제 로그인 상태 확인 로직 구현
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user, isLoading, refetch } = useUser();
+  const isLoggedIn = !!user;
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: 검색 기능 구현
-    console.log('검색:', searchQuery);
+    console.log("검색:", searchQuery);
   };
 
-  const handleMyPageClick = () => {
+  const handleAuthClick = () => {
     if (!isLoggedIn) {
-      // TODO: 로그인 페이지로 이동
-      console.log('로그인 페이지로 이동');
+      // Google OAuth 로그인 요청 (Next.js rewrites로 프록시)
+      window.location.href = "/oauth2/authorization/google";
     } else {
-      // TODO: 마이페이지로 이동
-      console.log('마이페이지로 이동');
+      setIsDropdownOpen(!isDropdownOpen);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+      await fetch(`${apiBaseUrl}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      setIsDropdownOpen(false);
+      refetch();
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
     }
   };
 
   const handleLogoClick = () => {
-    // TODO: 홈으로 이동
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   return (
@@ -69,7 +102,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         {/* Search Bar (데스크탑만) */}
-        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-[600px] mx-8">
+        <form
+          onSubmit={handleSearch}
+          className="hidden md:flex flex-1 max-w-[600px] mx-8"
+        >
           <div className="relative w-full">
             <input
               type="text"
@@ -97,29 +133,80 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
         </form>
 
-        {/* MyPage Button */}
-        <button
-          onClick={handleMyPageClick}
-          className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-[var(--radius-pill)]
-                   bg-black text-white text-sm font-medium
-                   transition-[background-color] duration-[var(--transition-base)]
-                   hover:bg-[var(--color-gray-800)]"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {/* Auth Button / Profile */}
+        {isLoading ? (
+          <div className="w-10 h-10 rounded-full bg-[var(--color-gray-200)] animate-pulse" />
+        ) : isLoggedIn && user ? (
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={handleAuthClick}
+              className="flex items-center gap-2 p-1 rounded-full
+                       transition-opacity duration-[var(--transition-base)]
+                       hover:opacity-80"
+            >
+              {user.profileImageUrl ? (
+                <Image
+                  src={user.profileImageUrl}
+                  alt={user.name || "프로필"}
+                  width={36}
+                  height={36}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-[var(--color-gray-300)] flex items-center justify-center">
+                  <span className="text-sm font-medium text-[var(--color-gray-600)]">
+                    {user.name?.charAt(0) || "?"}
+                  </span>
+                </div>
+              )}
+              <span className="hidden md:inline text-sm font-medium text-black">
+                {user.name}
+              </span>
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-[var(--radius-md)] shadow-lg border border-[var(--color-border-default)] py-1 z-[400]">
+                <div className="px-4 py-2 border-b border-[var(--color-border-default)]">
+                  <p className="text-sm font-medium text-black truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-[var(--color-gray-600)] truncate">
+                    {user.email}
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left text-sm text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)] transition-colors"
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={handleAuthClick}
+            className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-[var(--radius-pill)]
+                     bg-black text-white text-sm font-medium
+                     transition-[background-color] duration-[var(--transition-base)]
+                     hover:bg-[var(--color-gray-800)]"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-          <span className="hidden md:inline">{isLoggedIn ? '마이페이지' : '로그인'}</span>
-        </button>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            <span className="hidden md:inline">로그인</span>
+          </button>
+        )}
       </div>
     </header>
   );
