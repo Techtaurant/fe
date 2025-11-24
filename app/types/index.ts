@@ -2,6 +2,15 @@
  * 게시물 관련 타입 정의
  */
 
+// 사용자
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  profileImageUrl: string;
+  role: string;
+}
+
 // 태그
 export interface Tag {
   id: string;
