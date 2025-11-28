@@ -308,3 +308,398 @@ npm start
 - [ ] 검색 기능 구현
 - [ ] 무한 스크롤/페이지네이션
 - [ ] 반응형 레이아웃 (모바일, 태블릿)
+
+---
+
+## API 통신 설정
+
+### 개요
+
+이 프로젝트는 프론트엔드(`localhost:3000`)와 백엔드(`localhost:8080`)가 분리된 구조입니다.
+API 통신을 위한 두 가지 방식을 지원합니다:
+
+1. **직접 백엔드 서버 연결** (현재 구현) - CORS 설정 필요
+2. **Next.js Proxy 사용** (대안) - CORS 설정 불필요
+
+---
+
+### 방식 1: 직접 백엔드 서버 연결 (현재 구현)
+
+#### 특징
+
+- 브라우저에서 백엔드 서버(`http://localhost:8080`)로 직접 요청
+- 백엔드에 CORS 설정 필수
+- 브라우저 개발자 도구에서 실제 백엔드 URL 확인 가능 (디버깅 용이)
+- `httpClient.ts`가 절대 경로로 요청
+
+#### 환경 설정
+
+**.env.local**:
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+#### 백엔드 CORS 설정 (필수)
+
+##### Spring Boot
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)  // 쿠키 전송 허용 (중요!)
+                .maxAge(3600);
+    }
+}
+```
+
+##### Node.js (Express)
+
+```javascript
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,  // 쿠키 허용 (중요!)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+```
+
+#### 중요 설정
+
+1. **allowCredentials: true** - 쿠키 포함 요청 허용 (필수)
+2. **allowedOrigins** - 프론트엔드 URL 정확히 지정 (`http://localhost:3000`)
+3. **주의**: `allowCredentials(true)`와 `allowedOrigins("*")`는 함께 사용 불가
+
+#### 테스트 방법
+
+```javascript
+// 브라우저 콘솔 (F12)
+fetch('http://localhost:8080/api/users/me', {
+  credentials: 'include'
+})
+  .then(res => res.json())
+  .then(data => console.log('✅ CORS 성공:', data))
+  .catch(err => console.error('❌ CORS 에러:', err));
+```
+
+Response Headers 확인:
+```
+Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Credentials: true
+```
+
+#### 트러블슈팅
+
+**CORS policy 에러**:
+```
+Access to fetch at 'http://localhost:8080/api/users/me' from origin 
+'http://localhost:3000' has been blocked by CORS policy
+```
+
+해결:
+1. 백엔드 CORS 설정 확인
+2. `allowedOrigins`에 `http://localhost:3000` 포함 확인
+3. `allowCredentials(true)` 설정 확인
+
+**Preflight 요청 실패** (OPTIONS 403):
+- OPTIONS 메서드를 `allowedMethods`에 추가
+- Spring Security 사용 시 OPTIONS 요청 허용
+
+**쿠키가 전송되지 않음**:
+1. 프론트엔드: `credentials: 'include'` 확인
+2. 백엔드: `allowCredentials(true)` 확인
+3. `allowedOrigins("*")`를 구체적인 URL로 변경
+
+---
+
+### 방식 2: Next.js Proxy 사용 (대안)
+
+#### 특징
+
+- Next.js 개발 서버가 백엔드로 요청을 프록시
+- 백엔드 CORS 설정 불필요 (Same-Origin으로 인식)
+- 브라우저에는 `localhost:3000`으로 표시 (실제로는 백그라운드에서 `localhost:8080`으로 프록시)
+
+#### 설정 방법
+
+**next.config.ts**:
+```typescript
+const nextConfig: NextConfig = {
+  async rewrites() {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiBaseUrl}/api/:path*`,
+      },
+      {
+        source: "/open-api/:path*",
+        destination: `${apiBaseUrl}/open-api/:path*`,
+      },
+    ];
+  },
+};
+```
+
+**httpClient.ts 수정** (프록시 사용 시):
+```typescript
+// AS-IS (직접 연결)
+const fullUrl = `${API_BASE_URL}${url}`;  // http://localhost:8080/api/...
+
+// TO-BE (프록시 사용)
+const fullUrl = url;  // /api/... (상대 경로)
+```
+
+#### 동작 원리
+
+```
+1. 브라우저 (localhost:3000)
+   ↓ fetch('/api/users/me')
+   
+2. Next.js 개발 서버 (localhost:3000)
+   ↓ rewrites 규칙 적용
+   
+3. 백엔드 서버 (localhost:8080)
+   ↓ 요청 처리
+   
+4. Next.js 개발 서버 (localhost:3000)
+   ↓ 응답 프록시
+   
+5. 브라우저에 응답 전달
+```
+
+**중요**: 브라우저 개발자 도구에서는 `localhost:3000/api/users/me`로 표시되지만,
+실제로는 Next.js 서버가 백그라운드에서 `localhost:8080/api/users/me`로 프록시합니다.
+
+#### 테스트 방법
+
+1. **개발 서버 재시작** (필수):
+```bash
+npm run dev
+```
+
+2. **브라우저 콘솔에서 확인**:
+```javascript
+fetch('/api/users/me', {
+  credentials: 'include'
+})
+  .then(res => res.json())
+  .then(data => console.log('응답:', data))
+  .catch(err => console.error('에러:', err));
+```
+
+3. **백엔드 서버 로그 확인**:
+```
+GET /api/users/me 200 OK
+```
+로그가 표시되면 프록시가 정상 동작하는 것입니다.
+
+#### 올바른 요청 방식
+
+✅ **올바른 방식** (Next.js 프록시 사용):
+```typescript
+// 상대 경로로 요청
+const response = await fetch('/api/users/me', {
+  credentials: 'include'
+});
+```
+
+❌ **잘못된 방식** (직접 백엔드 호출):
+```typescript
+// CORS 에러 발생!
+const response = await fetch('http://localhost:8080/api/users/me', {
+  credentials: 'include'
+});
+```
+
+---
+
+### 두 방식 비교
+
+| 항목 | 직접 연결 (현재) | Proxy (대안) |
+|------|-----------------|--------------|
+| **CORS 설정** | 백엔드에 필수 | 불필요 |
+| **설정 위치** | 백엔드 | 프론트엔드 (next.config.ts) |
+| **디버깅** | 쉬움 (실제 URL 표시) | 어려움 (프록시 URL 표시) |
+| **개발 서버** | 재시작 불필요 | 설정 변경 시 재시작 필수 |
+| **프로덕션** | 별도 CORS 설정 | 별도 프록시 설정 필요 |
+| **보안** | CORS 정책 관리 | Next.js 서버 의존 |
+
+**권장사항**:
+- 개발 환경: **직접 연결** (현재 구현) - 디버깅 용이
+- 프로덕션: 도메인이 같으면 **직접 연결**, 다르면 **CORS 설정** 또는 **API Gateway** 사용
+
+---
+
+## 인증 시스템
+
+### HTTP 클라이언트 (`app/utils/httpClient.ts`)
+
+**역할**: API 요청 및 자동 토큰 갱신 처리
+**위치**: `app/utils/httpClient.ts`
+
+#### 주요 기능
+
+1. **직접 백엔드 서버 연결**
+   - 백엔드 서버(`localhost:8080`)로 직접 요청
+   - `NEXT_PUBLIC_API_BASE_URL` 환경 변수 사용
+   - 브라우저 개발자 도구에서 `http://localhost:8080`으로 표시
+
+2. **자동 토큰 갱신**
+   - 401 에러 발생 시 응답 body의 Custom Status 확인
+   - Custom Status가 3003 (AccessToken 만료)일 때만 토큰 갱신 시도
+   - 3008 (인증 필요) 등 다른 에러는 토큰 갱신하지 않고 바로 반환
+   - refreshToken은 쿠키에 자동 포함 (credentials: 'include')
+   - 갱신 성공 시 원래 요청 자동 재시도
+
+3. **중복 갱신 방지**
+   - 토큰 갱신 중 플래그(`isRefreshing`)로 중복 방지
+   - 갱신 중인 다른 요청들은 대기 큐에 추가
+   - 갱신 완료 후 대기 중인 요청들 자동 실행
+
+4. **에러 처리**
+   - 갱신 실패 시 홈으로 리다이렉트
+   - 대기 중인 모든 요청에 에러 전파
+
+#### API 함수
+
+```typescript
+// 기본 HTTP 클라이언트 (자동 토큰 갱신 포함)
+httpClient(url: string, options?: RequestInit): Promise<Response>
+
+// 편의 함수들
+httpGet<T>(url: string): Promise<T>
+httpPost<T>(url: string, data?: unknown): Promise<T>
+httpPut<T>(url: string, data?: unknown): Promise<T>
+httpDelete<T>(url: string): Promise<T>
+
+// 토큰 갱신 함수
+refreshTokens(): Promise<boolean>
+```
+
+#### 사용 예시
+
+```typescript
+import { httpClient, httpGet } from '@/app/utils/httpClient';
+
+// 기본 사용 (상대 경로만 전달)
+const response = await httpClient('/api/users/me');
+// 실제 요청: http://localhost:8080/api/users/me
+
+// 편의 함수 사용
+const user = await httpGet<User>('/api/users/me');
+```
+
+#### 동작 흐름
+
+1. **정상 요청**
+   ```
+   Client → http://localhost:8080/api/users/me → 200 OK → Response
+   ```
+
+2. **토큰 만료 시 (Custom Status 3003)**
+   ```
+   Client → http://localhost:8080/api/users/me → 401 (status: 3003)
+         ↓
+   Check Custom Status (3003 확인)
+         ↓
+   Refresh API (http://localhost:8080/open-api/auth/refresh)
+         ↓
+   Success → Retry Original Request → Response
+   ```
+
+3. **인증 필요 (Custom Status 3008)**
+   ```
+   Client → http://localhost:8080/api/users/me → 401 (status: 3008)
+         ↓
+   Check Custom Status (3008 확인)
+         ↓
+   Return Response (토큰 갱신하지 않음)
+   ```
+
+4. **토큰 갱신 실패 시**
+   ```
+   Client → http://localhost:8080/api/users/me → 401 (status: 3003)
+         ↓
+   Refresh API → Failed
+         ↓
+   Redirect to /
+   ```
+
+#### RefreshToken 저장 방식
+
+- **저장 위치**: HttpOnly Cookie (보안)
+- **자동 전송**: `credentials: 'include'` 옵션으로 자동 포함
+- **JavaScript 접근 불가**: XSS 공격으로부터 안전
+
+---
+
+### useUser 훅 (`app/hooks/useUser.ts`)
+
+**역할**: 현재 로그인한 사용자 정보 조회
+
+#### 특징
+
+- httpClient 사용으로 자동 토큰 갱신 지원
+- 401 에러 시 자동으로 토큰 갱신 후 재시도
+
+#### 반환값
+
+```typescript
+interface UseUserResult {
+  user: User | null;          // 사용자 정보
+  isLoading: boolean;         // 로딩 상태
+  error: Error | null;        // 에러
+  refetch: () => void;        // 재조회 함수
+}
+```
+
+---
+
+### 인증 API 엔드포인트
+
+#### POST /open-api/auth/refresh
+
+**역할**: Access Token 및 Refresh Token 갱신
+
+**요청**:
+- Method: POST
+- Headers: refreshToken (쿠키에서 자동 전송)
+
+**응답**:
+```typescript
+{
+  status: 0,           // 0: 성공, 기타: 실패
+  message: string      // 응답 메시지
+}
+```
+
+**성공 시**: 새로운 토큰이 쿠키에 자동 설정됨
+
+---
+
+### 에러 코드
+
+#### HTTP Status Code
+
+| Code | 설명 | 처리 |
+|------|------|------|
+| 200 | 성공 | 정상 처리 |
+| 401 | Unauthorized | Custom Status 확인 후 처리 |
+| 기타 | 서버 에러 | 에러 반환 |
+
+#### Custom Status Code
+
+| Code | 설명 | 처리 |
+|------|------|------|
+| 0 | 성공 | 정상 처리 |
+| 3003 | AccessToken 만료 | 자동 토큰 갱신 시도 |
+| 3008 | 인증 필요 | 에러 반환 (갱신하지 않음) |
+| 기타 | 토큰 갱신 실패 | 홈으로 리다이렉트 |
