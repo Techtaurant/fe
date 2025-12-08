@@ -49,7 +49,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     try {
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-      await fetch(`${apiBaseUrl}/open-api/auth/logout`, {
+      await fetch(`${apiBaseUrl}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
