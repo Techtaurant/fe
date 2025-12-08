@@ -22,8 +22,8 @@ const nextConfig: NextConfig = {
         destination: `${apiBaseUrl}/oauth2/:path*`,
       },
       {
-        source: "/api/auth/logout",
-        destination: `${apiBaseUrl}/api/auth/logout`,
+        source: "/open-api/:path*",
+        destination: `${apiBaseUrl}/open-api/:path*`,
       },
     ];
   },

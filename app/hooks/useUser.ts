@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { User } from '../types';
+import { httpClient } from '../utils/httpClient';
 
 interface UseUserResult {
   user: User | null;
@@ -20,8 +21,9 @@ export function useUser(): UseUserResult {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch('/api/users/me', {
-        credentials: 'include',
+      // httpClient 사용 - 자동 토큰 갱신 포함
+      const response = await httpClient('/api/users/me', {
+        method: 'GET',
       });
 
       if (!response.ok) {
