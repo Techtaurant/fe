@@ -3,12 +3,15 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useUser } from "../hooks/useUser";
+import { FeedMode } from "../types";
 
 interface HeaderProps {
   onMenuClick?: () => void;
+  currentMode?: FeedMode;
+  onModeChange?: (mode: FeedMode) => void;
 }
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header({ onMenuClick, currentMode = 'company', onModeChange }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -89,8 +92,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </svg>
         </button>
 
-        {/* Logo */}
-        <div className="flex items-center flex-1 md:flex-initial justify-center md:justify-start">
+        {/* Logo & Nav */}
+        <div className="flex items-center gap-6 md:gap-8 flex-1 md:flex-initial justify-center md:justify-start">
           <h1
             onClick={handleLogoClick}
             className="font-[family-name:var(--font-montserrat)] font-bold text-lg md:text-2xl tracking-tight
@@ -99,6 +102,32 @@ export default function Header({ onMenuClick }: HeaderProps) {
           >
             Techtaurant
           </h1>
+
+          {/* Mode Switcher (Desktop) */}
+          <div className="hidden md:flex items-center gap-1">
+            <button
+              onClick={() => onModeChange?.('company')}
+              className={`px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors
+                ${
+                  currentMode === 'company'
+                    ? 'text-black bg-[var(--color-gray-100)]'
+                    : 'text-[var(--color-gray-600)] hover:text-black hover:bg-[var(--color-gray-50)]'
+                }`}
+            >
+              기업 블로그
+            </button>
+            <button
+              onClick={() => onModeChange?.('user')}
+              className={`px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors
+                ${
+                  currentMode === 'user'
+                    ? 'text-black bg-[var(--color-gray-100)]'
+                    : 'text-[var(--color-gray-600)] hover:text-black hover:bg-[var(--color-gray-50)]'
+                }`}
+            >
+              커뮤니티
+            </button>
+          </div>
         </div>
 
         {/* Search Bar (데스크탑만) */}
