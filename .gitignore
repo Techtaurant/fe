@@ -41,6 +41,11 @@ yarn-error.log*
 next-env.d.ts
 CLAUDE.md
 .claude
+
+# type-coverage
+.type-coverage/
+coverage-detail.txt
+coverage-comment.md
 .agent
 .gemini
 .github/prompts

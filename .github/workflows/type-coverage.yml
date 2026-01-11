@@ -1,0 +1,117 @@
+name: Type Coverage Check
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main] # main 브랜치 업데이트 시 previous.json 갱신을 위해 필요
+
+jobs:
+  type-coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 파일 커밋을 위해 write 권한 필요
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Type Coverage
+        id: coverage
+        run: |
+          npm run type-coverage:json
+          PR_COVERAGE=$(cat .type-coverage/current.json | jq -r '.percentString')
+          echo "pr_coverage=$PR_COVERAGE" >> $GITHUB_OUTPUT
+          
+          # Base coverage 읽기 (없을 경우 0 처리)
+          if [ -f .github/type-coverage/previous.json ]; then
+            BASE_COVERAGE=$(cat .github/type-coverage/previous.json | jq -r '.percentString')
+          else
+            BASE_COVERAGE=0
+          fi
+          echo "base_coverage=$BASE_COVERAGE" >> $GITHUB_OUTPUT
+
+      - name: Generate coverage report (PR only)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_COVERAGE: ${{ steps.coverage.outputs.base_coverage }}
+        run: |
+          npx type-coverage --detail 2>&1 > coverage-detail.txt
+          node .github/scripts/generate-coverage-report.js
+
+      - name: Comment PR (PR only)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const comment = fs.readFileSync('coverage-comment.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## 📊 Type Coverage Report')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Update Baseline (Main branch only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # 현재 결과를 previous.json으로 복사
+          cp .type-coverage/current.json .github/type-coverage/previous.json
+          
+          # 변경사항이 있으면 커밋
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add .github/type-coverage/previous.json
+          if git diff --staged --quiet; then
+            echo "No changes in coverage baseline."
+          else
+            git commit -m "chore: update type coverage baseline [skip ci]"
+            git push
+          fi
+
+      - name: Check coverage threshold (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          PR_COVERAGE=${{ steps.coverage.outputs.pr_coverage }}
+          THRESHOLD=95
+
+          if (( $(echo "$PR_COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "❌ Type coverage ($PR_COVERAGE%) is below the required threshold ($THRESHOLD%)"
+            exit 1
+          else
+            echo "✅ Type coverage ($PR_COVERAGE%) meets the required threshold ($THRESHOLD%)"
+          fi

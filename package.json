@@ -6,21 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "type-coverage": "type-coverage",
+    "type-coverage:json": "mkdir -p .type-coverage && type-coverage --json-output > .type-coverage/current.json",
+    "type-coverage:detail": "type-coverage --detail",
+    "type-coverage:report": "npm run type-coverage:json && type-coverage --detail 2>&1 > coverage-detail.txt && BASE_COVERAGE=95.00 node .github/scripts/generate-coverage-report.js && cat coverage-comment.md"
   },
   "dependencies": {
+    "next": "16.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "next": "16.0.0"
+    "type-coverage": "^2.29.7"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
-    "eslint-config-next": "16.0.0"
+    "eslint-config-next": "16.0.0",
+    "tailwindcss": "^4",
+    "typescript": "^5.9.3"
   }
 }
