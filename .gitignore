@@ -46,3 +46,6 @@ CLAUDE.md
 .type-coverage/
 coverage-detail.txt
 coverage-comment.md
+.agent
+.gemini
+.github/prompts
