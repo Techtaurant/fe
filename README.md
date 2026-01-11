@@ -703,3 +703,389 @@ interface UseUserResult {
 | 3003 | AccessToken 만료 | 자동 토큰 갱신 시도 |
 | 3008 | 인증 필요 | 에러 반환 (갱신하지 않음) |
 | 기타 | 토큰 갱신 실패 | 홈으로 리다이렉트 |
+
+---
+
+## Type Coverage
+
+### 개요
+
+TypeScript의 타입 커버리지를 측정하고 관리하는 시스템입니다.
+`any` 타입 사용을 추적하여 타입 안정성을 보장합니다.
+
+**목표**: 95% 이상의 타입 커버리지 유지
+
+**파일 구조**:
+- `.type-coverage/current.json`: 현재 type coverage 결과
+- `.type-coverage/previous.json`: 이전 실행의 coverage 결과 (비교용)
+- `coverage-detail.txt`: any 타입 사용 위치 상세 정보 (임시 파일)
+- `coverage-comment.md`: PR 코멘트용 리포트 (임시 파일)
+
+---
+
+### GitHub Actions Workflow
+
+**파일**: `.github/workflows/type-coverage.yml`
+
+#### 실행 시점
+
+- PR이 `main` 브랜치로 열리거나 업데이트될 때
+
+#### 주요 기능
+
+1. **Base 브랜치 Coverage 측정**
+   - PR의 base 브랜치(main)로 체크아웃
+   - 타입 커버리지 측정 및 저장
+
+2. **PR Coverage 측정**
+   - PR 브랜치의 타입 커버리지 측정
+
+3. **비교 리포트 생성**
+   - Base와 PR의 coverage 비교
+   - `any` 타입 사용 위치 추적
+   - 상세 리포트 자동 생성
+
+4. **PR 코멘트 작성**
+   - Coverage 비교 결과를 PR에 코멘트로 작성
+   - 기존 코멘트가 있으면 업데이트
+
+5. **Coverage 검증**
+   - 95% 미만 시 워크플로우 실패
+   - PR 머지 차단
+
+#### 필요한 권한
+
+```yaml
+permissions:
+  contents: read        # 코드 체크아웃
+  pull-requests: write  # PR 코멘트 작성
+```
+
+---
+
+### PR 코멘트 형식
+
+워크플로우가 생성하는 PR 코멘트 예시:
+
+```markdown
+## 📊 Type Coverage Report
+
+✅ Type coverage가 기준을 충족합니다!
+
+### Coverage Summary
+
+| Metric | Value |
+|--------|-------|
+| **Current Coverage** | **96.50%** |
+| Base Coverage | 95.20% |
+| Change | 🟢 📈 +1.30% |
+| Threshold | 95% |
+
+### Type Statistics
+
+- **Total Symbols**: 1,234
+- **Correctly Typed**: 1,191
+- **Any Types**: 43
+
+### 🔍 Files with `any` Types (3 files)
+
+<details>
+<summary><code>app/utils/api.ts</code> (5 occurrences)</summary>
+
+```
+Line 12:5 - implicit any
+Line 24:10 - implicit any
+Line 45:3 - parameter 'data' implicitly has an 'any' type
+...
+```
+
+</details>
+```
+
+---
+
+### 로컬 실행 방법
+
+#### 1. 전체 Coverage 확인
+
+```bash
+npm run type-coverage
+```
+
+**출력 예시**:
+```
+(1525 / 1531) 99.60%
+type-coverage success.
+```
+
+#### 2. JSON 형식 출력
+
+```bash
+npm run type-coverage:json
+```
+
+**출력 파일**: `.type-coverage/current.json`
+
+```json
+{
+  "succeeded": true,
+  "atLeastFailed": false,
+  "correctCount": 1525,
+  "percent": 99.6,
+  "percentString": "99.60",
+  "totalCount": 1531
+}
+```
+
+실행 시 이전 coverage 데이터(`.type-coverage/previous.json`)가 있으면 자동으로 비교하여 변경사항을 추적합니다.
+
+#### 3. 상세 정보 확인 (any 위치 추적)
+
+```bash
+npm run type-coverage:detail
+```
+
+**출력 예시**:
+```
+/path/to/app/utils/httpClient.ts:106:11: body
+/path/to/app/utils/httpClient.ts:108:9: body
+/path/to/app/hooks/useUser.ts:37:13: result
+(1525 / 1531) 99.60%
+type-coverage success.
+```
+
+#### 4. 전체 리포트 생성 (로컬 테스트용)
+
+```bash
+npm run type-coverage:report
+```
+
+**기능**:
+- Coverage 측정
+- 상세 정보 수집
+- PR 코멘트 형식으로 리포트 생성
+- 콘솔에 출력
+
+**출력 예시**:
+```markdown
+## 📊 Type Coverage Report
+
+✅ Type coverage가 기준을 충족합니다!
+
+### Coverage Summary
+
+| Metric | Value |
+|--------|-------|
+| **Current Coverage** | **99.60%** |
+| Base Coverage | 95.00% |
+| Change | 🟢 📈 +4.60% |
+| Threshold | 95% |
+
+### 📊 Changes from Previous Run
+
+| Metric | Previous | Current | Change |
+|--------|----------|---------|--------|
+| Coverage | 99.50% | 99.60% | 📈 +0.10% |
+| Total Symbols | 1,520 | 1,531 | +11 |
+| Any Types | 8 | 6 | 🟢 -2 |
+
+✨ **Great job!** `any` 타입이 2개 줄었습니다!
+
+### 🔍 Files with `any` Types (2 files)
+
+...
+```
+
+> 💡 **이전 실행 데이터 비교**: `.type-coverage/previous.json` 파일이 있으면 자동으로 이전 실행과 비교하여 개선/악화 내역을 표시합니다.
+
+---
+
+### Coverage Report 생성 스크립트
+
+**파일**: `.github/scripts/generate-coverage-report.js`
+
+#### 역할
+
+- `.type-coverage/current.json` 파싱
+- Base와 PR coverage 비교
+- 이전 실행과 현재 실행 비교 (`.type-coverage/previous.json`)
+- `any` 사용 위치 분석
+- PR 코멘트용 마크다운 생성
+
+#### 입력
+
+- `.type-coverage/current.json`: 현재 type coverage 결과
+- `.type-coverage/previous.json`: 이전 coverage 결과 (선택적)
+- `coverage-detail.txt`: `any` 타입 상세 위치
+- `BASE_COVERAGE` (환경 변수): Base 브랜치의 coverage
+
+#### 출력
+
+- `coverage-comment.md`: PR 코멘트용 마크다운 파일
+- `.type-coverage/previous.json`: 다음 비교를 위해 현재 결과 저장
+
+#### 주요 함수
+
+```javascript
+// any 사용 정보 파싱
+parseAnyUsages(detailText: string): Record<string, AnyUsage[]>
+
+// 이전 coverage와 비교 분석
+analyzeChanges(previous, current, currentAnyUsages): ChangeAnalysis
+
+// PR 코멘트용 마크다운 생성
+generateMarkdown(options): string
+```
+
+#### 변경사항 추적
+
+스크립트는 실행 시 다음 작업을 수행합니다:
+1. `.type-coverage/previous.json`이 있으면 읽어서 비교 분석
+2. 현재 결과를 `.type-coverage/current.json`에 저장
+3. 다음 비교를 위해 `current.json`을 `previous.json`으로 복사
+4. Coverage 증감, any 타입 개수 변화 등을 리포트에 포함
+
+---
+
+### 트러블슈팅
+
+#### Coverage가 95% 미만일 때
+
+**증상**: PR이 머지되지 않음
+
+**해결**:
+1. `npm run type-coverage:detail` 실행
+2. `any` 타입 사용 위치 확인
+3. 명시적 타입 정의 추가
+
+**예시**:
+```typescript
+// ❌ Before (any 타입)
+function getData(id) {
+  return fetch(`/api/data/${id}`);
+}
+
+// ✅ After (명시적 타입)
+function getData(id: string): Promise<Response> {
+  return fetch(`/api/data/${id}`);
+}
+```
+
+#### Workflow가 실패할 때
+
+**증상**: GitHub Actions에서 type-coverage 워크플로우 실패
+
+**확인 사항**:
+1. `type-coverage` 패키지 설치 확인
+2. `tsconfig.json` 존재 확인
+3. `bc` 명령어 사용 가능 여부 (Ubuntu에 기본 설치)
+
+---
+
+### any 타입 사용 줄이기 팁
+
+#### 1. 명시적 타입 정의
+
+```typescript
+// ❌ Bad
+const data: any = await response.json();
+
+// ✅ Good
+interface UserData {
+  id: string;
+  name: string;
+}
+const data: UserData = await response.json();
+```
+
+#### 2. unknown 타입 사용
+
+```typescript
+// ❌ Bad
+function processData(data: any) {
+  return data.value;
+}
+
+// ✅ Good
+function processData(data: unknown) {
+  if (typeof data === 'object' && data !== null && 'value' in data) {
+    return (data as { value: string }).value;
+  }
+  throw new Error('Invalid data');
+}
+```
+
+#### 3. 제네릭 활용
+
+```typescript
+// ❌ Bad
+function getItem(arr: any[], index: number): any {
+  return arr[index];
+}
+
+// ✅ Good
+function getItem<T>(arr: T[], index: number): T {
+  return arr[index];
+}
+```
+
+#### 4. 타입 가드 작성
+
+```typescript
+// ❌ Bad
+function isUser(obj: any): boolean {
+  return obj.name !== undefined;
+}
+
+// ✅ Good
+interface User {
+  name: string;
+  email: string;
+}
+
+function isUser(obj: unknown): obj is User {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'name' in obj &&
+    'email' in obj
+  );
+}
+```
+
+---
+
+### 설정 파일
+
+#### package.json 스크립트
+
+```json
+{
+  "scripts": {
+    "type-coverage": "type-coverage",
+    "type-coverage:json": "mkdir -p .type-coverage && type-coverage --json-output > .type-coverage/current.json",
+    "type-coverage:detail": "type-coverage --detail",
+    "type-coverage:report": "npm run type-coverage:json && type-coverage --detail 2>&1 > coverage-detail.txt && BASE_COVERAGE=95.00 node .github/scripts/generate-coverage-report.js && cat coverage-comment.md"
+  }
+}
+```
+
+**스크립트 설명**:
+- `type-coverage`: 간단한 coverage 확인
+- `type-coverage:json`: `.type-coverage` 디렉토리 생성 후 JSON 형식으로 결과 저장
+- `type-coverage:detail`: any 타입 상세 위치 출력
+- `type-coverage:report`: 전체 PR 코멘트 형식 리포트 생성 (로컬 테스트용, 이전 실행과 자동 비교)
+
+#### GitHub Actions 주요 설정
+
+**Node.js 버전**: 20
+**실행 환경**: ubuntu-latest
+**Coverage 임계값**: 95%
+
+---
+
+### 참고 자료
+
+- [type-coverage GitHub](https://github.com/plantain-00/type-coverage)
+- [TypeScript Handbook - Type Guards](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+- [TypeScript Best Practices](https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html)
