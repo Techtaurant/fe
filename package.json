@@ -13,9 +13,13 @@
     "type-coverage:report": "npm run type-coverage:json && type-coverage --detail 2>&1 > coverage-detail.txt && BASE_COVERAGE=95.00 node .github/scripts/generate-coverage-report.js && cat coverage-comment.md"
   },
   "dependencies": {
+    "mermaid": "^11.12.2",
     "next": "16.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
     "type-coverage": "^2.29.7"
   },
   "devDependencies": {
