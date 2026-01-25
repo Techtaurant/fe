@@ -85,13 +85,13 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
             sans-serif;
           font-size: 17px;
           line-height: 1.7;
-          color: var(--color-gray-800);
+          color: var(--foreground);
         }
 
         .markdown-content h1 {
           font-size: 2rem;
           font-weight: 700;
-          color: var(--color-black);
+          color: var(--foreground);
           margin-top: 2rem;
           margin-bottom: 1rem;
           line-height: 1.3;
@@ -100,18 +100,18 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
         .markdown-content h2 {
           font-size: 1.5rem;
           font-weight: 700;
-          color: var(--color-black);
+          color: var(--foreground);
           margin-top: 2rem;
           margin-bottom: 0.75rem;
           line-height: 1.4;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid var(--color-border-default);
+          border-bottom: 1px solid var(--border);
         }
 
         .markdown-content h3 {
           font-size: 1.25rem;
           font-weight: 600;
-          color: var(--color-black);
+          color: var(--foreground);
           margin-top: 1.5rem;
           margin-bottom: 0.5rem;
         }
@@ -131,13 +131,13 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
         }
 
         .markdown-content li::marker {
-          color: var(--color-gray-500);
+          color: var(--muted-foreground);
         }
 
         /* 인라인 코드 */
         .markdown-content code:not(pre code) {
-          background-color: var(--color-gray-100);
-          color: var(--color-gray-800);
+          background-color: var(--muted);
+          color: var(--foreground);
           padding: 0.2em 0.4em;
           border-radius: 4px;
           font-size: 0.9em;
@@ -166,16 +166,16 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
         /* 인용문 */
         .markdown-content blockquote {
-          border-left: 4px solid var(--color-gray-300);
+          border-left: 4px solid var(--border);
           padding-left: 1rem;
           margin: 1rem 0;
-          color: var(--color-gray-600);
+          color: var(--muted-foreground);
           font-style: italic;
         }
 
         /* 링크 */
         .markdown-content a {
-          color: var(--color-green);
+          color: var(--primary);
           text-decoration: none;
           transition: opacity 0.2s ease;
         }
@@ -194,13 +194,13 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
         .markdown-content th,
         .markdown-content td {
-          border: 1px solid var(--color-border-default);
+          border: 1px solid var(--border);
           padding: 0.75rem;
           text-align: left;
         }
 
         .markdown-content th {
-          background-color: var(--color-gray-50);
+          background-color: var(--muted);
           font-weight: 600;
         }
 
@@ -211,13 +211,13 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
         /* 취소선 (GFM) */
         .markdown-content del {
-          color: var(--color-gray-500);
+          color: var(--muted-foreground);
         }
 
         /* 수평선 */
         .markdown-content hr {
           border: none;
-          border-top: 1px solid var(--color-border-default);
+          border-top: 1px solid var(--border);
           margin: 2rem 0;
         }
 
@@ -234,7 +234,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           display: flex;
           justify-content: center;
           margin: 1.5rem 0;
-          background-color: var(--color-gray-50);
+          background-color: var(--muted);
           padding: 1rem;
           border-radius: 8px;
           overflow-x: auto;
