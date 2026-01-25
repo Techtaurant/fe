@@ -9,6 +9,8 @@ export interface User {
   email: string;
   profileImageUrl: string;
   role: string;
+  followerCount?: number;
+  followingCount?: number;
 }
 
 // 태그
