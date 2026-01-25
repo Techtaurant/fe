@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
-import SelectDialog from './SelectDialog';
 
 interface SidebarProps {
   mode: FeedMode;
@@ -14,7 +13,7 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-const MAX_VISIBLE_ITEMS = 10;
+const MAX_VISIBLE_ITEMS = 5;
 
 export default function Sidebar({
   mode,
@@ -25,8 +24,8 @@ export default function Sidebar({
   isOpen = false,
   onClose = () => {},
 }: SidebarProps) {
-  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
-  const [isTechBlogDialogOpen, setIsTechBlogDialogOpen] = useState(false);
+  const [showAllTags, setShowAllTags] = useState(false);
+  const [showAllTechBlogs, setShowAllTechBlogs] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState(filterState.searchUser || '');
 
   // 모바일 드로어가 열릴 때 body 스크롤 막기
@@ -80,8 +79,12 @@ export default function Sidebar({
     });
   };
 
-  const visibleTags = availableTags.slice(0, MAX_VISIBLE_ITEMS);
-  const visibleTechBlogs = availableTechBlogs.slice(0, MAX_VISIBLE_ITEMS);
+  const visibleTags = showAllTags
+    ? availableTags
+    : availableTags.slice(0, MAX_VISIBLE_ITEMS);
+  const visibleTechBlogs = showAllTechBlogs
+    ? availableTechBlogs
+    : availableTechBlogs.slice(0, MAX_VISIBLE_ITEMS);
 
   return (
     <>
@@ -97,8 +100,8 @@ export default function Sidebar({
       <aside
         className={`
           fixed md:static top-0 left-0 h-full md:h-auto
-          w-[280px] p-6 bg-white
-          border-r border-[var(--color-border-default)]
+          w-[280px] p-6 bg-background
+          border-r border-border
           overflow-y-auto
           z-[250] md:z-auto
           transition-transform duration-300 ease-in-out
@@ -108,12 +111,11 @@ export default function Sidebar({
         {/* 닫기 버튼 (모바일만) */}
         <button
           onClick={onClose}
-          className="md:hidden absolute top-4 right-4 p-2 rounded-[var(--radius-md)]
-                   hover:bg-[var(--color-gray-100)] transition-[background-color] duration-[var(--transition-base)]"
+          className="md:hidden absolute top-4 right-4 p-2 rounded-md hover:bg-muted transition-colors duration-200"
           aria-label="필터 닫기"
         >
           <svg
-            className="w-6 h-6 text-[var(--color-gray-700)]"
+            className="w-6 h-6 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -134,26 +136,26 @@ export default function Sidebar({
           <div className="mt-12 md:mt-0">
             {/* 정렬 */}
             <div className="mb-8">
-              <h3 className="text-sm font-bold mb-3 text-black">정렬</h3>
+              <h3 className="text-sm font-bold mb-3 text-foreground">정렬</h3>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => handleSortChange('latest')}
-                  className={`px-4 py-2 rounded-[var(--radius-md)] text-sm text-left transition-[background-color] duration-[var(--transition-base)]
+                  className={`px-4 py-2 rounded-md text-sm text-left transition-colors duration-200
                     ${
                       filterState.sortBy === 'latest'
-                        ? 'bg-black text-white font-bold'
-                        : 'bg-transparent text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)]'
+                        ? 'bg-primary text-primary-foreground font-bold'
+                        : 'bg-transparent text-muted-foreground hover:bg-muted'
                     }`}
                 >
                   최신순
                 </button>
                 <button
                   onClick={() => handleSortChange('popular')}
-                  className={`px-4 py-2 rounded-[var(--radius-md)] text-sm text-left transition-[background-color] duration-[var(--transition-base)]
+                  className={`px-4 py-2 rounded-md text-sm text-left transition-colors duration-200
                     ${
                       filterState.sortBy === 'popular'
-                        ? 'bg-black text-white font-bold'
-                        : 'bg-transparent text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)]'
+                        ? 'bg-primary text-primary-foreground font-bold'
+                        : 'bg-transparent text-muted-foreground hover:bg-muted'
                     }`}
                 >
                   인기순
@@ -168,10 +170,9 @@ export default function Sidebar({
                   type="checkbox"
                   checked={filterState.hideReadPosts}
                   onChange={toggleHideReadPosts}
-                  className="w-5 h-5 rounded border-[var(--color-gray-400)] text-black
-                           focus:ring-2 focus:ring-black focus:ring-offset-0"
+                  className="w-5 h-5 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
                 />
-                <span className="text-sm text-[var(--color-gray-700)]">
+                <span className="text-sm text-muted-foreground">
                   읽은 게시물 제외
                 </span>
               </label>
@@ -179,33 +180,32 @@ export default function Sidebar({
 
              {/* 기술 블로그 필터 */}
              <div className="mb-8">
-              <h3 className="text-sm font-bold mb-3 text-black">기술 블로그</h3>
+              <h3 className="text-sm font-bold mb-3 text-foreground">기술 블로그</h3>
               <div className="flex flex-col gap-2">
                 {visibleTechBlogs.map((blog) => (
                   <label
                     key={blog.id}
-                    className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-[var(--color-bg-hover)] transition-[background-color] duration-[var(--transition-base)]"
+                    className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
                   >
                     <input
                       type="checkbox"
                       checked={filterState.selectedTechBlogs.includes(blog.id)}
                       onChange={() => toggleTechBlog(blog.id)}
-                      className="w-4 h-4 rounded border-[var(--color-gray-400)] text-black
-                              focus:ring-2 focus:ring-black focus:ring-offset-0"
+                      className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
                     />
-                    <span className="text-sm text-[var(--color-gray-700)]">
+                    <span className="text-sm text-muted-foreground">
                       {blog.name}
                     </span>
                   </label>
                 ))}
                 {availableTechBlogs.length > MAX_VISIBLE_ITEMS && (
                   <button
-                    onClick={() => setIsTechBlogDialogOpen(true)}
-                    className="mt-2 px-4 py-2 rounded-[var(--radius-md)] text-sm text-[var(--color-gray-700)]
-                            bg-transparent hover:bg-[var(--color-gray-100)]
-                            transition-[background-color] duration-[var(--transition-base)]"
+                    onClick={() => setShowAllTechBlogs((prev) => !prev)}
+                    className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
                   >
-                    더보기 ({availableTechBlogs.length - MAX_VISIBLE_ITEMS}개)
+                    {showAllTechBlogs
+                      ? '접기'
+                      : `더보기 (${availableTechBlogs.length - MAX_VISIBLE_ITEMS}개)`}
                   </button>
                 )}
               </div>
@@ -221,20 +221,20 @@ export default function Sidebar({
           <div className="mt-12 md:mt-0">
              {/* 사용자 검색 */}
              <div className="mb-8">
-              <h3 className="text-sm font-bold mb-3 text-black">사용자 검색</h3>
+              <h3 className="text-sm font-bold mb-3 text-foreground">사용자 검색</h3>
               <div className="relative">
                 <input
                   type="text"
                   placeholder="사용자 이름..."
                   value={userSearchQuery}
                   onChange={(e) => setUserSearchQuery(e.target.value)}
-                  className="w-full bg-[var(--color-gray-200)] border-none rounded-[var(--radius-pill)]
-                          py-2 pl-10 pr-4 text-sm text-[var(--color-gray-700)]
-                          transition-[background-color] duration-[var(--transition-base)]
-                          focus:bg-[var(--color-gray-100)] focus:outline-none"
+                  className="w-full bg-muted border-none rounded-full
+                          py-2 pl-10 pr-4 text-sm text-foreground
+                          transition-colors duration-200
+                          focus:bg-muted/70 focus:outline-none"
                 />
                 <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-gray-600)]"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -256,58 +256,36 @@ export default function Sidebar({
            ================================================================= */}
         {/* 태그 필터 */}
         <div className="mb-8">
-          <h3 className="text-sm font-bold mb-3 text-black">태그</h3>
+          <h3 className="text-sm font-bold mb-3 text-foreground">태그</h3>
           <div className="flex flex-col gap-2">
             {visibleTags.map((tag) => (
               <label
                 key={tag.id}
-                className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-[var(--color-bg-hover)] transition-[background-color] duration-[var(--transition-base)]"
+                className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
               >
                 <input
                   type="checkbox"
                   checked={filterState.selectedTags.includes(tag.id)}
                   onChange={() => toggleTag(tag.id)}
-                  className="w-4 h-4 rounded border-[var(--color-gray-400)] text-black
-                           focus:ring-2 focus:ring-black focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
                 />
-                <span className="text-sm text-[var(--color-gray-700)]">
+                <span className="text-sm text-muted-foreground">
                   {tag.name}
                 </span>
               </label>
             ))}
             {availableTags.length > MAX_VISIBLE_ITEMS && (
               <button
-                onClick={() => setIsTagDialogOpen(true)}
-                className="mt-2 px-4 py-2 rounded-[var(--radius-md)] text-sm text-[var(--color-gray-700)]
-                         bg-transparent hover:bg-[var(--color-gray-100)]
-                         transition-[background-color] duration-[var(--transition-base)]"
+                onClick={() => setShowAllTags((prev) => !prev)}
+                className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
               >
-                더보기 ({availableTags.length - MAX_VISIBLE_ITEMS}개)
+                {showAllTags
+                  ? '접기'
+                  : `더보기 (${availableTags.length - MAX_VISIBLE_ITEMS}개)`}
               </button>
             )}
           </div>
         </div>
-
-        {/* Dialogs */}
-        <SelectDialog
-          isOpen={isTagDialogOpen}
-          onClose={() => setIsTagDialogOpen(false)}
-          items={availableTags}
-          selectedIds={filterState.selectedTags}
-          onToggle={toggleTag}
-          title="태그 선택"
-          searchPlaceholder="태그 검색..."
-        />
-
-        <SelectDialog
-          isOpen={isTechBlogDialogOpen}
-          onClose={() => setIsTechBlogDialogOpen(false)}
-          items={availableTechBlogs}
-          selectedIds={filterState.selectedTechBlogs}
-          onToggle={toggleTechBlog}
-          title="기술 블로그 선택"
-          searchPlaceholder="기술 블로그 검색..."
-        />
       </aside>
     </>
   );
