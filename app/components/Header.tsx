@@ -11,7 +11,11 @@ interface HeaderProps {
   onModeChange?: (mode: FeedMode) => void;
 }
 
-export default function Header({ onMenuClick, currentMode = 'company', onModeChange }: HeaderProps) {
+export default function Header({
+  onMenuClick,
+  currentMode = "company",
+  onModeChange,
+}: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -106,23 +110,23 @@ export default function Header({ onMenuClick, currentMode = 'company', onModeCha
           {/* Mode Switcher (Desktop) */}
           <div className="hidden md:flex items-center gap-1">
             <button
-              onClick={() => onModeChange?.('company')}
+              onClick={() => onModeChange?.("company")}
               className={`px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors
                 ${
-                  currentMode === 'company'
-                    ? 'text-black bg-[var(--color-gray-100)]'
-                    : 'text-[var(--color-gray-600)] hover:text-black hover:bg-[var(--color-gray-50)]'
+                  currentMode === "company"
+                    ? "text-black bg-[var(--color-gray-100)]"
+                    : "text-[var(--color-gray-600)] hover:text-black hover:bg-[var(--color-gray-50)]"
                 }`}
             >
               기업 블로그
             </button>
             <button
-              onClick={() => onModeChange?.('user')}
+              onClick={() => onModeChange?.("user")}
               className={`px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors
                 ${
-                  currentMode === 'user'
-                    ? 'text-black bg-[var(--color-gray-100)]'
-                    : 'text-[var(--color-gray-600)] hover:text-black hover:bg-[var(--color-gray-50)]'
+                  currentMode === "user"
+                    ? "text-black bg-[var(--color-gray-100)]"
+                    : "text-[var(--color-gray-600)] hover:text-black hover:bg-[var(--color-gray-50)]"
                 }`}
             >
               커뮤니티
@@ -133,7 +137,7 @@ export default function Header({ onMenuClick, currentMode = 'company', onModeCha
         {/* Search Bar (데스크탑만) */}
         <form
           onSubmit={handleSearch}
-          className="hidden md:flex flex-1 max-w-[600px] mx-8"
+          className="hidden md:flex flex-1 max-w-[600px] mx-8 justify-center"
         >
           <div className="relative w-full">
             <input
