@@ -44,6 +44,14 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
       ? post.techBlog?.iconUrl
       : post.author?.profileImageUrl;
 
+  // 작성자 클릭 시 사용자 페이지로 이동 (커뮤니티 글만)
+  const handleAuthorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (post.type === "community" && post.author?.id) {
+      router.push(`/user/${post.author.id}`);
+    }
+  };
+
   return (
     <article
       onClick={handleCardClick}
@@ -56,23 +64,31 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
         <div className="flex-1">
           {/* Header Info: Author/Blog + Date */}
           <div className="flex items-center gap-2 mb-2 md:mb-3">
-            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-[var(--color-gray-200)] flex items-center justify-center">
-              {authorImage ? (
-                <Image
-                  src={authorImage}
-                  alt={authorName || "Profile"}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-[10px] font-bold text-[var(--color-gray-600)]">
-                  {(authorName || "?").charAt(0)}
-                </span>
-              )}
-            </div>
-            <span className="text-sm font-medium text-[var(--color-gray-700)]">
-              {authorName}
-            </span>
+            <button
+              type="button"
+              onClick={handleAuthorClick}
+              className={`flex items-center gap-2 ${
+                post.type === "community" ? "hover:opacity-70 cursor-pointer" : ""
+              }`}
+            >
+              <div className="relative w-6 h-6 rounded-full overflow-hidden bg-[var(--color-gray-200)] flex items-center justify-center">
+                {authorImage ? (
+                  <Image
+                    src={authorImage}
+                    alt={authorName || "Profile"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-[10px] font-bold text-[var(--color-gray-600)]">
+                    {(authorName || "?").charAt(0)}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-medium text-[var(--color-gray-700)]">
+                {authorName}
+              </span>
+            </button>
             <span className="text-xs text-[var(--color-gray-500)]">•</span>
             <span className="text-xs text-[var(--color-gray-500)]">
               {post.publishedAt}
