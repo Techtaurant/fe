@@ -26,17 +26,17 @@ function OAuthErrorContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-default)]">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center max-w-md mx-auto px-4">
-        <h1 className="text-2xl font-bold text-black mb-4">로그인 실패</h1>
-        <p className="text-[var(--color-gray-600)] mb-6">
+        <h1 className="text-2xl font-bold text-foreground mb-4">로그인 실패</h1>
+        <p className="text-muted-foreground mb-6">
           {getErrorDescription(errorCode)}
         </p>
         <button
           onClick={() => router.push('/')}
-          className="px-6 py-2 rounded-[var(--radius-pill)] bg-black text-white text-sm font-medium
-                   transition-[background-color] duration-[var(--transition-base)]
-                   hover:bg-[var(--color-gray-800)]"
+          className="px-6 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium
+                   transition-colors duration-200
+                   hover:bg-primary/90"
         >
           홈으로 돌아가기
         </button>

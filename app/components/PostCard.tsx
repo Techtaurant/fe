@@ -47,16 +47,14 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
   return (
     <article
       onClick={handleCardClick}
-      className="group cursor-pointer py-4 md:py-6 border-b border-[var(--color-border-default)]
-               transition-[background-color] duration-[var(--transition-base)]
-               hover:bg-[var(--color-bg-card-hover)]"
+      className="group cursor-pointer py-4 md:py-6 border-b border-border transition-colors duration-200 hover:bg-muted/50"
     >
       <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-6">
         {/* Content */}
         <div className="flex-1">
           {/* Header Info: Author/Blog + Date */}
           <div className="flex items-center gap-2 mb-2 md:mb-3">
-            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-[var(--color-gray-200)] flex items-center justify-center">
+            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
               {authorImage ? (
                 <Image
                   src={authorImage}
@@ -65,23 +63,22 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
                   className="object-cover"
                 />
               ) : (
-                <span className="text-[10px] font-bold text-[var(--color-gray-600)]">
+                <span className="text-[10px] font-bold text-muted-foreground">
                   {(authorName || "?").charAt(0)}
                 </span>
               )}
             </div>
-            <span className="text-sm font-medium text-[var(--color-gray-700)]">
+            <span className="text-sm font-medium text-foreground">
               {authorName}
             </span>
-            <span className="text-xs text-[var(--color-gray-500)]">•</span>
-            <span className="text-xs text-[var(--color-gray-500)]">
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-xs text-muted-foreground">
               {post.publishedAt}
             </span>
 
             {post.isRead && (
               <span
-                className="ml-auto md:ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--radius-sm)]
-                           bg-[var(--color-gray-200)] text-xs font-medium text-[var(--color-gray-600)]"
+                className="ml-auto md:ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-muted text-xs font-medium text-muted-foreground"
               >
                 <svg
                   className="w-3 h-3"
@@ -101,9 +98,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
 
           {/* Title */}
           <h2
-            className="text-lg md:text-xl font-bold text-black mb-2 md:mb-3 line-clamp-2
-                       font-[family-name:var(--font-family-serif)]
-                       group-hover:text-[var(--color-gray-800)]"
+            className="text-lg md:text-xl font-bold text-foreground mb-2 md:mb-3 line-clamp-2 font-serif group-hover:text-foreground"
           >
             {post.title}
           </h2>
@@ -116,8 +111,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
                 {post.tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="px-1.5 md:px-2 py-0.5 md:py-1 rounded-[var(--radius-sm)] bg-[var(--color-gray-100)]
-                           text-[11px] md:text-xs text-[var(--color-gray-700)] hover:bg-[var(--color-gray-200)]"
+                    className="px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm bg-muted/60 text-[11px] md:text-xs text-muted-foreground hover:bg-muted"
                     onClick={(e) => {
                       e.stopPropagation();
                       // TODO: 태그 클릭 시 해당 태그로 필터링
@@ -133,7 +127,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
             <div className="flex items-center gap-3 ml-auto md:ml-0">
               {/* View Count */}
               <div
-                className="flex items-center gap-1 text-xs md:text-sm text-[var(--color-gray-600)]"
+                className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
                 title="조회수"
               >
                 <svg
@@ -161,7 +155,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
               {/* Likes (Optional) */}
               {post.likeCount !== undefined && (
                 <div
-                  className="flex items-center gap-1 text-xs md:text-sm text-[var(--color-gray-600)]"
+                  className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
                   title="좋아요"
                 >
                   <svg
@@ -184,7 +178,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
               {/* Comments (Optional) */}
               {post.commentCount !== undefined && (
                 <div
-                  className="flex items-center gap-1 text-xs md:text-sm text-[var(--color-gray-600)]"
+                  className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
                   title="댓글"
                 >
                   <svg
@@ -209,7 +203,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
 
         {/* Thumbnail */}
         {post.thumbnailUrl && (
-          <div className="relative w-full md:w-[200px] h-[160px] md:h-[134px] flex-shrink-0 rounded-[var(--radius-md)] overflow-hidden">
+          <div className="relative w-full md:w-[200px] h-[160px] md:h-[134px] flex-shrink-0 rounded-md overflow-hidden">
             <Image
               src={post.thumbnailUrl}
               alt={post.title}

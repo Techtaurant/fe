@@ -31,7 +31,7 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
   ];
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-[var(--color-border-default)] mb-6 gap-4 md:gap-0">
+    <div className="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-border mb-6 gap-4 md:gap-0">
       {/* 날짜 필터 (왼쪽) */}
       <div className="flex items-center gap-1 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
         {dateOptions.map((option) => (
@@ -41,8 +41,8 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
             className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors
               ${
                 filterState.dateRange === option.value
-                  ? 'bg-[var(--color-gray-200)] text-black'
-                  : 'text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-muted/70'
               }`}
           >
             {option.label}
@@ -59,8 +59,8 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
             className={`whitespace-nowrap transition-colors
               ${
                 filterState.sortBy === option.value
-                  ? 'font-bold text-black'
-                  : 'font-medium text-[var(--color-gray-500)] hover:text-[var(--color-gray-700)]'
+                  ? 'font-bold text-foreground'
+                  : 'font-medium text-muted-foreground hover:text-foreground'
               }`}
           >
             {option.label}
