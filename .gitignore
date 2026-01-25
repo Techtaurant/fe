@@ -45,7 +45,7 @@ CLAUDE.md
 # type-coverage
 .type-coverage/
 coverage-detail.txt
-coverage-comment.md
-.agent
+coverage-comment.md.agent
 .gemini
 .github/prompts
+.agent
