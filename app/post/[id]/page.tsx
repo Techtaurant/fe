@@ -287,14 +287,14 @@ export default function PostDetailPage() {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-default)]">
+      <div className="min-h-screen bg-background">
         <Header
           onMenuClick={() => {}}
           currentMode={currentMode}
           onModeChange={() => {}}
         />
         <div className="flex items-center justify-center py-20">
-          <p className="text-lg text-[var(--color-gray-600)]">
+          <p className="text-lg text-muted-foreground">
             게시물을 찾을 수 없습니다.
           </p>
         </div>
@@ -303,7 +303,7 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-default)]">
+    <div className="min-h-screen bg-background">
       <Header
         onMenuClick={() => {}}
         currentMode={currentMode}
@@ -314,8 +314,7 @@ export default function PostDetailPage() {
         {/* 뒤로가기 버튼 */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-[var(--color-gray-600)] hover:text-[var(--color-gray-800)]
-                   transition-colors duration-[var(--transition-base)] mb-6"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 mb-6"
         >
           <svg
             className="w-5 h-5"
@@ -336,13 +335,13 @@ export default function PostDetailPage() {
         {/* 게시물 헤더 */}
         <header className="mb-8">
           {/* 제목 */}
-          <h1 className="text-2xl md:text-4xl font-bold text-black leading-tight mb-6">
+          <h1 className="text-2xl md:text-4xl font-bold text-foreground leading-tight mb-6">
             {post.title}
           </h1>
 
           {/* 작성자 정보 */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-[var(--color-gray-200)] flex items-center justify-center">
+            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
               {post.author?.profileImageUrl ? (
                 <Image
                   src={post.author.profileImageUrl}
@@ -351,16 +350,16 @@ export default function PostDetailPage() {
                   className="object-cover"
                 />
               ) : (
-                <span className="text-lg font-bold text-[var(--color-gray-600)]">
+                <span className="text-lg font-bold text-muted-foreground">
                   {post.author?.name.charAt(0) || "?"}
                 </span>
               )}
             </div>
             <div className="flex flex-col">
-              <span className="font-medium text-[var(--color-gray-800)]">
+              <span className="font-medium text-foreground">
                 {post.author?.name}
               </span>
-              <div className="flex items-center gap-2 text-sm text-[var(--color-gray-500)]">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>{post.publishedAt}</span>
                 <span>•</span>
                 <span>
@@ -369,26 +368,23 @@ export default function PostDetailPage() {
               </div>
             </div>
             <button
-              className="ml-auto px-4 py-1.5 rounded-[var(--radius-pill)]
-                       border border-[var(--color-green)] text-[var(--color-green)]
-                       text-sm font-medium hover:bg-[var(--color-green)] hover:text-white
-                       transition-colors duration-[var(--transition-base)]"
+              className="ml-auto px-4 py-1.5 rounded-full border border-success text-success text-sm font-medium hover:bg-success hover:text-success-foreground transition-colors duration-200"
             >
               팔로우
             </button>
           </div>
 
           {/* 상호작용 바 */}
-          <div className="flex items-center justify-between py-3 border-y border-[var(--color-border-default)]">
+          <div className="flex items-center justify-between py-3 border-y border-border">
             <div className="flex items-center gap-4">
               {/* 좋아요 */}
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1.5 text-sm transition-colors duration-[var(--transition-base)]
+                className={`flex items-center gap-1.5 text-sm transition-colors duration-200
                          ${
                            isLiked
-                             ? "text-[var(--color-green)]"
-                             : "text-[var(--color-gray-600)] hover:text-[var(--color-gray-800)]"
+                             ? "text-success"
+                             : "text-muted-foreground hover:text-foreground"
                          }`}
               >
                 <svg
@@ -408,7 +404,7 @@ export default function PostDetailPage() {
               </button>
 
               {/* 댓글 */}
-              <button className="flex items-center gap-1.5 text-sm text-[var(--color-gray-600)] hover:text-[var(--color-gray-800)]">
+              <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -430,11 +426,11 @@ export default function PostDetailPage() {
               {/* 북마크 */}
               <button
                 onClick={handleBookmark}
-                className={`p-2 rounded-full transition-colors duration-[var(--transition-base)]
+                className={`p-2 rounded-full transition-colors duration-200
                          ${
                            isBookmarked
-                             ? "text-black"
-                             : "text-[var(--color-gray-600)] hover:text-[var(--color-gray-800)]"
+                             ? "text-foreground"
+                             : "text-muted-foreground hover:text-foreground"
                          }`}
               >
                 <svg
@@ -455,8 +451,7 @@ export default function PostDetailPage() {
               {/* 공유 */}
               <button
                 onClick={handleShare}
-                className="p-2 rounded-full text-[var(--color-gray-600)] hover:text-[var(--color-gray-800)]
-                         transition-colors duration-[var(--transition-base)]"
+                className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200"
               >
                 <svg
                   className="w-5 h-5"
@@ -475,8 +470,7 @@ export default function PostDetailPage() {
 
               {/* 더보기 */}
               <button
-                className="p-2 rounded-full text-[var(--color-gray-600)] hover:text-[var(--color-gray-800)]
-                               transition-colors duration-[var(--transition-base)]"
+                className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200"
               >
                 <svg
                   className="w-5 h-5"
@@ -507,9 +501,7 @@ export default function PostDetailPage() {
             {post.tags.map((tag) => (
               <span
                 key={tag.id}
-                className="px-3 py-1.5 rounded-[var(--radius-pill)] bg-[var(--color-gray-100)]
-                         text-sm text-[var(--color-gray-700)] hover:bg-[var(--color-gray-200)]
-                         cursor-pointer transition-colors duration-[var(--transition-base)]"
+                className="px-3 py-1.5 rounded-full bg-muted/60 text-sm text-muted-foreground hover:bg-muted cursor-pointer transition-colors duration-200"
               >
                 {tag.name}
               </span>
@@ -518,33 +510,30 @@ export default function PostDetailPage() {
         )}
 
         {/* 구분선 */}
-        <div className="h-px bg-[var(--color-border-default)] mb-8" />
+        <div className="h-px bg-border mb-8" />
 
         {/* 댓글 섹션 */}
         <section>
-          <h3 className="text-lg font-bold text-black mb-6">
+          <h3 className="text-lg font-bold text-foreground mb-6">
             댓글 ({comments.length})
           </h3>
 
           {/* 댓글 입력 */}
           <div className="flex gap-3 mb-8">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-[var(--color-gray-200)] flex-shrink-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-[var(--color-gray-600)]">
+            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+              <span className="text-sm font-bold text-muted-foreground">
                 ?
               </span>
             </div>
             <div className="flex-1">
               <textarea
                 placeholder="댓글을 작성해주세요..."
-                className="w-full px-4 py-3 rounded-lg border border-[var(--color-border-default)]
-                         text-sm resize-none focus:outline-none focus:border-[var(--color-gray-400)]
-                         transition-colors duration-[var(--transition-base)]"
+                className="w-full px-4 py-3 rounded-lg border border-border bg-background text-sm resize-none focus:outline-none focus:border-ring transition-colors duration-200"
                 rows={3}
               />
               <div className="flex justify-end mt-2">
                 <button
-                  className="px-4 py-2 rounded-[var(--radius-pill)] bg-[var(--color-green)] text-white
-                           text-sm font-medium hover:opacity-90 transition-opacity duration-[var(--transition-base)]"
+                  className="px-4 py-2 rounded-full bg-success text-success-foreground text-sm font-medium hover:opacity-90 transition-opacity duration-200"
                 >
                   댓글 작성
                 </button>
@@ -557,7 +546,7 @@ export default function PostDetailPage() {
             {comments.length > 0 ? (
               comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-[var(--color-gray-200)] flex-shrink-0 flex items-center justify-center">
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
                     {comment.author.profileImageUrl ? (
                       <Image
                         src={comment.author.profileImageUrl}
@@ -566,25 +555,25 @@ export default function PostDetailPage() {
                         className="object-cover"
                       />
                     ) : (
-                      <span className="text-sm font-bold text-[var(--color-gray-600)]">
+                      <span className="text-sm font-bold text-muted-foreground">
                         {comment.author.name.charAt(0)}
                       </span>
                     )}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-sm text-[var(--color-gray-800)]">
+                      <span className="font-medium text-sm text-foreground">
                         {comment.author.name}
                       </span>
-                      <span className="text-xs text-[var(--color-gray-500)]">
+                      <span className="text-xs text-muted-foreground">
                         {comment.createdAt}
                       </span>
                     </div>
-                    <p className="text-sm text-[var(--color-gray-700)] leading-relaxed mb-2">
+                    <p className="text-sm text-foreground leading-relaxed mb-2">
                       {comment.content}
                     </p>
                     <div className="flex items-center gap-4">
-                      <button className="flex items-center gap-1 text-xs text-[var(--color-gray-500)] hover:text-[var(--color-gray-700)]">
+                      <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -600,7 +589,7 @@ export default function PostDetailPage() {
                         </svg>
                         <span>{comment.likeCount}</span>
                       </button>
-                      <button className="text-xs text-[var(--color-gray-500)] hover:text-[var(--color-gray-700)]">
+                      <button className="text-xs text-muted-foreground hover:text-foreground">
                         답글
                       </button>
                     </div>
@@ -608,7 +597,7 @@ export default function PostDetailPage() {
                 </div>
               ))
             ) : (
-              <p className="text-center text-[var(--color-gray-500)] py-8">
+              <p className="text-center text-muted-foreground py-8">
                 아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!
               </p>
             )}

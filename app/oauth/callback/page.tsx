@@ -13,10 +13,10 @@ export default function OAuthCallback() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-default)]">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-        <p className="text-[var(--color-gray-600)]">로그인 처리 중...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
+        <p className="text-muted-foreground">로그인 처리 중...</p>
       </div>
     </div>
   );

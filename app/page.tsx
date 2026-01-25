@@ -260,7 +260,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-default)]">
+    <div className="min-h-screen bg-background">
       <Header 
         onMenuClick={() => setIsMobileSidebarOpen(true)} 
         currentMode={filterState.mode}
@@ -297,7 +297,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
-              <p className="text-lg text-[var(--color-gray-600)]">
+              <p className="text-lg text-muted-foreground">
                 조건에 맞는 게시물이 없습니다.
               </p>
             </div>
