@@ -1,157 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import FilterBar from "./components/FilterBar";
 import PostCard from "./components/PostCard";
-import { FilterState, Post, Tag, TechBlog, FeedMode, User } from "./types";
+import { FilterState, Post, FeedMode } from "./types";
+import {
+  DUMMY_TAGS,
+  DUMMY_TECH_BLOGS,
+  DUMMY_COMPANY_POSTS,
+  DUMMY_COMMUNITY_POSTS,
+} from "./data/dummyData";
 
-// 더미 데이터
-const DUMMY_TAGS: Tag[] = [
-  { id: "1", name: "React" },
-  { id: "2", name: "TypeScript" },
-  { id: "3", name: "Next.js" },
-  { id: "4", name: "Node.js" },
-  { id: "5", name: "DevOps" },
-  { id: "6", name: "AWS" },
-  { id: "7", name: "Docker" },
-  { id: "8", name: "Kubernetes" },
-  { id: "9", name: "Vue.js" },
-  { id: "10", name: "Angular" },
-  { id: "11", name: "Python" },
-  { id: "12", name: "Java" },
-  { id: "13", name: "Spring" },
-  { id: "14", name: "Django" },
-  { id: "15", name: "GraphQL" },
-];
-
-const DUMMY_TECH_BLOGS: TechBlog[] = [
-  { id: "1", name: "토스", iconUrl: "/next.svg" },
-  { id: "2", name: "카카오", iconUrl: "/next.svg" },
-  { id: "3", name: "네이버", iconUrl: "/next.svg" },
-  { id: "4", name: "우아한형제들", iconUrl: "/next.svg" },
-  { id: "5", name: "라인", iconUrl: "/next.svg" },
-  { id: "6", name: "쿠팡", iconUrl: "/next.svg" },
-  { id: "7", name: "당근마켓", iconUrl: "/next.svg" },
-  { id: "8", name: "뱅크샐러드", iconUrl: "/next.svg" },
-  { id: "9", name: "야놀자", iconUrl: "/next.svg" },
-  { id: "10", name: "컬리", iconUrl: "/next.svg" },
-];
-
-const DUMMY_USERS: User[] = [
-  { id: "u1", name: "김개발", email: "dev1@test.com", profileImageUrl: "", role: "USER" },
-  { id: "u2", name: "이코딩", email: "dev2@test.com", profileImageUrl: "", role: "USER" },
-  { id: "u3", name: "박해커", email: "dev3@test.com", profileImageUrl: "", role: "USER" },
-];
-
-const DUMMY_COMPANY_POSTS: Post[] = [
-  {
-    id: "c1",
-    type: 'company',
-    title: "React 19의 새로운 기능과 변화",
-    thumbnailUrl: "/next.svg",
-    viewCount: 15420,
-    tags: [DUMMY_TAGS[0], DUMMY_TAGS[1]],
-    techBlog: DUMMY_TECH_BLOGS[0],
-    isRead: false,
-    publishedAt: "2025-01-15",
-    url: "https://toss.tech",
-  },
-  {
-    id: "c2",
-    type: 'company',
-    title: "TypeScript 5.0 릴리즈 노트 정리",
-    thumbnailUrl: "/next.svg",
-    viewCount: 8350,
-    tags: [DUMMY_TAGS[1]],
-    techBlog: DUMMY_TECH_BLOGS[1],
-    isRead: true,
-    publishedAt: "2025-01-14",
-    url: "https://tech.kakao.com",
-  },
-  {
-    id: "c3",
-    type: 'company',
-    title: "Next.js 16에서 달라진 점",
-    viewCount: 23100,
-    tags: [DUMMY_TAGS[0], DUMMY_TAGS[2]],
-    techBlog: DUMMY_TECH_BLOGS[2],
-    isRead: false,
-    publishedAt: "2025-01-13",
-    url: "https://d2.naver.com",
-  },
-  {
-    id: "c4",
-    type: 'company',
-    title: "AWS Lambda에서 컨테이너 이미지 사용하기",
-    thumbnailUrl: "/next.svg",
-    viewCount: 5200,
-    tags: [DUMMY_TAGS[4], DUMMY_TAGS[5]],
-    techBlog: DUMMY_TECH_BLOGS[3],
-    isRead: false,
-    publishedAt: "2025-01-12",
-    url: "https://techblog.woowahan.com",
-  },
-  {
-    id: "c5",
-    type: 'company',
-    title: "Kubernetes 운영 경험 공유",
-    thumbnailUrl: "/next.svg",
-    viewCount: 12800,
-    tags: [DUMMY_TAGS[4], DUMMY_TAGS[7]],
-    techBlog: DUMMY_TECH_BLOGS[4],
-    isRead: true,
-    publishedAt: "2025-01-11",
-    url: "https://engineering.linecorp.com",
-  },
-];
-
-const DUMMY_COMMUNITY_POSTS: Post[] = [
-  {
-    id: "u1",
-    type: 'community',
-    title: "주니어 개발자의 이직 회고",
-    viewCount: 1200,
-    likeCount: 56,
-    commentCount: 12,
-    tags: [DUMMY_TAGS[0]],
-    author: DUMMY_USERS[0],
-    isRead: false,
-    publishedAt: "2025-01-16",
-    url: "/post/u1",
-  },
-  {
-    id: "u2",
-    type: 'community',
-    title: "사이드 프로젝트 실패 경험담",
-    viewCount: 3400,
-    likeCount: 128,
-    commentCount: 45,
-    tags: [DUMMY_TAGS[2], DUMMY_TAGS[4]],
-    author: DUMMY_USERS[1],
-    isRead: false,
-    publishedAt: "2025-01-15",
-    url: "/post/u2",
-  },
-  {
-    id: "u3",
-    type: 'community',
-    title: "오늘 배운 알고리즘 정리",
-    viewCount: 150,
-    likeCount: 5,
-    commentCount: 0,
-    tags: [DUMMY_TAGS[11]],
-    author: DUMMY_USERS[2],
-    isRead: false,
-    publishedAt: "2025-01-14",
-    url: "/post/u3",
-  },
-];
-
-export default function Home() {
+function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   const [filterState, setFilterState] = useState<FilterState>({
-    mode: 'company',
+    mode: initialMode,
     dateRange: 'all',
     sortBy: 'latest',
     searchUser: '',
@@ -306,4 +171,13 @@ export default function Home() {
       </div>
     </div>
   );
+}
+
+export default function Home() {
+  const searchParams = useSearchParams();
+  const modeParam = searchParams.get("mode");
+  const initialMode: FeedMode =
+    modeParam === "user" || modeParam === "company" ? modeParam : "company";
+
+  return <HomeContent key={initialMode} initialMode={initialMode} />;
 }
