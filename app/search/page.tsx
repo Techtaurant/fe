@@ -34,22 +34,28 @@ export default function SearchPage() {
   const router = useRouter();
   const initialQuery = searchParams.get("q") || "";
 
-  const [query, setQuery] = useState(initialQuery);
+  const [inputValue, setInputValue] = useState(initialQuery);
+  const [committedQuery, setCommittedQuery] = useState(initialQuery);
   const [mode, setMode] = useState<FeedMode>("company");
 
   useEffect(() => {
-    setQuery(initialQuery);
+    setInputValue(initialQuery);
+    setCommittedQuery(initialQuery);
   }, [initialQuery]);
 
-  const posts = useMemo(() => {
-    return mode === "company" ? DUMMY_COMPANY_POSTS : DUMMY_COMMUNITY_POSTS;
-  }, [mode]);
+  const posts = useMemo(
+    () => [...DUMMY_COMPANY_POSTS, ...DUMMY_COMMUNITY_POSTS],
+    []
+  );
 
-  const results = useMemo(() => filterPosts(posts, query), [posts, query]);
+  const results = useMemo(
+    () => filterPosts(posts, committedQuery),
+    [posts, committedQuery]
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = query.trim();
+    const trimmed = inputValue.trim();
     if (!trimmed) {
       router.push("/search");
       return;
@@ -66,8 +72,8 @@ export default function SearchPage() {
             <input
               type="text"
               placeholder="검색어를 입력하세요"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               className="w-full bg-muted border-none rounded-full
                        py-3 pl-11 pr-4 text-sm text-foreground
                        transition-colors duration-200
@@ -89,7 +95,7 @@ export default function SearchPage() {
           </div>
         </form>
 
-        {!query.trim() ? (
+        {!committedQuery.trim() ? (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-sm text-muted-foreground">
               검색어를 입력하면 결과가 표시됩니다.
