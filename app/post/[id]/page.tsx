@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import MarkdownRenderer from "../../components/MarkdownRenderer";
+import { FEED_MODES } from "../../constants/feed";
 import { Post, Tag, User, Comment, FeedMode } from "../../types";
 
 /**
@@ -243,7 +244,7 @@ export default function PostDetailPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [currentMode] = useState<FeedMode>("user");
+  const [currentMode ] = useState<FeedMode>(FEED_MODES.USER);
 
   useEffect(() => {
     // 실제 구현에서는 API 호출로 대체
