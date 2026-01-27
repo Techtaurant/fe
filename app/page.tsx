@@ -6,6 +6,7 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import FilterBar from "./components/FilterBar";
 import PostCard from "./components/PostCard";
+import { FEED_MODES } from "./constants/feed";
 import { FilterState, Post, FeedMode } from "./types";
 import {
   DUMMY_TAGS,
@@ -177,7 +178,9 @@ export default function Home() {
   const searchParams = useSearchParams();
   const modeParam = searchParams.get("mode");
   const initialMode: FeedMode =
-    modeParam === "user" || modeParam === "company" ? modeParam : "company";
+    modeParam === FEED_MODES.USER || modeParam === FEED_MODES.COMPANY
+      ? modeParam
+      : FEED_MODES.COMPANY;
 
   return <HomeContent key={initialMode} initialMode={initialMode} />;
 }

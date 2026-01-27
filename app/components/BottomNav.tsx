@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 
 interface MobileBottomNavProps {
@@ -10,7 +11,7 @@ interface MobileBottomNavProps {
 }
 
 export default function MobileBottomNav({
-  currentMode = "company",
+  currentMode = FEED_MODES.COMPANY,
   onHomeClick,
   onModeNavigate,
 }: MobileBottomNavProps) {
@@ -87,9 +88,9 @@ export default function MobileBottomNav({
 
             <button
               type="button"
-              onClick={() => onModeNavigate("company")}
+              onClick={() => onModeNavigate(FEED_MODES.COMPANY)}
               className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
-                currentMode === "company"
+                currentMode === FEED_MODES.COMPANY
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
@@ -113,9 +114,9 @@ export default function MobileBottomNav({
 
             <button
               type="button"
-              onClick={() => onModeNavigate("user")}
+              onClick={() => onModeNavigate(FEED_MODES.USER)}
               className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
-                currentMode === "user"
+                currentMode === FEED_MODES.USER
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}

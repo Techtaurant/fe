@@ -5,6 +5,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Header from "../../components/Header";
 import PostCard from "../../components/PostCard";
+import { FEED_MODES } from "../../constants/feed";
 import { Post, Tag, User, FeedMode } from "../../types";
 
 /**
@@ -311,7 +312,7 @@ export default function UserDetailPage() {
   const params = useParams();
   const userId = params.id as string;
 
-  const [currentMode, setCurrentMode] = useState<FeedMode>("user");
+  const [currentMode, setCurrentMode] = useState<FeedMode>(FEED_MODES.USER);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(["tech", "frontend"]), // Default expanded for demo

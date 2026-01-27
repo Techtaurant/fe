@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "../components/Header";
 import PostCard from "../components/PostCard";
+import { FEED_MODES } from "../constants/feed";
 import { FeedMode, Post } from "../types";
 import {
   DUMMY_COMPANY_POSTS,
@@ -36,7 +37,7 @@ export default function SearchPage() {
 
   const [inputValue, setInputValue] = useState(initialQuery);
   const [committedQuery, setCommittedQuery] = useState(initialQuery);
-  const [mode, setMode] = useState<FeedMode>("company");
+  const [mode, setMode] = useState<FeedMode>(FEED_MODES.COMPANY);
 
   useEffect(() => {
     setInputValue(initialQuery);

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "../hooks/useUser";
+import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 import ThemeModeDropdown from "./ThemeDropdown";
 import MobileBottomNav from "./BottomNav";
@@ -16,7 +17,7 @@ interface HeaderProps {
 
 export default function Header({
   onMenuClick,
-  currentMode = "company",
+  currentMode = FEED_MODES.COMPANY,
   onModeChange,
 }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,10 +119,10 @@ export default function Header({
           {/* Mode Switcher (Desktop) */}
           <div className="hidden md:flex items-center gap-1">
             <button
-              onClick={() => handleModeNavigate("company")}
+              onClick={() => handleModeNavigate(FEED_MODES.COMPANY)}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
                 ${
-                  currentMode === "company"
+                  currentMode === FEED_MODES.COMPANY
                     ? "text-foreground bg-muted"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
@@ -129,10 +130,10 @@ export default function Header({
               기업 블로그
             </button>
             <button
-              onClick={() => handleModeNavigate("user")}
+              onClick={() => handleModeNavigate(FEED_MODES.USER)}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
                 ${
-                  currentMode === "user"
+                  currentMode === FEED_MODES.USER
                     ? "text-foreground bg-muted"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
