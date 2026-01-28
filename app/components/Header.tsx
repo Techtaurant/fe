@@ -55,8 +55,10 @@ export default function Header({
 
   const handleAuthClick = () => {
     if (!isLoggedIn) {
-      // Google OAuth 로그인 요청 (Next.js rewrites로 프록시)
-      window.location.href = "/oauth2/authorization/google";
+      // 백엔드로 직접 요청 (쿠키가 올바른 도메인에 설정됨)
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+      window.location.href = `${apiBaseUrl}/oauth2/authorization/google`;
     } else {
       setIsDropdownOpen(!isDropdownOpen);
     }
@@ -65,7 +67,7 @@ export default function Header({
   const handleLogout = async () => {
     try {
       const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
       await fetch(`${apiBaseUrl}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
