@@ -245,22 +245,62 @@ interface FilterState {
 
 ---
 
+## 스크립트 정보
+
+### `scripts/installer-macos.sh`
+
+**역할**: macOS에서 자동으로 mkcert를 설치하고 SSL 인증서를 생성하는 보조 스크립트
+
+**동작**:
+1. mkcert 설치 여부 확인
+2. 없으면 Homebrew로 자동 설치
+3. 로컬 CA 등록
+4. SSL 인증서 생성 (`conf/ssl/server.key`, `conf/ssl/server.crt`)
+
+**현재 프로젝트에서는 사용하지 않습니다.**
+- 대신 직접 `mkcert localhost 127.0.0.1` 명령어 사용
+- 인증서는 프로젝트 루트에 생성 (`localhost+1.pem`, `localhost+1-key.pem`)
+
+---
+
 ## 실행 방법
 
-### 개발 서버
+### 개발 서버 (HTTP)
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
+
+### 개발 서버 (HTTPS)
+
+OAuth 2.0 테스트 시 HTTPS가 필요합니다.
+
+#### 1. 로컬 SSL 인증서 생성 (처음 1회만)
+```bash
+mkcert localhost 127.0.0.1
+```
+
+생성 파일:
+- `localhost+1.pem` (인증서)
+- `localhost+1-key.pem` (개인 키)
+
+#### 2. HTTPS 개발 서버 실행
+```bash
+pnpm dev:https
+```
+
+접속: `https://localhost:3000`
+
+> ⚠️ 자체 서명 인증서이므로 브라우저에서 보안 경고가 나타날 수 있습니다. 무시하고 진행하면 됩니다.
 
 ### 빌드
 ```bash
-npm run build
+pnpm build
 ```
 
 ### 프로덕션 실행
 ```bash
-npm start
+pnpm start
 ```
 
 ---
@@ -327,7 +367,7 @@ API 통신을 위한 두 가지 방식을 지원합니다:
 
 #### 특징
 
-- 브라우저에서 백엔드 서버(`http://localhost:8080`)로 직접 요청
+- 브라우저에서 백엔드 서버(`http://localhost:3000`)로 직접 요청
 - 백엔드에 CORS 설정 필수
 - 브라우저 개발자 도구에서 실제 백엔드 URL 확인 가능 (디버깅 용이)
 - `httpClient.ts`가 절대 경로로 요청
@@ -336,7 +376,7 @@ API 통신을 위한 두 가지 방식을 지원합니다:
 
 **.env.local**:
 ```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 ```
 
 #### 백엔드 CORS 설정 (필수)
@@ -381,7 +421,7 @@ app.use(cors({
 
 ```javascript
 // 브라우저 콘솔 (F12)
-fetch('http://localhost:8080/api/users/me', {
+fetch('http://localhost:3000/api/users/me', {
   credentials: 'include'
 })
   .then(res => res.json())
@@ -399,7 +439,7 @@ Access-Control-Allow-Credentials: true
 
 **CORS policy 에러**:
 ```
-Access to fetch at 'http://localhost:8080/api/users/me' from origin 
+Access to fetch at 'http://localhost:3000/api/users/me' from origin 
 'http://localhost:3000' has been blocked by CORS policy
 ```
 
@@ -433,7 +473,7 @@ Access to fetch at 'http://localhost:8080/api/users/me' from origin
 ```typescript
 const nextConfig: NextConfig = {
   async rewrites() {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
     return [
       {
         source: "/api/:path*",
@@ -451,7 +491,7 @@ const nextConfig: NextConfig = {
 **httpClient.ts 수정** (프록시 사용 시):
 ```typescript
 // AS-IS (직접 연결)
-const fullUrl = `${API_BASE_URL}${url}`;  // http://localhost:8080/api/...
+const fullUrl = `${API_BASE_URL}${url}`;  // http://localhost:3000/api/...
 
 // TO-BE (프록시 사용)
 const fullUrl = url;  // /api/... (상대 경로)
@@ -514,7 +554,7 @@ const response = await fetch('/api/users/me', {
 ❌ **잘못된 방식** (직접 백엔드 호출):
 ```typescript
 // CORS 에러 발생!
-const response = await fetch('http://localhost:8080/api/users/me', {
+const response = await fetch('http://localhost:3000/api/users/me', {
   credentials: 'include'
 });
 ```
@@ -550,7 +590,7 @@ const response = await fetch('http://localhost:8080/api/users/me', {
 1. **직접 백엔드 서버 연결**
    - 백엔드 서버(`localhost:8080`)로 직접 요청
    - `NEXT_PUBLIC_API_BASE_URL` 환경 변수 사용
-   - 브라우저 개발자 도구에서 `http://localhost:8080`으로 표시
+   - 브라우저 개발자 도구에서 `http://localhost:3000`으로 표시
 
 2. **자동 토큰 갱신**
    - 401 에러 발생 시 응답 body의 Custom Status 확인
@@ -591,7 +631,7 @@ import { httpClient, httpGet } from '@/app/utils/httpClient';
 
 // 기본 사용 (상대 경로만 전달)
 const response = await httpClient('/api/users/me');
-// 실제 요청: http://localhost:8080/api/users/me
+// 실제 요청: http://localhost:3000/api/users/me
 
 // 편의 함수 사용
 const user = await httpGet<User>('/api/users/me');
@@ -601,23 +641,23 @@ const user = await httpGet<User>('/api/users/me');
 
 1. **정상 요청**
    ```
-   Client → http://localhost:8080/api/users/me → 200 OK → Response
+   Client → http://localhost:3000/api/users/me → 200 OK → Response
    ```
 
 2. **토큰 만료 시 (Custom Status 3003)**
    ```
-   Client → http://localhost:8080/api/users/me → 401 (status: 3003)
+   Client → http://localhost:3000/api/users/me → 401 (status: 3003)
          ↓
    Check Custom Status (3003 확인)
          ↓
-   Refresh API (http://localhost:8080/open-api/auth/refresh)
+   Refresh API (http://localhost:3000/open-api/auth/refresh)
          ↓
    Success → Retry Original Request → Response
    ```
 
 3. **인증 필요 (Custom Status 3008)**
    ```
-   Client → http://localhost:8080/api/users/me → 401 (status: 3008)
+   Client → http://localhost:3000/api/users/me → 401 (status: 3008)
          ↓
    Check Custom Status (3008 확인)
          ↓
@@ -626,7 +666,7 @@ const user = await httpGet<User>('/api/users/me');
 
 4. **토큰 갱신 실패 시**
    ```
-   Client → http://localhost:8080/api/users/me → 401 (status: 3003)
+   Client → http://localhost:3000/api/users/me → 401 (status: 3003)
          ↓
    Refresh API → Failed
          ↓
@@ -638,6 +678,20 @@ const user = await httpGet<User>('/api/users/me');
 - **저장 위치**: HttpOnly Cookie (보안)
 - **자동 전송**: `credentials: 'include'` 옵션으로 자동 포함
 - **JavaScript 접근 불가**: XSS 공격으로부터 안전
+
+---
+
+### OAuth 2.0 설정
+
+**주의**: 프론트엔드는 **HTTPS**에서만 작동합니다.
+- 로컬 개발: `pnpm dev:https`로 `https://localhost:3000`에서 실행
+- 쿠키가 `Secure; SameSite=None` 설정되므로 HTTPS 필수
+
+**동작 흐름**:
+1. 로그인 버튼 클릭
+2. 브라우저가 백엔드 OAuth URL로 리다이렉트
+3. 백엔드가 쿠키 설정 (같은 도메인에)
+4. Google OAuth 콜백 후 쿠키 자동 전달
 
 ---
 
