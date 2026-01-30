@@ -6,7 +6,8 @@
  */
 
 // API 베이스 URL (직접 백엔드 서버로 요청)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 interface RefreshResponse {
   status: number;
@@ -43,15 +44,15 @@ const processQueue = (error: Error | null = null) => {
 export async function refreshTokens(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/open-api/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include', // 쿠키에 있는 refreshToken 자동 포함
+      method: "POST",
+      credentials: "include", // 쿠키에 있는 refreshToken 자동 포함
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error('토큰 갱신 실패');
+      throw new Error("토큰 갱신 실패");
     }
 
     const data: RefreshResponse = await response.json();
@@ -61,9 +62,9 @@ export async function refreshTokens(): Promise<boolean> {
       return true;
     }
 
-    throw new Error(data.message || '토큰 갱신 실패');
+    throw new Error(data.message || "토큰 갱신 실패");
   } catch (error) {
-    console.error('토큰 갱신 에러:', error);
+    console.error("토큰 갱신 에러:", error);
     return false;
   }
 }
@@ -77,7 +78,7 @@ export async function refreshTokens(): Promise<boolean> {
  */
 export async function httpClient(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   // 전체 URL 생성 (백엔드 서버로 직접 요청)
   const fullUrl = `${API_BASE_URL}${url}`;
@@ -85,9 +86,9 @@ export async function httpClient(
   // 기본 옵션: 쿠키 포함
   const config: RequestInit = {
     ...options,
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
   };
@@ -131,12 +132,12 @@ export async function httpClient(
     const refreshSuccess = await refreshTokens();
 
     if (!refreshSuccess) {
-      processQueue(new Error('토큰 갱신 실패'));
+      processQueue(new Error("토큰 갱신 실패"));
       // 홈으로 리다이렉트
-      if (typeof window !== 'undefined') {
-        window.location.href = '/';
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
       }
-      throw new Error('토큰 갱신 실패');
+      throw new Error("토큰 갱신 실패");
     }
 
     // 갱신 성공 - 대기 중인 요청들 처리
@@ -156,50 +157,44 @@ export async function httpClient(
  * GET 요청
  */
 export async function httpGet<T>(url: string): Promise<T> {
-  const response = await httpClient(url, { method: 'GET' });
-  
+  const response = await httpClient(url, { method: "GET" });
+
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
-  
+
   return response.json();
 }
 
 /**
  * POST 요청
  */
-export async function httpPost<T>(
-  url: string,
-  data?: unknown
-): Promise<T> {
+export async function httpPost<T>(url: string, data?: unknown): Promise<T> {
   const response = await httpClient(url, {
-    method: 'POST',
+    method: "POST",
     body: data ? JSON.stringify(data) : undefined,
   });
-  
+
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
-  
+
   return response.json();
 }
 
 /**
  * PUT 요청
  */
-export async function httpPut<T>(
-  url: string,
-  data?: unknown
-): Promise<T> {
+export async function httpPut<T>(url: string, data?: unknown): Promise<T> {
   const response = await httpClient(url, {
-    method: 'PUT',
+    method: "PUT",
     body: data ? JSON.stringify(data) : undefined,
   });
-  
+
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
-  
+
   return response.json();
 }
 
@@ -207,11 +202,11 @@ export async function httpPut<T>(
  * DELETE 요청
  */
 export async function httpDelete<T>(url: string): Promise<T> {
-  const response = await httpClient(url, { method: 'DELETE' });
-  
+  const response = await httpClient(url, { method: "DELETE" });
+
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
-  
+
   return response.json();
 }
