@@ -72,3 +72,28 @@ export interface FilterState {
   selectedTags: string[];
   selectedTechBlogs: string[];
 }
+
+// 게시물 작성 요청
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  categoryPath: string;
+  tags: string[];
+}
+
+// 게시물 작성 응답
+export interface CreatePostResponse {
+  status: number;
+  data: {
+    id: string;
+    title: string;
+    content: string;
+    authorId: string;
+    authorName: string;
+    categoryPath: string;
+    tags: string[];
+    createdAt: string;
+    updatedAt: string;
+  };
+  message: string;
+}

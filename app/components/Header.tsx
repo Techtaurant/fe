@@ -58,6 +58,10 @@ export default function Header({
       // 백엔드로 직접 요청 (쿠키가 올바른 도메인에 설정됨)
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+      console.warn(
+        "Redirecting to OAuth URL:",
+        `${apiBaseUrl}/oauth2/authorization/google`,
+      );
       window.location.href = `${apiBaseUrl}/oauth2/authorization/google`;
     } else {
       setIsDropdownOpen(!isDropdownOpen);
@@ -178,6 +182,32 @@ export default function Header({
         </form>
 
         <div className="flex items-center gap-2">
+          {/* Write Post Button (로그인 사용자만) */}
+          {isLoggedIn && !isLoading && (
+            <button
+              onClick={() => router.push("/post/write")}
+              className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-full
+                     bg-secondary text-secondary-foreground text-sm font-medium
+                     transition-colors duration-200
+                     hover:bg-secondary/90"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              <span>게시물 작성</span>
+            </button>
+          )}
+
           {/* Auth Button / Profile */}
           {isLoading ? (
             <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
