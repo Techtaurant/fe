@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
+import SidebarSearchInput from './SidebarSearchInput';
 
 interface SidebarProps {
   mode: FeedMode;
@@ -27,6 +28,8 @@ export default function Sidebar({
   const [showAllTags, setShowAllTags] = useState(false);
   const [showAllTechBlogs, setShowAllTechBlogs] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState(filterState.searchUser || '');
+  const [tagSearchQuery, setTagSearchQuery] = useState('');
+  const [techBlogSearchQuery, setTechBlogSearchQuery] = useState('');
 
   // 모바일 드로어가 열릴 때 body 스크롤 막기
   useEffect(() => {
@@ -79,12 +82,19 @@ export default function Sidebar({
     });
   };
 
+  const filteredTags = availableTags.filter((tag) =>
+    tag.name.toLowerCase().includes(tagSearchQuery.trim().toLowerCase()),
+  );
+  const filteredTechBlogs = availableTechBlogs.filter((blog) =>
+    blog.name.toLowerCase().includes(techBlogSearchQuery.trim().toLowerCase()),
+  );
+
   const visibleTags = showAllTags
-    ? availableTags
-    : availableTags.slice(0, MAX_VISIBLE_ITEMS);
+    ? filteredTags
+    : filteredTags.slice(0, MAX_VISIBLE_ITEMS);
   const visibleTechBlogs = showAllTechBlogs
-    ? availableTechBlogs
-    : availableTechBlogs.slice(0, MAX_VISIBLE_ITEMS);
+    ? filteredTechBlogs
+    : filteredTechBlogs.slice(0, MAX_VISIBLE_ITEMS);
 
   return (
     <>
@@ -100,7 +110,7 @@ export default function Sidebar({
       <aside
         className={`
           fixed md:static top-0 left-0 h-full md:h-auto
-          w-[280px] p-6 bg-background
+          w-[280px] p-6 bg-sidebar
           border-r border-border
           overflow-y-auto
           z-[250] md:z-auto
@@ -181,6 +191,13 @@ export default function Sidebar({
              {/* 기술 블로그 필터 */}
              <div className="mb-8">
               <h3 className="text-sm font-bold mb-3 text-foreground">기술 블로그</h3>
+              <div className="mb-3">
+                <SidebarSearchInput
+                  placeholder="기술 블로그 검색"
+                  value={techBlogSearchQuery}
+                  onChange={setTechBlogSearchQuery}
+                />
+              </div>
               <div className="flex flex-col gap-2">
                 {visibleTechBlogs.map((blog) => (
                   <label
@@ -198,14 +215,14 @@ export default function Sidebar({
                     </span>
                   </label>
                 ))}
-                {availableTechBlogs.length > MAX_VISIBLE_ITEMS && (
+                {filteredTechBlogs.length > MAX_VISIBLE_ITEMS && (
                   <button
                     onClick={() => setShowAllTechBlogs((prev) => !prev)}
                     className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
                   >
                     {showAllTechBlogs
                       ? '접기'
-                      : `더보기 (${availableTechBlogs.length - MAX_VISIBLE_ITEMS}개)`}
+                      : `더보기 (${filteredTechBlogs.length - MAX_VISIBLE_ITEMS}개)`}
                   </button>
                 )}
               </div>
@@ -257,6 +274,13 @@ export default function Sidebar({
         {/* 태그 필터 */}
         <div className="mb-8">
           <h3 className="text-sm font-bold mb-3 text-foreground">태그</h3>
+          <div className="mb-3">
+            <SidebarSearchInput
+              placeholder="태그 검색"
+              value={tagSearchQuery}
+              onChange={setTagSearchQuery}
+            />
+          </div>
           <div className="flex flex-col gap-2">
             {visibleTags.map((tag) => (
               <label
@@ -274,14 +298,14 @@ export default function Sidebar({
                 </span>
               </label>
             ))}
-            {availableTags.length > MAX_VISIBLE_ITEMS && (
+            {filteredTags.length > MAX_VISIBLE_ITEMS && (
               <button
                 onClick={() => setShowAllTags((prev) => !prev)}
                 className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
               >
                 {showAllTags
                   ? '접기'
-                  : `더보기 (${availableTags.length - MAX_VISIBLE_ITEMS}개)`}
+                  : `더보기 (${filteredTags.length - MAX_VISIBLE_ITEMS}개)`}
               </button>
             )}
           </div>
