@@ -89,6 +89,28 @@ export default function Sidebar({
     blog.name.toLowerCase().includes(techBlogSearchQuery.trim().toLowerCase()),
   );
 
+  const selectTopTag = () => {
+    const topTag = filteredTags[0];
+    if (!topTag) return;
+    if (!filterState.selectedTags.includes(topTag.id)) {
+      onFilterChange({
+        ...filterState,
+        selectedTags: [...filterState.selectedTags, topTag.id],
+      });
+    }
+  };
+
+  const selectTopTechBlog = () => {
+    const topTechBlog = filteredTechBlogs[0];
+    if (!topTechBlog) return;
+    if (!filterState.selectedTechBlogs.includes(topTechBlog.id)) {
+      onFilterChange({
+        ...filterState,
+        selectedTechBlogs: [...filterState.selectedTechBlogs, topTechBlog.id],
+      });
+    }
+  };
+
   const visibleTags = showAllTags
     ? filteredTags
     : filteredTags.slice(0, MAX_VISIBLE_ITEMS);
@@ -196,6 +218,7 @@ export default function Sidebar({
                   placeholder="기술 블로그 검색"
                   value={techBlogSearchQuery}
                   onChange={setTechBlogSearchQuery}
+                  onEnter={selectTopTechBlog}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -279,6 +302,7 @@ export default function Sidebar({
               placeholder="태그 검색"
               value={tagSearchQuery}
               onChange={setTagSearchQuery}
+              onEnter={selectTopTag}
             />
           </div>
           <div className="flex flex-col gap-2">

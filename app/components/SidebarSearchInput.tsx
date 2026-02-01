@@ -3,12 +3,14 @@
 interface SidebarSearchInputProps {
   value: string;
   onChange: (value: string) => void;
+  onEnter?: () => void;
   placeholder: string;
 }
 
 export default function SidebarSearchInput({
   value,
   onChange,
+  onEnter,
   placeholder,
 }: SidebarSearchInputProps) {
   return (
@@ -18,6 +20,12 @@ export default function SidebarSearchInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onEnter?.();
+          }
+        }}
         className="w-full bg-muted border-none rounded-full
                 py-2 pl-10 pr-4 text-sm text-foreground
                 transition-colors duration-200
