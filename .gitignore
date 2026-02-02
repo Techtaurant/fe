@@ -50,3 +50,5 @@ coverage-comment.md.agent
 .gemini
 .github/prompts
 .agent
+
+conf/ssl
