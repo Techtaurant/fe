@@ -26,7 +26,7 @@ export default function Sidebar({
   isOpen = false,
   onClose = () => {},
 }: SidebarProps) {
-  const { tags: fetchedTags } = useTags(availableTags);
+  const { tags: fetchedTags, isLoading: isTagsLoading } = useTags(availableTags);
   const [showAllTags, setShowAllTags] = useState(false);
   const [showAllTechBlogs, setShowAllTechBlogs] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState(filterState.searchUser || '');
@@ -308,22 +308,34 @@ export default function Sidebar({
             />
           </div>
           <div className="flex flex-col gap-2">
-            {visibleTags.map((tag) => (
-              <label
-                key={tag.id}
-                className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
-              >
-                <input
-                  type="checkbox"
-                  checked={filterState.selectedTags.includes(tag.id)}
-                  onChange={() => toggleTag(tag.id)}
-                  className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
-                />
-                <span className="text-sm text-muted-foreground">
-                  {tag.name}
-                </span>
-              </label>
-            ))}
+            {isTagsLoading ? (
+              Array.from({ length: MAX_VISIBLE_ITEMS }).map((_, index) => (
+                <div
+                  key={`tag-skeleton-${index}`}
+                  className="flex items-center gap-3 px-2 py-1"
+                >
+                  <div className="w-4 h-4 rounded border border-border bg-muted animate-pulse" />
+                  <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+                </div>
+              ))
+            ) : (
+              visibleTags.map((tag) => (
+                <label
+                  key={tag.id}
+                  className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
+                >
+                  <input
+                    type="checkbox"
+                    checked={filterState.selectedTags.includes(tag.id)}
+                    onChange={() => toggleTag(tag.id)}
+                    className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {tag.name}
+                  </span>
+                </label>
+              ))
+            )}
             {filteredTags.length > MAX_VISIBLE_ITEMS && (
               <button
                 onClick={() => setShowAllTags((prev) => !prev)}
