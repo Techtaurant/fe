@@ -9,7 +9,6 @@ import PostCard from "./components/PostCard";
 import { FEED_MODES } from "./constants/feed";
 import { FilterState, Post, FeedMode } from "./types";
 import {
-  DUMMY_TAGS,
   DUMMY_TECH_BLOGS,
   DUMMY_COMPANY_POSTS,
   DUMMY_COMMUNITY_POSTS,
@@ -137,7 +136,7 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
           mode={filterState.mode}
           filterState={filterState}
           onFilterChange={setFilterState}
-          availableTags={DUMMY_TAGS}
+          availableTags={[]}
           availableTechBlogs={DUMMY_TECH_BLOGS}
           isOpen={isMobileSidebarOpen}
           onClose={() => setIsMobileSidebarOpen(false)}
