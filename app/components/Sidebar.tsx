@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
 import SidebarSearchInput from './SidebarSearchInput';
+import { useTags } from '../hooks/useTags';
 
 interface SidebarProps {
   mode: FeedMode;
@@ -25,6 +26,7 @@ export default function Sidebar({
   isOpen = false,
   onClose = () => {},
 }: SidebarProps) {
+  const { tags: fetchedTags } = useTags(availableTags);
   const [showAllTags, setShowAllTags] = useState(false);
   const [showAllTechBlogs, setShowAllTechBlogs] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState(filterState.searchUser || '');
@@ -82,7 +84,7 @@ export default function Sidebar({
     });
   };
 
-  const filteredTags = availableTags.filter((tag) =>
+  const filteredTags = fetchedTags.filter((tag) =>
     tag.name.toLowerCase().includes(tagSearchQuery.trim().toLowerCase()),
   );
   const filteredTechBlogs = availableTechBlogs.filter((blog) =>
