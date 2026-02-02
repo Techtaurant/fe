@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Tag } from '../types';
 import { httpClient } from '../utils/httpClient';
+import { tagCacheSchema, TagCachePayload } from '../schemas/tagCache';
 
 interface TagListResponse {
   status: number;
@@ -13,11 +14,6 @@ interface TagListResponse {
     }>;
   };
   message?: string;
-}
-
-interface TagCachePayload {
-  tags: Tag[];
-  cachedAt: number;
 }
 
 interface UseTagsResult {
@@ -81,10 +77,10 @@ export function useTags(initialTags: Tag[] = []): UseTagsResult {
       try {
         const raw = localStorage.getItem(TAGS_CACHE_KEY);
         if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return null;
-        if (!Array.isArray(parsed.tags)) return null;
-        return parsed as TagCachePayload;
+        const parsed: unknown = JSON.parse(raw);
+        const result = tagCacheSchema.safeParse(parsed);
+        if (!result.success) return null;
+        return result.data;
       } catch {
         return null;
       }
