@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Tag } from '../types';
 import { httpClient } from '../utils/httpClient';
-import { tagCacheSchema, TagCachePayload } from '../schemas/tagCache';
+import { parseTagCache, TagCachePayload } from '../schemas/tagCache';
+import { TAGS_CACHE_KEY, TAGS_TTL_MS, TAGS_ENDPOINT } from '../constants/tags';
 
 interface TagListResponse {
   status: number;
@@ -23,8 +24,31 @@ interface UseTagsResult {
   refetch: () => void;
 }
 
-const TAGS_CACHE_KEY = 'tags_cache';
-const TAGS_TTL_MS = 30 * 60 * 1000;
+const readCache = (): TagCachePayload | null => {
+  const raw = localStorage.getItem(TAGS_CACHE_KEY);
+  if (!raw) return null;
+  return parseTagCache(raw);
+};
+
+const writeCache = (tags: Tag[]) => {
+  try {
+    const payload: TagCachePayload = {
+      tags,
+      cachedAt: Date.now(),
+    };
+    localStorage.setItem(TAGS_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // ignore cache write errors
+  }
+};
+
+const mapTags = (result: TagListResponse): Tag[] => {
+  const content = Array.isArray(result?.data?.content) ? result.data.content : [];
+  return content.map((tag) => ({
+    id: tag.id,
+    name: tag.name,
+  }));
+};
 
 export function useTags(initialTags: Tag[] = []): UseTagsResult {
   const [tags, setTags] = useState<Tag[]>(initialTags);
@@ -32,37 +56,22 @@ export function useTags(initialTags: Tag[] = []): UseTagsResult {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchTags = async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setIsLoading(true);
+    }
+    setError(null);
+
     try {
-      if (!options?.silent) {
-        setIsLoading(true);
-      }
-      setError(null);
-
-      const response = await httpClient('/open-api/tags?size=20', {
-        method: 'GET',
-      });
-
+      const response = await httpClient(TAGS_ENDPOINT, { method: 'GET' });
       if (!response.ok) {
         throw new Error(`Failed to fetch tags: ${response.status}`);
       }
 
       const result: TagListResponse = await response.json();
-      const content = Array.isArray(result?.data?.content) ? result.data.content : [];
-      const nextTags = content.map((tag) => ({
-        id: tag.id,
-        name: tag.name,
-      }));
+      const nextTags = mapTags(result);
 
       setTags(nextTags);
-      try {
-        const payload: TagCachePayload = {
-          tags: nextTags,
-          cachedAt: Date.now(),
-        };
-        localStorage.setItem(TAGS_CACHE_KEY, JSON.stringify(payload));
-      } catch {
-        // ignore cache write errors
-      }
+      writeCache(nextTags);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to load tags'));
     } finally {
@@ -73,18 +82,7 @@ export function useTags(initialTags: Tag[] = []): UseTagsResult {
   };
 
   useEffect(() => {
-    const cached = (() => {
-      try {
-        const raw = localStorage.getItem(TAGS_CACHE_KEY);
-        if (!raw) return null;
-        const parsed: unknown = JSON.parse(raw);
-        const result = tagCacheSchema.safeParse(parsed);
-        if (!result.success) return null;
-        return result.data;
-      } catch {
-        return null;
-      }
-    })();
+    const cached = readCache();
 
     if (cached && cached.tags.length > 0) {
       setTags(cached.tags);

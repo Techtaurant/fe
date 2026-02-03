@@ -13,3 +13,11 @@ export const tagCacheSchema = z.object({
 });
 
 export type TagCachePayload = z.infer<typeof tagCacheSchema>;
+
+export const parseTagCache = (raw: string): TagCachePayload | null => {
+  try {
+    return tagCacheSchema.parse(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+};
