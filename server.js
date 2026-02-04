@@ -26,7 +26,7 @@ const handle = app.getRequestHandler();
 
 app.prepare()
   .then(() => {
-    https
+    const server = https
       .createServer(httpsOptions, (req, res) => {
         // HTTPS 정보를 헤더에 설정 (Next.js에서 인식하도록)
         req.headers['x-forwarded-proto'] = 'https';
@@ -51,20 +51,39 @@ app.prepare()
         }
 
         handle(req, res);
-      })
-      .listen(3000, '0.0.0.0', (err) => {
-        if (err) {
-          console.error('❌ 서버 시작 실패:', err);
-          process.exit(1);
-        }
-        console.log('\n═════════════════════════════════════════');
-        console.log('✅ HTTPS 서버 시작 완료');
-        console.log('═════════════════════════════════════════');
-        console.log('🔐 주소: https://localhost:3000');
-        console.log('🔐 프로토콜: HTTPS (TLS/SSL)');
-        console.log('🔐 인증서: localhost+1.pem / localhost+1-key.pem');
-        console.log('═════════════════════════════════════════\n');
       });
+
+    // 포트 사용 중 에러 핸들링
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error('\n═════════════════════════════════════════');
+        console.error('❌ 포트 3000이 이미 사용 중입니다');
+        console.error('═════════════════════════════════════════');
+        console.error('다음 명령어로 포트를 사용 중인 프로세스를 확인하세요:');
+        console.error('  lsof -i :3000');
+        console.error('\n프로세스를 종료하려면:');
+        console.error('  kill -9 <PID>');
+        console.error('═════════════════════════════════════════\n');
+        process.exit(1);
+      } else {
+        console.error('❌ 서버 에러:', err);
+        process.exit(1);
+      }
+    });
+
+    server.listen(3000, '0.0.0.0', (err) => {
+      if (err) {
+        console.error('❌ 서버 시작 실패:', err);
+        process.exit(1);
+      }
+      console.log('\n═════════════════════════════════════════');
+      console.log('✅ HTTPS 서버 시작 완료');
+      console.log('═════════════════════════════════════════');
+      console.log('🔐 주소: https://localhost:3000');
+      console.log('🔐 프로토콜: HTTPS (TLS/SSL)');
+      console.log('🔐 인증서: localhost+1.pem / localhost+1-key.pem');
+      console.log('═════════════════════════════════════════\n');
+    });
   })
   .catch((err) => {
     console.error('❌ Next.js 준비 실패:', err);
