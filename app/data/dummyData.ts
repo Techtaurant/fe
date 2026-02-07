@@ -1,22 +1,4 @@
-import { Post, Tag, TechBlog, User } from "../types";
-
-export const DUMMY_TAGS: Tag[] = [
-  { id: "1", name: "React" },
-  { id: "2", name: "TypeScript" },
-  { id: "3", name: "Next.js" },
-  { id: "4", name: "Node.js" },
-  { id: "5", name: "DevOps" },
-  { id: "6", name: "AWS" },
-  { id: "7", name: "Docker" },
-  { id: "8", name: "Kubernetes" },
-  { id: "9", name: "Vue.js" },
-  { id: "10", name: "Angular" },
-  { id: "11", name: "Python" },
-  { id: "12", name: "Java" },
-  { id: "13", name: "Spring" },
-  { id: "14", name: "Django" },
-  { id: "15", name: "GraphQL" },
-];
+import { Post, TechBlog, User } from "../types";
 
 export const DUMMY_TECH_BLOGS: TechBlog[] = [
   { id: "1", name: "토스", iconUrl: "/next.svg" },
@@ -32,9 +14,33 @@ export const DUMMY_TECH_BLOGS: TechBlog[] = [
 ];
 
 export const DUMMY_USERS: User[] = [
-  { id: "u1", name: "김개발", email: "dev1@test.com", profileImageUrl: "", role: "USER" },
-  { id: "u2", name: "이코딩", email: "dev2@test.com", profileImageUrl: "", role: "USER" },
-  { id: "u3", name: "박해커", email: "dev3@test.com", profileImageUrl: "", role: "USER" },
+  {
+    id: "u1",
+    name: "김개발",
+    email: "dev1@test.com",
+    profileImageUrl: "",
+    role: "USER",
+    followerCount: 154,
+    followingCount: 42,
+  },
+  {
+    id: "u2",
+    name: "이코딩",
+    email: "dev2@test.com",
+    profileImageUrl: "",
+    role: "USER",
+    followerCount: 89,
+    followingCount: 120,
+  },
+  {
+    id: "u3",
+    name: "박해커",
+    email: "dev3@test.com",
+    profileImageUrl: "",
+    role: "USER",
+    followerCount: 20,
+    followingCount: 15,
+  },
 ];
 
 export const DUMMY_COMPANY_POSTS: Post[] = [
@@ -44,7 +50,7 @@ export const DUMMY_COMPANY_POSTS: Post[] = [
     title: "React 19의 새로운 기능과 변화",
     thumbnailUrl: "/next.svg",
     viewCount: 15420,
-    tags: [DUMMY_TAGS[0], DUMMY_TAGS[1]],
+    tags: [],
     techBlog: DUMMY_TECH_BLOGS[0],
     isRead: false,
     publishedAt: "2025-01-15",
@@ -56,7 +62,7 @@ export const DUMMY_COMPANY_POSTS: Post[] = [
     title: "TypeScript 5.0 릴리즈 노트 정리",
     thumbnailUrl: "/next.svg",
     viewCount: 8350,
-    tags: [DUMMY_TAGS[1]],
+    tags: [],
     techBlog: DUMMY_TECH_BLOGS[1],
     isRead: true,
     publishedAt: "2025-01-14",
@@ -67,7 +73,7 @@ export const DUMMY_COMPANY_POSTS: Post[] = [
     type: "company",
     title: "Next.js 16에서 달라진 점",
     viewCount: 23100,
-    tags: [DUMMY_TAGS[0], DUMMY_TAGS[2]],
+    tags: [],
     techBlog: DUMMY_TECH_BLOGS[2],
     isRead: false,
     publishedAt: "2025-01-13",
@@ -79,7 +85,7 @@ export const DUMMY_COMPANY_POSTS: Post[] = [
     title: "AWS Lambda에서 컨테이너 이미지 사용하기",
     thumbnailUrl: "/next.svg",
     viewCount: 5200,
-    tags: [DUMMY_TAGS[4], DUMMY_TAGS[5]],
+    tags: [],
     techBlog: DUMMY_TECH_BLOGS[3],
     isRead: false,
     publishedAt: "2025-01-12",
@@ -91,7 +97,7 @@ export const DUMMY_COMPANY_POSTS: Post[] = [
     title: "Kubernetes 운영 경험 공유",
     thumbnailUrl: "/next.svg",
     viewCount: 12800,
-    tags: [DUMMY_TAGS[4], DUMMY_TAGS[7]],
+    tags: [],
     techBlog: DUMMY_TECH_BLOGS[4],
     isRead: true,
     publishedAt: "2025-01-11",
@@ -107,7 +113,7 @@ export const DUMMY_COMMUNITY_POSTS: Post[] = [
     viewCount: 1200,
     likeCount: 56,
     commentCount: 12,
-    tags: [DUMMY_TAGS[0]],
+    tags: [],
     author: DUMMY_USERS[0],
     isRead: false,
     publishedAt: "2025-01-16",
@@ -120,7 +126,7 @@ export const DUMMY_COMMUNITY_POSTS: Post[] = [
     viewCount: 3400,
     likeCount: 128,
     commentCount: 45,
-    tags: [DUMMY_TAGS[2], DUMMY_TAGS[4]],
+    tags: [],
     author: DUMMY_USERS[1],
     isRead: false,
     publishedAt: "2025-01-15",
@@ -133,7 +139,7 @@ export const DUMMY_COMMUNITY_POSTS: Post[] = [
     viewCount: 150,
     likeCount: 5,
     commentCount: 0,
-    tags: [DUMMY_TAGS[11]],
+    tags: [],
     author: DUMMY_USERS[2],
     isRead: false,
     publishedAt: "2025-01-14",
