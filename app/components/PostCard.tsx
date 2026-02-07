@@ -114,7 +114,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
           {/* Metadata & Tags */}
           <div className="flex items-center gap-3 md:gap-4 flex-wrap">
             {/* Tags */}
-            {post.tags.length > 0 && (
+            {post.tags && post.tags.length > 0 && (
               <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                 {post.tags.map((tag) => (
                   <span

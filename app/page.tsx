@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
@@ -11,8 +11,8 @@ import { FilterState, Post, FeedMode } from "./types";
 import {
   DUMMY_TECH_BLOGS,
   DUMMY_COMPANY_POSTS,
-  DUMMY_COMMUNITY_POSTS,
 } from "./data/dummyData";
+import { fetchCommunityPostList } from "./services/posts";
 
 function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   const [filterState, setFilterState] = useState<FilterState>({
@@ -27,8 +27,38 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
 
   // Mode에 따라 보여줄 포스트 소스 결정
   const [companyPosts, setCompanyPosts] = useState<Post[]>(DUMMY_COMPANY_POSTS);
-  const [communityPosts, setCommunityPosts] = useState<Post[]>(DUMMY_COMMUNITY_POSTS);
+  const [communityPosts, setCommunityPosts] = useState<Post[]>([]);
+  const [communityError, setCommunityError] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPosts = async () => {
+      try {
+        const result = await fetchCommunityPostList({
+          size: 20,
+          period: "ALL",
+          sort: "LATEST",
+        });
+
+        if (isMounted) {
+          setCommunityPosts(result.posts);
+          setCommunityError(null);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setCommunityPosts([]);
+          setCommunityError("커뮤니티 게시물을 불러오지 못했습니다.");
+        }
+      }
+    };
+
+    loadPosts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleReadStatusChange = (postId: string, isRead: boolean) => {
     if (filterState.mode === 'company') {
@@ -62,7 +92,7 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
     // 2. 태그 필터 (공통)
     if (
       filterState.selectedTags.length > 0 &&
-      !post.tags.some((tag) => filterState.selectedTags.includes(tag.id))
+      !post.tags?.some((tag) => filterState.selectedTags.includes(tag.id))
     ) {
       return false;
     }
@@ -106,7 +136,7 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
 
   // 정렬 로직
   const sortedPosts = [...filteredPosts].sort((a, b) => {
-    // 공통: 최신순, 인기순
+    // 공통: 최신순
     // 커뮤니티 전용: 댓글, 좋아요 등
 
     switch (filterState.sortBy) {
@@ -150,6 +180,12 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
             />
           )}
           
+          {communityError && filterState.mode === "user" && (
+            <div className="mb-6 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
+              {communityError}
+            </div>
+          )}
+
           {sortedPosts.length > 0 ? (
             <div className="flex flex-col gap-6">
               {sortedPosts.map((post) => (
