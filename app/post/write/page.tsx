@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
-import { httpPost } from "@/app/utils/httpClient";
-import { CreatePostRequest, CreatePostResponse } from "@/app/types";
+import { createPost } from "@/app/services/posts";
+import { CreatePostRequest, CreatePostResponse, Post } from "@/app/types";
 
 /**
  * 게시물 작성 페이지
@@ -20,7 +20,8 @@ export default function WritePostPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({
     title: false,
     content: false,
@@ -55,12 +56,7 @@ export default function WritePostPage() {
     }
   };
 
-  /**
-   * 게시물 작성 제출
-   */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const validateForm = () => {
     const nextFieldErrors = {
       title: !title.trim(),
       content: !content.trim(),
@@ -70,12 +66,21 @@ export default function WritePostPage() {
     if (nextFieldErrors.title || nextFieldErrors.content || nextFieldErrors.categoryPath) {
       setError(null);
       setFieldErrors(nextFieldErrors);
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  /**
+   * 게시물 작성 제출
+   */
+  const handleSubmit = async (status: CreatePostRequest["status"]) => {
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     setError(null);
-    setSuccess(false);
+    setSuccess(null);
     setFieldErrors({ title: false, content: false, categoryPath: false });
 
     try {
@@ -84,11 +89,64 @@ export default function WritePostPage() {
         content: content.trim(),
         categoryPath: categoryPath.trim(),
         tags,
+        status,
       };
 
-      await httpPost<CreatePostResponse>("/api/posts", postData);
+      let result: CreatePostResponse;
 
-      setSuccess(true);
+      try {
+        result = await createPost(postData);
+      } catch (apiError) {
+        const message = apiError instanceof Error ? apiError.message : "UNKNOWN";
+        if (message === "UNAUTHORIZED") {
+          setError("인증되지 않은 사용자입니다. 로그인 후 다시 시도해주세요.");
+          return;
+        }
+        if (message === "BAD_REQUEST") {
+          setError("잘못된 요청입니다. 입력값을 확인해주세요.");
+          return;
+        }
+        if (message.startsWith("HTTP_")) {
+          setError(`요청에 실패했습니다. (${message.replace("HTTP_", "")})`);
+          return;
+        }
+        setError(message || "게시물 작성 중 오류가 발생했습니다.");
+        return;
+      }
+
+      const createdAt = new Date(result.data.createdAt);
+      const resolvedTags = result.data.tags.map((name) => ({
+        id: name,
+        name,
+      }));
+      const newPost: Post = {
+        id: result.data.id,
+        type: "community",
+        title: result.data.title,
+        content: result.data.content,
+        viewCount: 0,
+        likeCount: 0,
+        commentCount: 0,
+        tags: resolvedTags,
+        author: {
+          id: result.data.authorId,
+          name: result.data.authorName,
+          email: "",
+          profileImageUrl: "",
+          role: "USER",
+        },
+        isRead: false,
+        publishedAt: createdAt.toISOString().slice(0, 10),
+        url: `/post/${result.data.id}`,
+      };
+
+      if (status === "DRAFT") {
+        setSuccess("게시물이 임시저장되었습니다.");
+      } else if (status === "PRIVATE") {
+        setSuccess("게시물이 비공개로 저장되었습니다.");
+      } else {
+        setSuccess("게시물이 성공적으로 작성되었습니다!");
+      }
       setTitle("");
       setContent("");
       setCategoryPath("");
@@ -96,7 +154,9 @@ export default function WritePostPage() {
       setTagInput("");
       setFieldErrors({ title: false, content: false, categoryPath: false });
 
-      router.push("/?mode=user");
+      if (status === "PUBLISHED") {
+        router.push("/?mode=user");
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "게시물 작성 중 오류가 발생했습니다.";
@@ -111,7 +171,12 @@ export default function WritePostPage() {
       <div className="mx-auto max-w-[1400px]">
         {/* 입력 영역 */}
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!isSubmitting) {
+              if (validateForm()) setIsPublishModalOpen(true);
+            }
+          }}
           className="rounded-lg bg-card p-4 shadow-sm md:rounded-xl md:p-6 lg:p-8"
         >
           {/* 제목 */}
@@ -216,7 +281,7 @@ export default function WritePostPage() {
           )}
           {success && (
             <div className="mb-6 rounded-lg border border-[#cfc] bg-[#efe] p-4 text-sm font-medium text-[#3c3]">
-              게시물이 성공적으로 작성되었습니다!
+              {success}
             </div>
           )}
 
@@ -268,14 +333,70 @@ export default function WritePostPage() {
           {/* 제출 버튼 */}
           <div className="flex justify-end gap-3">
             <button
-              type="submit"
+              type="button"
               disabled={isSubmitting}
+              onClick={() => handleSubmit("DRAFT")}
+              className="rounded-lg border border-border px-6 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              임시저장
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => {
+                if (validateForm()) setIsPublishModalOpen(true);
+              }}
               className="rounded-lg bg-primary px-8 py-3 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "발행 중..." : "발행하기"}
             </button>
           </div>
         </form>
+
+        {isPublishModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-lg">
+              <h2 className="text-lg font-semibold text-foreground">
+                게시물 공개 설정
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                발행할 게시물의 공개 범위를 선택해주세요.
+              </p>
+              <div className="mt-6 flex flex-col gap-3">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    setIsPublishModalOpen(false);
+                    handleSubmit("PUBLISHED");
+                  }}
+                  className="w-full rounded-lg bg-primary px-4 py-3 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  전체 공개로 발행
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    setIsPublishModalOpen(false);
+                    handleSubmit("PRIVATE");
+                  }}
+                  className="w-full rounded-lg border border-border px-4 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  비공개로 발행
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => setIsPublishModalOpen(false)}
+                  className="w-full rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
