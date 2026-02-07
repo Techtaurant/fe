@@ -21,6 +21,11 @@ export default function WritePostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    title: false,
+    content: false,
+    categoryPath: false,
+  });
 
   /**
    * 태그 추가 처리
@@ -56,24 +61,22 @@ export default function WritePostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
-      setError("제목을 입력해주세요.");
-      return;
-    }
+    const nextFieldErrors = {
+      title: !title.trim(),
+      content: !content.trim(),
+      categoryPath: !categoryPath.trim(),
+    };
 
-    if (!content.trim()) {
-      setError("내용을 입력해주세요.");
-      return;
-    }
-
-    if (!categoryPath.trim()) {
-      setError("카테고리를 입력해주세요.");
+    if (nextFieldErrors.title || nextFieldErrors.content || nextFieldErrors.categoryPath) {
+      setError(null);
+      setFieldErrors(nextFieldErrors);
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
+    setFieldErrors({ title: false, content: false, categoryPath: false });
 
     try {
       const postData: CreatePostRequest = {
@@ -91,6 +94,7 @@ export default function WritePostPage() {
       setCategoryPath("");
       setTags([]);
       setTagInput("");
+      setFieldErrors({ title: false, content: false, categoryPath: false });
 
       router.push("/?mode=user");
     } catch (err) {
@@ -105,17 +109,7 @@ export default function WritePostPage() {
   return (
     <div className="min-h-screen bg-background px-3 py-4 md:px-4 md:py-6">
       <div className="mx-auto max-w-[1400px]">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground md:text-3xl">
-            새로운 게시물 작성
-          </h1>
-          <p className="mt-2 text-base text-muted-foreground">
-            마크다운 형식으로 글을 작성하고 실시간 미리보기를 확인할 수 있습니다.
-          </p>
-        </div>
-
-        {/* 상단 입력 영역 */}
+        {/* 입력 영역 */}
         <form
           onSubmit={handleSubmit}
           className="rounded-lg bg-card p-4 shadow-sm md:rounded-xl md:p-6 lg:p-8"
@@ -123,31 +117,55 @@ export default function WritePostPage() {
           {/* 제목 */}
           <div className="mb-4 md:mb-6">
             <label htmlFor="title" className="mb-2 block text-sm font-semibold text-foreground">
-              제목
+              제목 <span className="text-red-600">*</span>
             </label>
             <input
               id="title"
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (fieldErrors.title) {
+                  setFieldErrors((prev) => ({ ...prev, title: false }));
+                }
+              }}
               placeholder="게시물의 제목을 입력하세요"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-base font-semibold text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-4 py-3 text-base font-semibold text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
+                fieldErrors.title
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-border focus:border-primary"
+              }`}
             />
+            {fieldErrors.title && (
+              <p className="mt-2 text-sm font-medium text-red-600">제목을 입력해주세요.</p>
+            )}
           </div>
 
           {/* 카테고리 */}
           <div className="mb-4 md:mb-6">
             <label htmlFor="category" className="mb-2 block text-sm font-semibold text-foreground">
-              카테고리
+              카테고리 <span className="text-red-600">*</span>
             </label>
             <input
               id="category"
               type="text"
               value={categoryPath}
-              onChange={(e) => setCategoryPath(e.target.value)}
+              onChange={(e) => {
+                setCategoryPath(e.target.value);
+                if (fieldErrors.categoryPath) {
+                  setFieldErrors((prev) => ({ ...prev, categoryPath: false }));
+                }
+              }}
               placeholder="예: java/spring/deepdive"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
+                fieldErrors.categoryPath
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-border focus:border-primary"
+              }`}
             />
+            {fieldErrors.categoryPath && (
+              <p className="mt-2 text-sm font-medium text-red-600">카테고리를 입력해주세요.</p>
+            )}
           </div>
 
           {/* 태그 */}
@@ -165,13 +183,6 @@ export default function WritePostPage() {
                 placeholder="태그를 입력하고 Enter를 누르세요"
                 className="w-full flex-1 rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
               />
-              <button
-                type="button"
-                onClick={handleAddTag}
-                className="w-full cursor-pointer rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 md:w-auto"
-              >
-                추가
-              </button>
             </div>
 
             {/* 태그 목록 */}
@@ -198,7 +209,7 @@ export default function WritePostPage() {
           </div>
 
           {/* 에러/성공 메시지 */}
-          {error && (
+          {error && !(fieldErrors.title || fieldErrors.content || fieldErrors.categoryPath) && (
             <div className="mb-6 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
               {error}
             </div>
@@ -213,14 +224,28 @@ export default function WritePostPage() {
           <div className="grid grid-cols-1 gap-0 mb-6 lg:mb-8 lg:grid-cols-2 lg:gap-6 lg:min-h-[500px]">
             <div className="min-h-[400px] flex flex-col overflow-hidden rounded-lg border border-border bg-background lg:min-h-0">
               <div className="border-b border-border bg-muted p-4">
-                <h2 className="text-base font-semibold text-foreground">마크다운 편집</h2>
+                <h2 className="text-base font-semibold text-foreground">
+                  마크다운 편집 <span className="text-red-600">*</span>
+                </h2>
               </div>
               <textarea
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (fieldErrors.content) {
+                    setFieldErrors((prev) => ({ ...prev, content: false }));
+                  }
+                }}
                 placeholder="마크다운 형식으로 내용을 입력하세요&#10;&#10;# 제목&#10;## 부제목&#10;&#10;**굵은 텍스트**&#10;*기울인 텍스트*&#10;&#10;- 리스트 항목&#10;&#10;```코드&#10;코드 블록&#10;```"
-                className="flex-1 resize-none border-0 bg-card p-4 font-mono text-base leading-relaxed text-foreground placeholder:text-muted-foreground placeholder:whitespace-pre focus:outline-none md:text-sm"
+                className={`flex-1 resize-none border-0 bg-card p-4 font-mono text-base leading-relaxed text-foreground placeholder:text-muted-foreground placeholder:whitespace-pre focus:outline-none md:text-sm ${
+                  fieldErrors.content ? "outline outline-1 outline-red-500" : ""
+                }`}
               />
+              {fieldErrors.content && (
+                <p className="border-t border-border bg-background px-4 py-2 text-sm font-medium text-red-600">
+                  내용을 입력해주세요.
+                </p>
+              )}
             </div>
 
             {/* 프리뷰 */}
