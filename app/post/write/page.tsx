@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
 import { httpPost } from "@/app/utils/httpClient";
 import { CreatePostRequest, CreatePostResponse } from "@/app/types";
@@ -11,6 +12,7 @@ import { CreatePostRequest, CreatePostResponse } from "@/app/types";
  * - 오른쪽: 실시간 프리뷰
  */
 export default function WritePostPage() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categoryPath, setCategoryPath] = useState("");
@@ -19,6 +21,11 @@ export default function WritePostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    title: false,
+    content: false,
+    categoryPath: false,
+  });
 
   /**
    * 태그 추가 처리
@@ -54,24 +61,22 @@ export default function WritePostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
-      setError("제목을 입력해주세요.");
-      return;
-    }
+    const nextFieldErrors = {
+      title: !title.trim(),
+      content: !content.trim(),
+      categoryPath: !categoryPath.trim(),
+    };
 
-    if (!content.trim()) {
-      setError("내용을 입력해주세요.");
-      return;
-    }
-
-    if (!categoryPath.trim()) {
-      setError("카테고리를 입력해주세요.");
+    if (nextFieldErrors.title || nextFieldErrors.content || nextFieldErrors.categoryPath) {
+      setError(null);
+      setFieldErrors(nextFieldErrors);
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
+    setFieldErrors({ title: false, content: false, categoryPath: false });
 
     try {
       const postData: CreatePostRequest = {
@@ -89,9 +94,9 @@ export default function WritePostPage() {
       setCategoryPath("");
       setTags([]);
       setTagInput("");
+      setFieldErrors({ title: false, content: false, categoryPath: false });
 
-      // 성공 메시지 3초 후 자동 사라짐
-      setTimeout(() => setSuccess(false), 3000);
+      router.push("/?mode=user");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "게시물 작성 중 오류가 발생했습니다.";
@@ -102,52 +107,73 @@ export default function WritePostPage() {
   };
 
   return (
-    <div className="write-page-container">
-      <div className="write-page-wrapper">
-        {/* 헤더 */}
-        <div className="write-header">
-          <h1>새로운 게시물 작성</h1>
-          <p>마크다운 형식으로 글을 작성하고 실시간 미리보기를 확인할 수 있습니다.</p>
-        </div>
-
-        {/* 상단 입력 영역 */}
-        <form onSubmit={handleSubmit} className="write-form">
+    <div className="min-h-screen bg-background px-3 py-4 md:px-4 md:py-6">
+      <div className="mx-auto max-w-[1400px]">
+        {/* 입력 영역 */}
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-lg bg-card p-4 shadow-sm md:rounded-xl md:p-6 lg:p-8"
+        >
           {/* 제목 */}
-          <div className="form-section">
-            <label htmlFor="title" className="form-label">
-              제목
+          <div className="mb-4 md:mb-6">
+            <label htmlFor="title" className="mb-2 block text-sm font-semibold text-foreground">
+              제목 <span className="text-red-600">*</span>
             </label>
             <input
               id="title"
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (fieldErrors.title) {
+                  setFieldErrors((prev) => ({ ...prev, title: false }));
+                }
+              }}
               placeholder="게시물의 제목을 입력하세요"
-              className="form-input title-input"
+              className={`w-full rounded-lg border bg-background px-4 py-3 text-base font-semibold text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
+                fieldErrors.title
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-border focus:border-primary"
+              }`}
             />
+            {fieldErrors.title && (
+              <p className="mt-2 text-sm font-medium text-red-600">제목을 입력해주세요.</p>
+            )}
           </div>
 
           {/* 카테고리 */}
-          <div className="form-section">
-            <label htmlFor="category" className="form-label">
-              카테고리
+          <div className="mb-4 md:mb-6">
+            <label htmlFor="category" className="mb-2 block text-sm font-semibold text-foreground">
+              카테고리 <span className="text-red-600">*</span>
             </label>
             <input
               id="category"
               type="text"
               value={categoryPath}
-              onChange={(e) => setCategoryPath(e.target.value)}
+              onChange={(e) => {
+                setCategoryPath(e.target.value);
+                if (fieldErrors.categoryPath) {
+                  setFieldErrors((prev) => ({ ...prev, categoryPath: false }));
+                }
+              }}
               placeholder="예: java/spring/deepdive"
-              className="form-input"
+              className={`w-full rounded-lg border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
+                fieldErrors.categoryPath
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-border focus:border-primary"
+              }`}
             />
+            {fieldErrors.categoryPath && (
+              <p className="mt-2 text-sm font-medium text-red-600">카테고리를 입력해주세요.</p>
+            )}
           </div>
 
           {/* 태그 */}
-          <div className="form-section">
-            <label htmlFor="tags" className="form-label">
+          <div className="mb-4 md:mb-6">
+            <label htmlFor="tags" className="mb-2 block text-sm font-semibold text-foreground">
               태그
             </label>
-            <div className="tag-input-wrapper">
+            <div className="flex flex-col gap-2 md:flex-row">
               <input
                 id="tags"
                 type="text"
@@ -155,27 +181,23 @@ export default function WritePostPage() {
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={handleTagKeyPress}
                 placeholder="태그를 입력하고 Enter를 누르세요"
-                className="form-input"
+                className="w-full flex-1 rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
               />
-              <button
-                type="button"
-                onClick={handleAddTag}
-                className="tag-add-button"
-              >
-                추가
-              </button>
             </div>
 
             {/* 태그 목록 */}
             {tags.length > 0 && (
-              <div className="tags-list">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {tags.map((tag) => (
-                  <span key={tag} className="tag-badge">
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm text-foreground"
+                  >
                     {tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="tag-remove-button"
+                      className="cursor-pointer border-0 bg-transparent p-0 text-lg text-muted-foreground transition-colors hover:text-foreground"
                       aria-label={`${tag} 제거`}
                     >
                       ×
@@ -187,37 +209,55 @@ export default function WritePostPage() {
           </div>
 
           {/* 에러/성공 메시지 */}
-          {error && <div className="message-box error-message">{error}</div>}
+          {error && !(fieldErrors.title || fieldErrors.content || fieldErrors.categoryPath) && (
+            <div className="mb-6 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
+              {error}
+            </div>
+          )}
           {success && (
-            <div className="message-box success-message">
+            <div className="mb-6 rounded-lg border border-[#cfc] bg-[#efe] p-4 text-sm font-medium text-[#3c3]">
               게시물이 성공적으로 작성되었습니다!
             </div>
           )}
 
           {/* 콘텐츠 에디터 */}
-          <div className="editor-container">
-            <div className="editor-panel">
-              <div className="editor-header">
-                <h2>마크다운 편집</h2>
+          <div className="grid grid-cols-1 gap-0 mb-6 lg:mb-8 lg:grid-cols-2 lg:gap-6 lg:min-h-[500px]">
+            <div className="min-h-[400px] flex flex-col overflow-hidden rounded-lg border border-border bg-background lg:min-h-0">
+              <div className="border-b border-border bg-muted p-4">
+                <h2 className="text-base font-semibold text-foreground">
+                  마크다운 편집 <span className="text-red-600">*</span>
+                </h2>
               </div>
               <textarea
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (fieldErrors.content) {
+                    setFieldErrors((prev) => ({ ...prev, content: false }));
+                  }
+                }}
                 placeholder="마크다운 형식으로 내용을 입력하세요&#10;&#10;# 제목&#10;## 부제목&#10;&#10;**굵은 텍스트**&#10;*기울인 텍스트*&#10;&#10;- 리스트 항목&#10;&#10;```코드&#10;코드 블록&#10;```"
-                className="markdown-editor"
+                className={`flex-1 resize-none border-0 bg-card p-4 font-mono text-base leading-relaxed text-foreground placeholder:text-muted-foreground placeholder:whitespace-pre focus:outline-none md:text-sm ${
+                  fieldErrors.content ? "outline outline-1 outline-red-500" : ""
+                }`}
               />
+              {fieldErrors.content && (
+                <p className="border-t border-border bg-background px-4 py-2 text-sm font-medium text-red-600">
+                  내용을 입력해주세요.
+                </p>
+              )}
             </div>
 
             {/* 프리뷰 */}
-            <div className="preview-panel">
-              <div className="preview-header">
-                <h2>미리보기</h2>
+            <div className="min-h-[400px] flex flex-col overflow-hidden rounded-lg border border-border border-t-0 bg-background lg:min-h-0 lg:border-t">
+              <div className="border-b border-border bg-muted p-4">
+                <h2 className="text-base font-semibold text-foreground">미리보기</h2>
               </div>
-              <div className="preview-content">
+              <div className="flex-1 overflow-y-auto p-4">
                 {content ? (
                   <MarkdownRenderer content={content} />
                 ) : (
-                  <div className="preview-empty">
+                  <div className="flex h-full items-center justify-center text-center text-muted-foreground">
                     <p>마크다운 내용을 입력하면 여기에 미리보기가 표시됩니다</p>
                   </div>
                 )}
@@ -226,324 +266,17 @@ export default function WritePostPage() {
           </div>
 
           {/* 제출 버튼 */}
-          <div className="form-actions">
+          <div className="flex justify-end gap-3">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="submit-button"
+              className="rounded-lg bg-primary px-8 py-3 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "작성 중..." : "게시물 작성"}
+              {isSubmitting ? "발행 중..." : "발행하기"}
             </button>
           </div>
         </form>
       </div>
-
-      <style jsx>{`
-        .write-page-container {
-          min-height: 100vh;
-          background-color: var(--background);
-          padding: 24px 16px;
-        }
-
-        .write-page-wrapper {
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-
-        .write-header {
-          margin-bottom: 32px;
-        }
-
-        .write-header h1 {
-          font-size: 32px;
-          font-weight: 700;
-          color: var(--foreground);
-          margin-bottom: 8px;
-        }
-
-        .write-header p {
-          font-size: 16px;
-          color: var(--muted-foreground);
-        }
-
-        .write-form {
-          background-color: var(--card);
-          border-radius: 12px;
-          padding: 32px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-section {
-          margin-bottom: 24px;
-        }
-
-        .form-label {
-          display: block;
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--foreground);
-          margin-bottom: 8px;
-        }
-
-        .form-input {
-          width: 100%;
-          padding: 12px 16px;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          font-size: 16px;
-          color: var(--foreground);
-          background-color: var(--background);
-          transition: border-color 0.2s ease, background-color 0.2s ease;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            sans-serif;
-        }
-
-        .form-input:focus {
-          outline: none;
-          border-color: var(--primary);
-          background-color: var(--card);
-        }
-
-        .form-input::placeholder {
-          color: var(--muted-foreground);
-        }
-
-        .title-input {
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        .tag-input-wrapper {
-          display: flex;
-          gap: 8px;
-        }
-
-        .tag-input-wrapper .form-input {
-          flex: 1;
-        }
-
-        .tag-add-button {
-          padding: 12px 20px;
-          background-color: var(--primary);
-          color: var(--primary-foreground);
-          border: none;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: opacity 0.2s ease;
-        }
-
-        .tag-add-button:hover {
-          opacity: 0.9;
-        }
-
-        .tags-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 12px;
-        }
-
-        .tag-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          background-color: var(--muted);
-          color: var(--foreground);
-          border-radius: 20px;
-          font-size: 14px;
-        }
-
-        .tag-remove-button {
-          background: none;
-          border: none;
-          color: var(--muted-foreground);
-          cursor: pointer;
-          font-size: 18px;
-          padding: 0;
-          transition: color 0.2s ease;
-        }
-
-        .tag-remove-button:hover {
-          color: var(--foreground);
-        }
-
-        .message-box {
-          padding: 16px;
-          border-radius: 8px;
-          margin-bottom: 24px;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .error-message {
-          background-color: #fee;
-          color: #c33;
-          border: 1px solid #fcc;
-        }
-
-        .success-message {
-          background-color: #efe;
-          color: #3c3;
-          border: 1px solid #cfc;
-        }
-
-        .editor-container {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          margin-bottom: 32px;
-          min-height: 500px;
-        }
-
-        .editor-panel,
-        .preview-panel {
-          display: flex;
-          flex-direction: column;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background-color: var(--background);
-          overflow: hidden;
-        }
-
-        .editor-header,
-        .preview-header {
-          padding: 16px;
-          border-bottom: 1px solid var(--border);
-          background-color: var(--muted);
-        }
-
-        .editor-header h2,
-        .preview-header h2 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--foreground);
-          margin: 0;
-        }
-
-        .markdown-editor {
-          flex: 1;
-          padding: 16px;
-          border: none;
-          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
-            monospace;
-          font-size: 14px;
-          line-height: 1.6;
-          color: var(--foreground);
-          background-color: var(--card);
-          resize: none;
-        }
-
-        .markdown-editor:focus {
-          outline: none;
-        }
-
-        .markdown-editor::placeholder {
-          color: var(--muted-foreground);
-          white-space: pre;
-        }
-
-        .preview-content {
-          flex: 1;
-          padding: 16px;
-          overflow-y: auto;
-        }
-
-        .preview-empty {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100%;
-          color: var(--muted-foreground);
-          text-align: center;
-        }
-
-        .form-actions {
-          display: flex;
-          gap: 12px;
-          justify-content: flex-end;
-        }
-
-        .submit-button {
-          padding: 12px 32px;
-          background-color: var(--primary);
-          color: var(--primary-foreground);
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: opacity 0.2s ease;
-        }
-
-        .submit-button:hover:not(:disabled) {
-          opacity: 0.9;
-        }
-
-        .submit-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        /* 모바일 반응형 */
-        @media (max-width: 1024px) {
-          .editor-container {
-            grid-template-columns: 1fr;
-            gap: 0;
-            min-height: auto;
-          }
-
-          .editor-panel {
-            min-height: 400px;
-          }
-
-          .preview-panel {
-            min-height: 400px;
-            border-top: none;
-          }
-
-          .write-form {
-            padding: 24px 16px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .write-page-container {
-            padding: 16px 12px;
-          }
-
-          .write-header h1 {
-            font-size: 24px;
-          }
-
-          .write-form {
-            border-radius: 8px;
-            padding: 16px;
-          }
-
-          .form-section {
-            margin-bottom: 16px;
-          }
-
-          .tag-input-wrapper {
-            flex-direction: column;
-          }
-
-          .tag-add-button {
-            width: 100%;
-          }
-
-          .editor-container {
-            margin-bottom: 24px;
-          }
-
-          .markdown-editor {
-            font-size: 16px;
-          }
-        }
-      `}</style>
     </div>
   );
 }

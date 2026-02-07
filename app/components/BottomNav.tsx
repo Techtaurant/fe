@@ -64,8 +64,7 @@ export default function MobileBottomNav({
             </Link>
 
             <Link
-              // TODO: 게시물 작성 페이지 이동
-              href="/"
+              href="/post/write"
               className="flex flex-col items-center px-2 py-1"
               aria-label="UI"
             >
