@@ -6,18 +6,8 @@ import Image from "next/image";
 import Header from "../../components/Header";
 import PostCard from "../../components/PostCard";
 import { FEED_MODES } from "../../constants/feed";
+import { DUMMY_USERS } from "../../data/dummyData";
 import { Post, Tag, User, FeedMode } from "../../types";
-
-/**
- * 더미 데이터: 실제 구현에서는 API를 통해 데이터를 가져옴
- */
-const DUMMY_TAGS: Tag[] = [
-  { id: "1", name: "React" },
-  { id: "2", name: "TypeScript" },
-  { id: "3", name: "Next.js" },
-  { id: "4", name: "Node.js" },
-  { id: "5", name: "DevOps" },
-];
 
 interface Category {
   id: string;
@@ -88,35 +78,9 @@ const DUMMY_CATEGORIES: Category[] = [
   { id: "project", name: "프로젝트", count: 10 },
 ];
 
-const DUMMY_USERS: Record<string, User> = {
-  u1: {
-    id: "u1",
-    name: "김개발",
-    email: "dev1@test.com",
-    profileImageUrl: "",
-    role: "USER",
-    followerCount: 154,
-    followingCount: 42,
-  },
-  u2: {
-    id: "u2",
-    name: "이코딩",
-    email: "dev2@test.com",
-    profileImageUrl: "",
-    role: "USER",
-    followerCount: 89,
-    followingCount: 120,
-  },
-  u3: {
-    id: "u3",
-    name: "박해커",
-    email: "dev3@test.com",
-    profileImageUrl: "",
-    role: "USER",
-    followerCount: 20,
-    followingCount: 15,
-  },
-};
+const DUMMY_USERS_BY_ID: Record<string, User> = Object.fromEntries(
+  DUMMY_USERS.map((user) => [user.id, user]),
+);
 
 const DUMMY_USER_POSTS: Record<string, Post[]> = {
   u1: [
@@ -127,8 +91,8 @@ const DUMMY_USER_POSTS: Record<string, Post[]> = {
       viewCount: 1200,
       likeCount: 56,
       commentCount: 12,
-      tags: [DUMMY_TAGS[0], DUMMY_TAGS[1]],
-      author: DUMMY_USERS.u1,
+      tags: [],
+      author: DUMMY_USERS_BY_ID["u1"],
       isRead: false,
       publishedAt: "2025-01-16",
       url: "/post/p1",
@@ -140,8 +104,8 @@ const DUMMY_USER_POSTS: Record<string, Post[]> = {
       viewCount: 890,
       likeCount: 34,
       commentCount: 8,
-      tags: [DUMMY_TAGS[0]],
-      author: DUMMY_USERS.u1,
+      tags: [],
+      author: DUMMY_USERS_BY_ID["u1"],
       isRead: true,
       publishedAt: "2025-01-10",
       url: "/post/p2",
@@ -153,8 +117,8 @@ const DUMMY_USER_POSTS: Record<string, Post[]> = {
       viewCount: 650,
       likeCount: 28,
       commentCount: 5,
-      tags: [DUMMY_TAGS[1]],
-      author: DUMMY_USERS.u1,
+      tags: [],
+      author: DUMMY_USERS_BY_ID["u1"],
       isRead: false,
       publishedAt: "2025-01-05",
       url: "/post/p3",
@@ -168,8 +132,8 @@ const DUMMY_USER_POSTS: Record<string, Post[]> = {
       viewCount: 2100,
       likeCount: 89,
       commentCount: 23,
-      tags: [DUMMY_TAGS[3]],
-      author: DUMMY_USERS.u2,
+      tags: [],
+      author: DUMMY_USERS_BY_ID["u2"],
       isRead: false,
       publishedAt: "2025-01-14",
       url: "/post/p4",
@@ -183,8 +147,8 @@ const DUMMY_USER_POSTS: Record<string, Post[]> = {
       viewCount: 450,
       likeCount: 15,
       commentCount: 3,
-      tags: [DUMMY_TAGS[4]],
-      author: DUMMY_USERS.u3,
+      tags: [],
+      author: DUMMY_USERS_BY_ID["u3"],
       isRead: false,
       publishedAt: "2025-01-12",
       url: "/post/p5",
@@ -197,7 +161,7 @@ function getUserTags(posts: Post[]): { tag: Tag; count: number }[] {
   const tagCounts = new Map<string, { tag: Tag; count: number }>();
 
   posts.forEach((post) => {
-    post.tags.forEach((tag) => {
+    post.tags?.forEach((tag) => {
       const existing = tagCounts.get(tag.id);
       if (existing) {
         existing.count++;
@@ -332,7 +296,7 @@ export default function UserDetailPage() {
     });
   };
 
-  const user = DUMMY_USERS[userId];
+  const user = DUMMY_USERS_BY_ID[userId];
   const userPosts = DUMMY_USER_POSTS[userId] || [];
   const userTags = getUserTags(userPosts);
 
@@ -351,7 +315,7 @@ export default function UserDetailPage() {
   // 필터링된 게시물
   const filteredPosts = userPosts.filter((post) => {
     if (selectedTag) {
-      return post.tags.some((tag) => tag.id === selectedTag);
+      return post.tags?.some((tag) => tag.id === selectedTag);
     }
     return true;
   });

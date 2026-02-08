@@ -105,7 +105,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           margin-bottom: 0.75rem;
           line-height: 1.4;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid var(--border);
         }
 
         .markdown-content h3 {
