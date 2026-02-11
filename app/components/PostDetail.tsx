@@ -1,33 +1,69 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Image from "next/image";
+import {
+  ArrowLeft,
+  Bookmark,
+  MessageCircle,
+  Share2,
+  ThumbsDown,
+  ThumbsUp,
+  Eye,
+} from "lucide-react";
 import Header from "./Header";
 import MarkdownRenderer from "./MarkdownRenderer";
+import { useUser } from "../hooks/useUser";
 import { Comment, FeedMode, Post } from "../types";
 
 interface PostDetailProps {
   post: Post;
+  postId: string;
   comments: Comment[];
   isLiked: boolean;
   isBookmarked: boolean;
+  reactionState: "like" | "dislike" | "none";
   currentMode: FeedMode;
+  isCommentsLoading: boolean;
+  commentsHasNext: boolean;
+  isCommentsLoadingMore: boolean;
   onBack: () => void;
   onLike: () => void;
+  onDislike?: () => void;
   onBookmark: () => void;
   onShare: () => void;
+  onCreateComment: (content: string) => Promise<void>;
+  onLoadMoreComments: () => void;
 }
 
 export default function PostDetail({
   post,
+  postId,
   comments,
   isLiked,
   isBookmarked,
+  reactionState,
   currentMode,
+  isCommentsLoading,
+  commentsHasNext,
+  isCommentsLoadingMore,
   onBack,
   onLike,
+  onDislike,
   onBookmark,
   onShare,
+  onCreateComment,
+  onLoadMoreComments,
 }: PostDetailProps) {
+  const { user } = useUser();
+  const isOwner = Boolean(user?.id && post.author?.id && user.id === post.author.id);
+  const commentInputRef = useRef<HTMLDivElement | null>(null);
+  const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [isCommentExpanded, setIsCommentExpanded] = useState(false);
+  const [commentValue, setCommentValue] = useState("");
+  const collapsedTextareaHeight = "52px";
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+
   const formatCount = (count: number): string => {
     if (count >= 10000) return `${(count / 10000).toFixed(1)}만`;
     if (count >= 1000) return `${(count / 1000).toFixed(1)}천`;
@@ -48,19 +84,7 @@ export default function PostDetail({
           onClick={onBack}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 mb-6"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+            <ArrowLeft className="w-5 h-5" />
           <span className="text-sm font-medium">돌아가기</span>
         </button>
 
@@ -99,105 +123,8 @@ export default function PostDetail({
                 </span>
               </div>
             </div>
-            <button className="ml-auto px-4 py-1.5 rounded-full border border-success text-success text-sm font-medium hover:bg-success hover:text-success-foreground transition-colors duration-200">
-              팔로우
-            </button>
-          </div>
-
-          {/* 상호작용 바 */}
-          <div className="flex items-center justify-between py-3 border-y border-border">
-            <div className="flex items-center gap-4">
-              {/* 좋아요 */}
-              <button
-                onClick={onLike}
-                className={`flex items-center gap-1.5 text-sm transition-colors duration-200 ${
-                  isLiked
-                    ? "text-success"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill={isLiked ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
-                <span>{formatCount(post.likeCount || 0)}</span>
-              </button>
-
-              {/* 댓글 */}
-              <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
-                </svg>
-                <span>{formatCount(post.commentCount || 0)}</span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* 북마크 */}
-              <button
-                onClick={onBookmark}
-                className={`p-2 rounded-full transition-colors duration-200 ${
-                  isBookmarked
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill={isBookmarked ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  />
-                </svg>
-              </button>
-
-              {/* 공유 */}
-              <button
-                onClick={onShare}
-                className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                  />
-                </svg>
-              </button>
-
-              {/* 더보기 */}
-              <button className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200">
+            {isOwner ? (
+              <button className="ml-auto p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -212,8 +139,26 @@ export default function PostDetail({
                   />
                 </svg>
               </button>
-            </div>
+            ) : (
+              <button className="ml-auto px-4 py-1.5 rounded-full border border-success text-success text-sm font-medium hover:bg-success hover:text-success-foreground transition-colors duration-200">
+                팔로우
+              </button>
+            )}
           </div>
+
+          {/* 태그 */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="px-3 py-1.5 rounded-full bg-muted/60 text-sm text-muted-foreground hover:bg-muted cursor-pointer transition-colors duration-200"
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
         </header>
 
         {/* 게시물 본문 */}
@@ -221,43 +166,147 @@ export default function PostDetail({
           <MarkdownRenderer content={post.content || ""} />
         </article>
 
-        {/* 태그 */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-8">
-            {post.tags.map((tag) => (
-              <span
-                key={tag.id}
-                className="px-3 py-1.5 rounded-full bg-muted/60 text-sm text-muted-foreground hover:bg-muted cursor-pointer transition-colors duration-200"
+        {/* 상호작용 바 */}
+        <div className="flex items-center justify-between py-3 border-t border-border mb-3">
+          <div className="flex items-center gap-4">
+            {/* 좋아요 / 싫어요 */}
+            <div className="flex items-center gap-3 rounded-full bg-muted px-3 py-2 text-base font-semibold text-muted-foreground">
+              <button
+                onClick={onLike}
+                className={`flex items-center gap-2 rounded-full px-3 py-1.5 transition-colors duration-200 cursor-pointer ${
+                  reactionState === "like"
+                    ? "bg-red-500/15 text-red-600 hover:bg-red-500/20"
+                    : "hover:text-foreground hover:bg-muted/80"
+                }`}
+                aria-label="좋아요"
               >
-                {tag.name}
-              </span>
-            ))}
+                <ThumbsUp className="w-5 h-5" />
+              </button>
+              <span className="px-1">{formatCount(post.likeCount || 0)}</span>
+              <button
+                onClick={onDislike}
+                className={`flex items-center gap-2 rounded-full px-3 py-1.5 transition-colors duration-200 cursor-pointer ${
+                  reactionState === "dislike"
+                    ? "bg-blue-500/15 text-blue-600 hover:bg-blue-500/20"
+                    : "hover:text-foreground hover:bg-muted/80"
+                }`}
+                aria-label="싫어요"
+              >
+                <ThumbsDown className="w-5 h-5" />
+              </button>
+            </div>
+
+          {/* 댓글 */}
+            <button
+              onClick={() => {
+                commentInputRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+                setIsCommentExpanded(true);
+                setTimeout(() => commentTextareaRef.current?.focus(), 150);
+              }}
+              className="flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-base font-semibold text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
+            >
+              <MessageCircle className="w-6 h-6" />
+              <span>{formatCount(post.commentCount || 0)}</span>
+            </button>
+            {/* 조회수 */}
+            <div className="flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-base font-semibold text-muted-foreground">
+              <Eye className="w-6 h-6" />
+              <span>{formatCount(post.viewCount || 0)}</span>
+            </div>
           </div>
-        )}
 
-        {/* 구분선 */}
-        <div className="h-px bg-border mb-8" />
+          <div className="flex items-center gap-3">
+            {/* 북마크 */}
+            <button
+              onClick={onBookmark}
+              className={`p-3 rounded-full transition-colors duration-200 cursor-pointer ${
+                isBookmarked
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Bookmark
+                className="w-6 h-6"
+                fill={isBookmarked ? "currentColor" : "none"}
+              />
+            </button>
 
+            {/* 공유 */}
+            <button
+              onClick={onShare}
+              className="p-3 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
+            >
+              <Share2 className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* 댓글 섹션 */}
         <section>
-          <h3 className="text-lg font-bold text-foreground mb-6">
-            댓글 ({comments.length})
-          </h3>
 
           {/* 댓글 입력 */}
-          <div className="flex gap-3 mb-8">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-muted-foreground">?</span>
-            </div>
+          <div ref={commentInputRef} className="flex gap-3 mb-8">
             <div className="flex-1">
               <textarea
-                placeholder="댓글을 작성해주세요..."
-                className="w-full px-4 py-3 rounded-lg border border-border bg-background text-sm resize-none focus:outline-none focus:border-ring transition-colors duration-200"
-                rows={3}
+                ref={commentTextareaRef}
+                placeholder={isCommentExpanded ? "" : "의견을 나눠주세요"}
+                value={commentValue}
+                onChange={(e) => setCommentValue(e.target.value)}
+                onInput={(e) => {
+                  const target = e.currentTarget;
+                  target.style.height = "auto";
+                  target.style.height = `${target.scrollHeight}px`;
+                }}
+                className={`w-full px-5 rounded-3xl border-2 border-border bg-background text-base resize-none focus:outline-none focus:border-ring transition-colors duration-200 placeholder:text-lg hover:bg-muted/85 ${
+                  isCommentExpanded
+                    ? "min-h-[120px] max-h-60 overflow-y-auto text-left py-4"
+                    : "h-[52px] overflow-hidden text-left py-4 leading-5"
+                }`}
+                rows={1}
+                onFocus={() => {
+                  setIsCommentExpanded(true);
+                  if (commentTextareaRef.current && !commentValue) {
+                    commentTextareaRef.current.style.height = "120px";
+                  }
+                }}
               />
-              <div className="flex justify-end mt-2">
-                <button className="px-4 py-2 rounded-full bg-success text-success-foreground text-sm font-medium hover:opacity-90 transition-opacity duration-200">
-                  댓글 작성
+              <div className="flex justify-end mt-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommentValue("");
+                    setIsCommentExpanded(false);
+                    if (commentTextareaRef.current) {
+                      commentTextareaRef.current.style.height = collapsedTextareaHeight;
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-full border border-border text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const trimmed = commentValue.trim();
+                    if (!trimmed || isCommentSubmitting) return;
+                    setIsCommentSubmitting(true);
+                    try {
+                      await onCreateComment(trimmed);
+                      setCommentValue("");
+                      setIsCommentExpanded(false);
+                      if (commentTextareaRef.current) {
+                        commentTextareaRef.current.style.height = collapsedTextareaHeight;
+                      }
+                    } finally {
+                      setIsCommentSubmitting(false);
+                    }
+                  }}
+                  disabled={isCommentSubmitting}
+                  className="px-5 py-2.5 rounded-full bg-slate-700 text-white text-base font-medium hover:bg-slate-800 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  댓글
                 </button>
               </div>
             </div>
@@ -265,7 +314,11 @@ export default function PostDetail({
 
           {/* 댓글 목록 */}
           <div className="flex flex-col gap-6">
-            {comments.length > 0 ? (
+            {isCommentsLoading && comments.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-4">
+                댓글을 불러오는 중입니다.
+              </div>
+            ) : comments.length > 0 ? (
               comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
                   <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
@@ -322,6 +375,18 @@ export default function PostDetail({
               <p className="text-center text-muted-foreground py-8">
                 아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!
               </p>
+            )}
+            {commentsHasNext && (
+              <div className="flex justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={onLoadMoreComments}
+                  disabled={isCommentsLoadingMore}
+                  className="px-5 py-2.5 rounded-full border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isCommentsLoadingMore ? "불러오는 중..." : "더보기"}
+                </button>
+              </div>
             )}
           </div>
         </section>
