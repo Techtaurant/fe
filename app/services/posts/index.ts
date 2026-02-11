@@ -1,5 +1,10 @@
 import { CreatePostRequest, CreatePostResponse, Post } from "@/app/types";
-import { createPostRequest, fetchCommunityPosts, fetchPostDetail } from "./client";
+import {
+  createPostRequest,
+  fetchCommunityPosts,
+  fetchPostDetail,
+  setPostLike,
+} from "./client";
 import { mapDetailToPost, mapListItemToPost } from "./mappers";
 import {
   CommunityPostListResult,
@@ -35,4 +40,11 @@ export async function fetchPostDetailWithMeta(postId: string): Promise<{
     post: mapDetailToPost(result.data),
     isLiked: result.data.isLiked,
   };
+}
+
+export async function updatePostLike(
+  postId: string,
+  likeStatus: "NONE" | "LIKE" | "DISLIKE",
+) {
+  return setPostLike(postId, likeStatus);
 }
