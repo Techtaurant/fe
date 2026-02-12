@@ -6,6 +6,8 @@ import { FEED_MODES } from "../constants/feed";
 import { fetchPostDetailWithMeta, updatePostLike } from "../services/posts";
 import { FeedMode, Post } from "../types";
 
+type ReactionState = "like" | "dislike" | "none";
+
 export function usePostDetail(postId: string) {
   const { user } = useUser();
   const [post, setPost] = useState<Post | null>(null);
@@ -14,9 +16,7 @@ export function usePostDetail(postId: string) {
   const [currentMode] = useState<FeedMode>(FEED_MODES.USER);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [reactionState, setReactionState] = useState<"like" | "dislike" | "none">(
-    "none",
-  );
+  const [reactionState, setReactionState] = useState<ReactionState>("none");
 
   const getStoredReaction = (id: string) => {
     if (typeof window === "undefined") return null;
@@ -31,7 +31,7 @@ export function usePostDetail(postId: string) {
     }
   };
 
-  const setStoredReaction = (id: string, value: "like" | "dislike" | "none") => {
+  const setStoredReaction = (id: string, value: ReactionState) => {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(`post:${id}:reaction`, value);
@@ -75,7 +75,7 @@ export function usePostDetail(postId: string) {
     };
   }, [postId]);
 
-  const handleReaction = (target: "like" | "dislike") => {
+  const handleReaction = async (target: "like" | "dislike") => {
     if (!user) {
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
@@ -83,8 +83,7 @@ export function usePostDetail(postId: string) {
       return;
     }
 
-    const nextReaction: "like" | "dislike" | "none" =
-      reactionState === target ? "none" : target;
+    const nextReaction: ReactionState = reactionState === target ? "none" : target;
     const likeStatus =
       nextReaction === "none"
         ? "NONE"
@@ -92,38 +91,40 @@ export function usePostDetail(postId: string) {
           ? "LIKE"
           : "DISLIKE";
 
-    updatePostLike(postId, likeStatus)
-      .then(async () => {
-        setIsLiked(nextReaction === "like");
-        setReactionState(nextReaction);
-        setStoredReaction(postId, nextReaction);
-        try {
-          const refreshed = await fetchPostDetailWithMeta(postId);
-          setPost(refreshed.post);
-        } catch {
-          // keep current UI if refresh fails
-        }
-      })
-      .catch((error) => {
-        const message = error instanceof Error ? error.message : "UNKNOWN";
-        if (message === "UNAUTHORIZED") {
-          const apiBaseUrl =
-            process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-          window.location.href = `${apiBaseUrl}/oauth2/authorization/google`;
-          return;
-        }
-        if (message === "NOT_FOUND") {
-          alert("게시물을 찾을 수 없습니다.");
-          return;
-        }
-        alert("반응 처리에 실패했습니다.");
-      })
-      .finally(() => {});
+    try {
+      await updatePostLike(postId, likeStatus);
+      setIsLiked(nextReaction === "like");
+      setReactionState(nextReaction);
+      setStoredReaction(postId, nextReaction);
+      try {
+        const refreshed = await fetchPostDetailWithMeta(postId);
+        setPost(refreshed.post);
+      } catch {
+        // keep current UI if refresh fails
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "UNKNOWN";
+      if (message === "UNAUTHORIZED") {
+        const apiBaseUrl =
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+        window.location.href = `${apiBaseUrl}/oauth2/authorization/google`;
+        return;
+      }
+      if (message === "NOT_FOUND") {
+        alert("게시물을 찾을 수 없습니다.");
+        return;
+      }
+      alert("반응 처리에 실패했습니다.");
+    }
   };
 
-  const handleLike = () => handleReaction("like");
+  const handleLike = () => {
+    void handleReaction("like");
+  };
 
-  const handleDislike = () => handleReaction("dislike");
+  const handleDislike = () => {
+    void handleReaction("dislike");
+  };
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);

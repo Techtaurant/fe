@@ -14,7 +14,16 @@ interface RefreshResponse {
   message: string;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error("UNKNOWN_ERROR");
+}
+
 // 토큰 갱신 중 플래그 (중복 갱신 방지)
+
 let isRefreshing = false;
 // 갱신 대기 중인 요청들
 let failedQueue: Array<{
@@ -55,7 +64,14 @@ export async function refreshTokens(): Promise<boolean> {
       throw new Error("토큰 갱신 실패");
     }
 
-    const data: RefreshResponse = await response.json();
+    const rawData: unknown = await response.json();
+    if (!isRecord(rawData) || typeof rawData.status !== "number") {
+      throw new Error("토큰 갱신 응답 형식 오류");
+    }
+    const data: RefreshResponse = {
+      status: rawData.status,
+      message: typeof rawData.message === "string" ? rawData.message : "",
+    };
 
     // status 0이면 성공
     if (data.status === 0) {
@@ -63,7 +79,7 @@ export async function refreshTokens(): Promise<boolean> {
     }
 
     throw new Error(data.message || "토큰 갱신 실패");
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("토큰 갱신 에러:", error);
     return false;
   }
@@ -104,9 +120,9 @@ export async function httpClient(
   // 401 에러인 경우, Custom Status 확인
   const clonedResponse = response.clone();
   try {
-    const body = await clonedResponse.json();
+    const body: unknown = await clonedResponse.json();
     // Custom Status가 3003 (AccessToken 만료)이 아니면 토큰 갱신하지 않고 바로 반환
-    if (body.status !== 3003) {
+    if (!isRecord(body) || body.status !== 3003) {
       return response;
     }
   } catch {
@@ -145,9 +161,10 @@ export async function httpClient(
 
     // 원래 요청 재시도
     return fetch(fullUrl, config);
-  } catch (error) {
-    processQueue(error as Error);
-    throw error;
+  } catch (error: unknown) {
+    const normalizedError = toError(error);
+    processQueue(normalizedError);
+    throw normalizedError;
   } finally {
     isRefreshing = false;
   }
