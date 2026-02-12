@@ -24,7 +24,7 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
   ];
 
   const sortOptions: { label: string; value: SortOption }[] = [
-    { label: '인기순', value: 'popular' },
+    { label: '최신순', value: 'latest' },
     { label: '댓글순', value: 'comments' },
     { label: '조회순', value: 'views' },
     { label: '추천순', value: 'likes' },

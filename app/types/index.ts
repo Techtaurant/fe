@@ -36,7 +36,7 @@ export interface Post {
   viewCount: number;
   likeCount?: number;
   commentCount?: number;
-  tags: Tag[];
+  tags?: Tag[];
   techBlog?: TechBlog; // 기업 블로그 글일 경우
   author?: User; // 커뮤니티 글일 경우
   isRead: boolean;
@@ -79,6 +79,7 @@ export interface CreatePostRequest {
   content: string;
   categoryPath: string;
   tags: string[];
+  status: "DRAFT" | "PUBLISHED" | "PRIVATE";
 }
 
 // 게시물 작성 응답
