@@ -267,7 +267,7 @@ export default function Sidebar({
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="사용자 이름..."
+                  placeholder="사용자 이름"
                   value={userSearchQuery}
                   onChange={(e) => setUserSearchQuery(e.target.value)}
                   className="w-full bg-muted border-none rounded-full

@@ -1,64 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import FilterBar from "./components/FilterBar";
-import PostCard from "./components/PostCard";
+import CommunityFeedSection from "./components/feed/CommunityFeedSection";
+import PostList from "./components/feed/PostList";
 import { FEED_MODES } from "./constants/feed";
-import { FilterState, Post, FeedMode } from "./types";
+import { Post, FeedMode } from "./types";
 import {
   DUMMY_TECH_BLOGS,
   DUMMY_COMPANY_POSTS,
 } from "./data/dummyData";
-import { fetchCommunityPostList } from "./services/posts";
+import { useCommunityFeed } from "./hooks/useCommunityFeed";
+import { useFeedFilters } from "./hooks/useFeedFilters";
 
 function HomeContent({ initialMode }: { initialMode: FeedMode }) {
-  const [filterState, setFilterState] = useState<FilterState>({
-    mode: initialMode,
-    dateRange: 'all',
-    sortBy: 'latest',
-    searchUser: '',
-    hideReadPosts: false,
-    selectedTags: [],
-    selectedTechBlogs: [],
-  });
-
-  // Mode에 따라 보여줄 포스트 소스 결정
   const [companyPosts, setCompanyPosts] = useState<Post[]>(DUMMY_COMPANY_POSTS);
-  const [communityPosts, setCommunityPosts] = useState<Post[]>([]);
-  const [communityError, setCommunityError] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  const {
+    filterState,
+    setFilterState,
+    handleModeChange,
+    communityPeriod,
+    communitySort,
+    getVisiblePosts,
+  } = useFeedFilters({
+    initialMode,
+  });
 
-    const loadPosts = async () => {
-      try {
-        const result = await fetchCommunityPostList({
-          size: 20,
-          period: "ALL",
-          sort: "LATEST",
-        });
-
-        if (isMounted) {
-          setCommunityPosts(result.posts);
-          setCommunityError(null);
-        }
-      } catch (error) {
-        if (isMounted) {
-          setCommunityPosts([]);
-          setCommunityError("커뮤니티 게시물을 불러오지 못했습니다.");
-        }
-      }
-    };
-
-    loadPosts();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // keep feed query synced to current filters
+  const communityFeed = useCommunityFeed({
+    enabled: filterState.mode === "user",
+    period: communityPeriod,
+    sort: communitySort,
+    size: 20,
+  });
 
   const handleReadStatusChange = (postId: string, isRead: boolean) => {
     if (filterState.mode === 'company') {
@@ -66,93 +45,15 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
         prev.map((post) => (post.id === postId ? { ...post, isRead } : post))
       );
     } else {
-      setCommunityPosts((prev) =>
+      communityFeed.setPosts((prev) =>
         prev.map((post) => (post.id === postId ? { ...post, isRead } : post))
       );
     }
   };
 
-  const handleModeChange = (mode: FeedMode) => {
-    // 모드 변경 시 필터 초기화 (선택적)
-    setFilterState(prev => ({
-      ...prev,
-      mode,
-      sortBy: 'latest', // 정렬 초기화
-      // 태그나 검색어는 유지할지 초기화할지 결정. 여기선 유지.
-    }));
-  };
-
-  const currentPosts = filterState.mode === 'company' ? companyPosts : communityPosts;
-
-  // 통합 필터링 로직
-  const filteredPosts = currentPosts.filter((post) => {
-    // 1. 읽은 게시물 제외 (공통)
-    if (filterState.hideReadPosts && post.isRead) return false;
-
-    // 2. 태그 필터 (공통)
-    if (
-      filterState.selectedTags.length > 0 &&
-      !post.tags?.some((tag) => filterState.selectedTags.includes(tag.id))
-    ) {
-      return false;
-    }
-
-    // 3. 모드별 필터
-    if (filterState.mode === 'company') {
-      // 기업 블로그 필터
-      if (
-        filterState.selectedTechBlogs.length > 0 &&
-        post.techBlog &&
-        !filterState.selectedTechBlogs.includes(post.techBlog.id)
-      ) {
-        return false;
-      }
-    } else {
-      // 커뮤니티: 날짜 필터
-      if (filterState.dateRange !== 'all') {
-        const postDate = new Date(post.publishedAt);
-        const now = new Date();
-        let days = 0;
-        if (filterState.dateRange === '7d') days = 7;
-        else if (filterState.dateRange === '30d') days = 30;
-        else if (filterState.dateRange === '365d') days = 365;
-        
-        const diffTime = Math.abs(now.getTime() - postDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-  
-        if (diffDays > days) return false;
-      }
-
-      // 커뮤니티: 사용자 검색
-      if (filterState.searchUser && post.author) {
-        if (!post.author.name.toLowerCase().includes(filterState.searchUser.toLowerCase())) {
-          return false;
-        }
-      }
-    }
-    
-    return true;
-  });
-
-  // 정렬 로직
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
-    // 공통: 최신순
-    // 커뮤니티 전용: 댓글, 좋아요 등
-
-    switch (filterState.sortBy) {
-      case 'popular':
-        return b.viewCount - a.viewCount;
-      case 'comments':
-        return (b.commentCount || 0) - (a.commentCount || 0);
-      case 'views':
-        return b.viewCount - a.viewCount;
-      case 'likes':
-        return (b.likeCount || 0) - (a.likeCount || 0);
-      case 'latest':
-      default:
-        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-    }
-  });
+  const currentPosts =
+    filterState.mode === FEED_MODES.COMPANY ? companyPosts : communityFeed.posts;
+  const visiblePosts = getVisiblePosts(currentPosts);
 
   return (
     <div className="min-h-screen bg-background">
@@ -180,29 +81,19 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
             />
           )}
           
-          {communityError && filterState.mode === "user" && (
-            <div className="mb-6 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
-              {communityError}
-            </div>
-          )}
-
-          {sortedPosts.length > 0 ? (
-            <div className="flex flex-col gap-6">
-              {sortedPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onReadStatusChange={handleReadStatusChange}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20">
-              <p className="text-lg text-muted-foreground">
-                조건에 맞는 게시물이 없습니다.
-              </p>
-            </div>
-          )}
+            {filterState.mode === "user" ? (
+              <CommunityFeedSection
+                posts={visiblePosts}
+                error={communityFeed.error}
+                hasNext={communityFeed.hasNext}
+                isLoading={communityFeed.isLoading}
+                isLoadingMore={communityFeed.isLoadingMore}
+                onLoadMore={communityFeed.loadMore}
+                onReadStatusChange={handleReadStatusChange}
+              />
+            ) : (
+              <PostList posts={visiblePosts} onReadStatusChange={handleReadStatusChange} />
+            )}
         </main>
       </div>
     </div>
