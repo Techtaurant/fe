@@ -6,18 +6,15 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import FilterBar from "./components/FilterBar";
 import CommunityFeedSection from "./components/feed/CommunityFeedSection";
-import PostList from "./components/feed/PostList";
+import CompanyFeedSection from "./components/feed/CompanyFeedSection";
 import { FEED_MODES } from "./constants/feed";
-import { Post, FeedMode } from "./types";
-import {
-  DUMMY_TECH_BLOGS,
-  DUMMY_COMPANY_POSTS,
-} from "./data/dummyData";
+import { FeedMode } from "./types";
+import { DUMMY_TECH_BLOGS } from "./data/dummyData";
 import { useCommunityFeed } from "./hooks/useCommunityFeed";
+import { useCompanyFeed } from "./hooks/useCompanyFeed";
 import { useFeedFilters } from "./hooks/useFeedFilters";
 
 function HomeContent({ initialMode }: { initialMode: FeedMode }) {
-  const [companyPosts, setCompanyPosts] = useState<Post[]>(DUMMY_COMPANY_POSTS);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const {
@@ -38,10 +35,13 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
     sort: communitySort,
     size: 20,
   });
+  const companyFeed = useCompanyFeed({
+    enabled: filterState.mode === FEED_MODES.COMPANY,
+  });
 
   const handleReadStatusChange = (postId: string, isRead: boolean) => {
     if (filterState.mode === 'company') {
-      setCompanyPosts((prev) =>
+      companyFeed.setPosts((prev) =>
         prev.map((post) => (post.id === postId ? { ...post, isRead } : post))
       );
     } else {
@@ -52,7 +52,7 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   };
 
   const currentPosts =
-    filterState.mode === FEED_MODES.COMPANY ? companyPosts : communityFeed.posts;
+    filterState.mode === FEED_MODES.COMPANY ? companyFeed.posts : communityFeed.posts;
   const visiblePosts = getVisiblePosts(currentPosts);
 
   return (
@@ -92,7 +92,11 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
                 onReadStatusChange={handleReadStatusChange}
               />
             ) : (
-              <PostList posts={visiblePosts} onReadStatusChange={handleReadStatusChange} />
+              <CompanyFeedSection
+                posts={visiblePosts}
+                isLoading={companyFeed.isLoading}
+                onReadStatusChange={handleReadStatusChange}
+              />
             )}
         </main>
       </div>

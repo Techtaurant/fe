@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { Post } from "../../types";
-import PostList from "./PostList";
+import PostList from "../PostList";
+import FeedSkeleton from "../skeleton/FeedSkeleton";
 
 interface CommunityFeedSectionProps {
   posts: Post[];
@@ -24,7 +25,8 @@ export default function CommunityFeedSection({
   onReadStatusChange,
 }: CommunityFeedSectionProps) {
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
-  const showInitialSkeleton = (isLoading || isLoadingMore) && posts.length === 0;
+  const showInitialSkeleton =
+    (isLoading || isLoadingMore) && posts.length === 0;
   const showLoadMoreSkeleton = isLoadingMore && posts.length > 0;
 
   useEffect(() => {
@@ -53,20 +55,7 @@ export default function CommunityFeedSection({
       )}
 
       {showInitialSkeleton ? (
-        <div className="flex flex-col gap-6">
-          {Array.from({ length: 5 }).map((_, idx) => (
-            <article key={idx} className="py-4 md:py-6 border-b border-border animate-pulse">
-              <div className="h-4 w-24 rounded skeleton-bg mb-3" />
-              <div className="h-6 w-4/5 rounded skeleton-bg mb-3" />
-              <div className="h-4 w-2/3 rounded skeleton-bg mb-4" />
-              <div className="flex gap-2">
-                <div className="h-6 w-14 rounded-full skeleton-bg" />
-                <div className="h-6 w-16 rounded-full skeleton-bg" />
-                <div className="h-6 w-12 rounded-full skeleton-bg" />
-              </div>
-            </article>
-          ))}
-        </div>
+        <FeedSkeleton variant="community" count={5} />
       ) : (
         <>
           <PostList
@@ -76,15 +65,7 @@ export default function CommunityFeedSection({
           />
           <div ref={loadMoreTriggerRef} className="h-2 w-full" />
           {showLoadMoreSkeleton && (
-            <div className="flex flex-col gap-6 pt-2">
-              {Array.from({ length: 2 }).map((_, idx) => (
-                <article key={idx} className="py-4 md:py-6 border-b border-border animate-pulse">
-                  <div className="h-4 w-20 rounded skeleton-bg mb-3" />
-                  <div className="h-5 w-3/4 rounded skeleton-bg mb-3" />
-                  <div className="h-4 w-1/2 rounded skeleton-bg" />
-                </article>
-              ))}
-            </div>
+            <FeedSkeleton variant="company" count={2} loadMore />
           )}
           {!hasNext && !isLoading && !isLoadingMore && posts.length > 0 && (
             <div className="py-4 text-center text-sm text-muted-foreground">
