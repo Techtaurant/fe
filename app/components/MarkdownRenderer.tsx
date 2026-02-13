@@ -30,8 +30,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
       startOnLoad: false,
       theme: "neutral",
       securityLevel: "loose",
-      fontFamily:
-        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      fontFamily: "var(--font-kr-sans)",
     });
 
     // mermaid 클래스를 가진 코드 블록 찾기
@@ -81,8 +80,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
       {/* 마크다운 스타일 */}
       <style jsx global>{`
         .markdown-content {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            sans-serif;
+          font-family: var(--font-kr-sans);
           font-size: 17px;
           line-height: 1.7;
           color: var(--foreground);
@@ -140,8 +138,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           padding: 0.2em 0.4em;
           border-radius: 4px;
           font-size: 0.9em;
-          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
-            monospace;
+          font-family: var(--font-app-mono);
         }
 
         /* 코드 블록 */
@@ -159,8 +156,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
         .markdown-content pre code {
           background: transparent;
           padding: 0;
-          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
-            monospace;
+          font-family: var(--font-app-mono);
         }
 
         /* 인용문 */

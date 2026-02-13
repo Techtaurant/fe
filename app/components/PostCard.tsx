@@ -106,7 +106,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
 
           {/* Title */}
           <h2
-            className="text-lg md:text-xl font-bold text-foreground mb-2 md:mb-3 line-clamp-2 font-serif group-hover:text-foreground"
+            className="text-lg md:text-xl font-bold text-foreground mb-2 md:mb-3 line-clamp-2 font-kr-serif group-hover:text-foreground"
           >
             {post.title}
           </h2>

@@ -329,7 +329,7 @@ export default function UserDetailPage() {
           onMenuClick={() => {}}
         />
         <div className="max-w-[728px] mx-auto px-6 py-12">
-          <p className="text-center text-[#757575] font-sans">
+          <p className="text-center text-[#757575] font-kr-sans">
             사용자를 찾을 수 없습니다.
           </p>
         </div>
@@ -368,7 +368,7 @@ export default function UserDetailPage() {
                     className="object-cover"
                   />
                 ) : (
-                  <span className="text-3xl font-serif text-[#757575]">
+                  <span className="text-3xl font-kr-serif text-[#757575]">
                     {user.name.charAt(0)}
                   </span>
                 )}
@@ -378,30 +378,30 @@ export default function UserDetailPage() {
                   Design system h1 is 40px serif. h2 is 24px serif. 
                   Let's match h2 for sidebar context or slightly larger. 
                   Let's use standard font-bold text-xl for now, but font-serif. */}
-              <h1 className="font-serif text-[24px] font-bold text-black leading-tight mb-2">
+              <h1 className="font-kr-serif text-[24px] font-bold text-black leading-tight mb-2">
                 {user.name}
               </h1>
 
               {/* Email/Meta: typography.styles.caption (sans, 14px, gray.600) */}
-              <p className="font-sans text-[14px] text-[#757575] mb-6">
+              <p className="font-kr-sans text-[14px] text-[#757575] mb-6">
                 {user.email}
               </p>
 
               {/* Social Stats Row */}
               <div className="flex items-center gap-5 mb-6 px-1">
                 <div className="flex items-center gap-1.5 cursor-pointer group">
-                  <span className="font-sans text-[15px] font-bold text-black group-hover:text-gray-700">
+                  <span className="font-kr-sans text-[15px] font-bold text-black group-hover:text-gray-700">
                     {(user.followerCount || 0).toLocaleString()}
                   </span>
-                  <span className="font-sans text-[14px] text-[#757575] group-hover:text-[#242424]">
+                  <span className="font-kr-sans text-[14px] text-[#757575] group-hover:text-[#242424]">
                     팔로워
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 cursor-pointer group">
-                  <span className="font-sans text-[15px] font-bold text-black group-hover:text-gray-700">
+                  <span className="font-kr-sans text-[15px] font-bold text-black group-hover:text-gray-700">
                     {(user.followingCount || 0).toLocaleString()}
                   </span>
-                  <span className="font-sans text-[14px] text-[#757575] group-hover:text-[#242424]">
+                  <span className="font-kr-sans text-[14px] text-[#757575] group-hover:text-[#242424]">
                     팔로잉
                   </span>
                 </div>
@@ -439,7 +439,7 @@ export default function UserDetailPage() {
             {/* Categories Navigation */}
             <div>
               {/* Header: typography.styles.h3 (sans, 16px, bold) */}
-              <h3 className="font-sans text-[16px] font-bold text-black mb-4">
+              <h3 className="font-kr-sans text-[16px] font-bold text-black mb-4">
                 카테고리
               </h3>
               <ul className="flex flex-col gap-0.5">
@@ -462,7 +462,7 @@ export default function UserDetailPage() {
 
             {/* Tags Section */}
             <div>
-              <h3 className="font-sans text-[16px] font-bold text-black mb-4">
+              <h3 className="font-kr-sans text-[16px] font-bold text-black mb-4">
                 태그
               </h3>
 
@@ -519,7 +519,7 @@ export default function UserDetailPage() {
           <main className="flex-1 max-w-[728px]">
             {/* Header Area */}
             <div className="mb-8 border-b border-[#E6E6E6] pb-4">
-              <h2 className="font-serif text-[40px] font-bold text-black leading-tight">
+              <h2 className="font-kr-serif text-[40px] font-bold text-black leading-tight">
                 {user.name}의 글
               </h2>
               {selectedTag && (
