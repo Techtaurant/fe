@@ -16,7 +16,7 @@ export function mapListItemToPost(item: PostListItem): Post {
     type: "community",
     title: item.title,
     viewCount: item.viewCount,
-    likeCount: item.likeCount,
+    likeCount: item.likeCount ?? 0,
     commentCount: item.commentCount,
     tags: item.tags,
     author: {
@@ -40,7 +40,7 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
     title: detail.title,
     content: detail.content,
     viewCount: detail.viewCount,
-    likeCount: detail.likeCount,
+    likeCount: detail.likeCount ?? 0,
     commentCount: detail.commentCount,
     tags: detail.tags,
     author: {

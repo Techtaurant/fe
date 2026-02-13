@@ -74,3 +74,27 @@ export async function fetchPostDetail(postId: string): Promise<PostDetailRespons
 
   return (await response.json()) as PostDetailResponse;
 }
+
+export async function setPostLike(
+  postId: string,
+  likeStatus: "NONE" | "LIKE" | "DISLIKE",
+): Promise<{ status: number; message: string }> {
+  const response = await httpClient(`/api/posts/${postId}/like`, {
+    method: "POST",
+    body: JSON.stringify({ likeStatus }),
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as { status: number; message: string };
+}
