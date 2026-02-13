@@ -51,6 +51,15 @@
 }
 
 :root {
+  --font-kr-sans:
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", sans-serif;
+  --font-kr-serif: var(--font-kr-sans);
+  --font-app-mono:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --font-brand: var(--font-montserrat), var(--font-kr-sans);
   --radius: 0.65rem;
   --background: #F8F9FA;
   --foreground: #202124;
@@ -109,6 +118,7 @@
   --toast-info-border: #5B8DEF;
   --toast-info-text: #F8F9FA;
   --toast-info-icon: #F8F9FA;
+  --skeleton: rgb(0 0 0 / 0.05);
 }
 
 .dark {
@@ -169,6 +179,7 @@
   --toast-info-border: #8AB4F8;
   --toast-info-text: #3C3C3C;
   --toast-info-icon: #3C3C3C;
+  --skeleton: #262626;
 }
 
 @layer base {
@@ -184,10 +195,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family:
-      "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue",
-      "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji",
-      "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    font-family: var(--font-kr-sans);
   }
 
   * {
@@ -263,6 +271,30 @@
 
   [data-sonner-toast][data-type="info"] [data-icon] {
     color: var(--toast-info-icon) !important;
+  }
+}
+
+@layer utilities {
+  .font-kr-sans {
+    font-family: var(--font-kr-sans);
+  }
+
+  .font-kr-serif {
+    font-family: var(--font-kr-serif);
+  }
+
+  .font-app-mono {
+    font-family: var(--font-app-mono);
+  }
+
+  .font-brand {
+    font-family: var(--font-brand);
+  }
+}
+
+@layer components {
+  .skeleton-bg {
+    background-color: var(--skeleton);
   }
 }
 
