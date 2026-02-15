@@ -88,10 +88,10 @@ export default function Sidebar({
     });
   };
 
-  const filteredTags = fetchedTags.filter((tag) =>
+  const filteredTags = fetchedTags.filter((tag: Tag) =>
     tag.name.toLowerCase().includes(tagSearchQuery.trim().toLowerCase()),
   );
-  const filteredTechBlogs = fetchedTechBlogs.filter((blog) =>
+  const filteredTechBlogs = fetchedTechBlogs.filter((blog: TechBlog) =>
     blog.name.toLowerCase().includes(techBlogSearchQuery.trim().toLowerCase()),
   );
 
@@ -231,7 +231,7 @@ export default function Sidebar({
                 {shouldShowTechBlogSkeleton ? (
                   <FilterCheckboxListSkeleton count={MAX_VISIBLE_ITEMS} />
                 ) : (
-                  visibleTechBlogs.map((blog) => (
+                  visibleTechBlogs.map((blog: TechBlog) => (
                     <label
                       key={blog.id}
                       className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
@@ -319,7 +319,7 @@ export default function Sidebar({
             {isTagsLoading ? (
               <FilterCheckboxListSkeleton count={MAX_VISIBLE_ITEMS} />
             ) : (
-              visibleTags.map((tag) => (
+              visibleTags.map((tag: Tag) => (
                 <label
                   key={tag.id}
                   className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"

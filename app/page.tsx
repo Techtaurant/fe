@@ -8,11 +8,11 @@ import FilterBar from "./components/FilterBar";
 import CommunityFeedSection from "./components/feed/CommunityFeedSection";
 import CompanyFeedSection from "./components/feed/CompanyFeedSection";
 import { FEED_MODES } from "./constants/feed";
-import { FeedMode } from "./types";
+import { FeedMode, Post } from "./types";
 import { DUMMY_TECH_BLOGS } from "./data/dummyData";
-import { useCommunityFeed } from "./hooks/useCommunityFeed";
 import { useCompanyFeed } from "./hooks/useCompanyFeed";
 import { useFeedFilters } from "./hooks/useFeedFilters";
+import { useCommunityFeed } from "./hooks/useCommunityFeed";
 
 function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -41,12 +41,16 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
 
   const handleReadStatusChange = (postId: string, isRead: boolean) => {
     if (filterState.mode === "company") {
-      companyFeed.setPosts((prev) =>
-        prev.map((post) => (post.id === postId ? { ...post, isRead } : post)),
+      companyFeed.setPosts((prev: Post[]) =>
+        prev.map((post: Post) =>
+          post.id === postId ? { ...post, isRead } : post,
+        ),
       );
     } else {
-      communityFeed.setPosts((prev) =>
-        prev.map((post) => (post.id === postId ? { ...post, isRead } : post)),
+      communityFeed.setPosts((prev: Post[]) =>
+        prev.map((post: Post) =>
+          post.id === postId ? { ...post, isRead } : post,
+        ),
       );
     }
   };
