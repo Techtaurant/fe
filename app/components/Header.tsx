@@ -115,7 +115,7 @@ export default function Header({
         <div className="flex items-center gap-6 md:gap-8 flex-1 md:flex-initial justify-center md:justify-start">
           <h1
             onClick={handleLogoClick}
-            className="font-[family-name:var(--font-montserrat)] font-bold text-lg md:text-2xl tracking-tight
+            className="font-brand font-bold text-lg md:text-2xl tracking-tight
                      cursor-pointer text-foreground transition-opacity duration-200
                      hover:opacity-80"
           >
@@ -210,7 +210,7 @@ export default function Header({
 
           {/* Auth Button / Profile */}
           {isLoading ? (
-            <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+            <div className="w-10 h-10 rounded-full skeleton-bg animate-pulse" />
           ) : isLoggedIn && user ? (
             <div className="relative" ref={dropdownRef}>
               <button
