@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
 import SidebarSearchInput from './SidebarSearchInput';
 import { useTags } from '../hooks/useTags';
-import { useTechBlogs } from '../hooks/useTechBlogs';
+import { useTechBlogsTags } from '../hooks/useTechBlogsTags';
 import FilterCheckboxListSkeleton from './skeleton/FilterCheckboxListSkeleton';
 
 interface SidebarProps {
@@ -29,7 +29,7 @@ export default function Sidebar({
   onClose = () => {},
 }: SidebarProps) {
   const { tags: fetchedTags, isLoading: isTagsLoading } = useTags(availableTags);
-  const { techBlogs: fetchedTechBlogs, isLoading: isTechBlogsLoading } = useTechBlogs(availableTechBlogs);
+  const { techBlogs: fetchedTechBlogs, isLoading: isTechBlogsLoading } = useTechBlogsTags(availableTechBlogs);
   const shouldShowTechBlogSkeleton = isTechBlogsLoading || isTagsLoading;
   const [showAllTags, setShowAllTags] = useState(false);
   const [showAllTechBlogs, setShowAllTechBlogs] = useState(false);
