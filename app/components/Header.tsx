@@ -62,7 +62,7 @@ export default function Header({
         "Redirecting to OAuth URL:",
         `${apiBaseUrl}/oauth2/authorization/google`,
       );
-      window.location.href = `${apiBaseUrl}/oauth2/authorization/google`;
+      window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
     } else {
       setIsDropdownOpen(!isDropdownOpen);
     }
