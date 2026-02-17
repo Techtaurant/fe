@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
 import SidebarSearchInput from './SidebarSearchInput';
 import { useTags } from '../hooks/useTags';
+import { useTechBlogsTags } from '../hooks/useTechBlogsTags';
+import FilterCheckboxListSkeleton from './skeleton/FilterCheckboxListSkeleton';
 
 interface SidebarProps {
   mode: FeedMode;
@@ -27,6 +29,8 @@ export default function Sidebar({
   onClose = () => {},
 }: SidebarProps) {
   const { tags: fetchedTags, isLoading: isTagsLoading } = useTags(availableTags);
+  const { techBlogs: fetchedTechBlogs, isLoading: isTechBlogsLoading } = useTechBlogsTags(availableTechBlogs);
+  const shouldShowTechBlogSkeleton = isTechBlogsLoading || isTagsLoading;
   const [showAllTags, setShowAllTags] = useState(false);
   const [showAllTechBlogs, setShowAllTechBlogs] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState(filterState.searchUser || '');
@@ -84,10 +88,10 @@ export default function Sidebar({
     });
   };
 
-  const filteredTags = fetchedTags.filter((tag) =>
+  const filteredTags = fetchedTags.filter((tag: Tag) =>
     tag.name.toLowerCase().includes(tagSearchQuery.trim().toLowerCase()),
   );
-  const filteredTechBlogs = availableTechBlogs.filter((blog) =>
+  const filteredTechBlogs = fetchedTechBlogs.filter((blog: TechBlog) =>
     blog.name.toLowerCase().includes(techBlogSearchQuery.trim().toLowerCase()),
   );
 
@@ -224,23 +228,27 @@ export default function Sidebar({
                 />
               </div>
               <div className="flex flex-col gap-2">
-                {visibleTechBlogs.map((blog) => (
-                  <label
-                    key={blog.id}
-                    className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={filterState.selectedTechBlogs.includes(blog.id)}
-                      onChange={() => toggleTechBlog(blog.id)}
-                      className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
-                    />
-                    <span className="text-sm text-muted-foreground">
-                      {blog.name}
-                    </span>
-                  </label>
-                ))}
-                {filteredTechBlogs.length > MAX_VISIBLE_ITEMS && (
+                {shouldShowTechBlogSkeleton ? (
+                  <FilterCheckboxListSkeleton count={MAX_VISIBLE_ITEMS} />
+                ) : (
+                  visibleTechBlogs.map((blog: TechBlog) => (
+                    <label
+                      key={blog.id}
+                      className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filterState.selectedTechBlogs.includes(blog.id)}
+                        onChange={() => toggleTechBlog(blog.id)}
+                        className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {blog.name}
+                      </span>
+                    </label>
+                  ))
+                )}
+                {!shouldShowTechBlogSkeleton && filteredTechBlogs.length > MAX_VISIBLE_ITEMS && (
                   <button
                     onClick={() => setShowAllTechBlogs((prev) => !prev)}
                     className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
@@ -309,17 +317,9 @@ export default function Sidebar({
           </div>
           <div className="flex flex-col gap-2">
             {isTagsLoading ? (
-              Array.from({ length: MAX_VISIBLE_ITEMS }).map((_, index) => (
-                <div
-                  key={`tag-skeleton-${index}`}
-                  className="flex items-center gap-3 px-2 py-1"
-                >
-                  <div className="w-4 h-4 rounded border border-border skeleton-bg animate-pulse" />
-                  <div className="h-4 w-24 rounded skeleton-bg animate-pulse" />
-                </div>
-              ))
+              <FilterCheckboxListSkeleton count={MAX_VISIBLE_ITEMS} />
             ) : (
-              visibleTags.map((tag) => (
+              visibleTags.map((tag: Tag) => (
                 <label
                   key={tag.id}
                   className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"

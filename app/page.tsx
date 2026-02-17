@@ -6,18 +6,15 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import FilterBar from "./components/FilterBar";
 import CommunityFeedSection from "./components/feed/CommunityFeedSection";
-import PostList from "./components/feed/PostList";
+import CompanyFeedSection from "./components/feed/CompanyFeedSection";
 import { FEED_MODES } from "./constants/feed";
-import { Post, FeedMode } from "./types";
-import {
-  DUMMY_TECH_BLOGS,
-  DUMMY_COMPANY_POSTS,
-} from "./data/dummyData";
-import { useCommunityFeed } from "./hooks/useCommunityFeed";
+import { FeedMode, Post } from "./types";
+import { DUMMY_TECH_BLOGS } from "./data/dummyData";
+import { useCompanyFeed } from "./hooks/useCompanyFeed";
 import { useFeedFilters } from "./hooks/useFeedFilters";
+import { useCommunityFeed } from "./hooks/useCommunityFeed";
 
 function HomeContent({ initialMode }: { initialMode: FeedMode }) {
-  const [companyPosts, setCompanyPosts] = useState<Post[]>(DUMMY_COMPANY_POSTS);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const {
@@ -38,27 +35,36 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
     sort: communitySort,
     size: 20,
   });
+  const companyFeed = useCompanyFeed({
+    enabled: filterState.mode === FEED_MODES.COMPANY,
+  });
 
   const handleReadStatusChange = (postId: string, isRead: boolean) => {
-    if (filterState.mode === 'company') {
-      setCompanyPosts((prev) =>
-        prev.map((post) => (post.id === postId ? { ...post, isRead } : post))
+    if (filterState.mode === "company") {
+      companyFeed.setPosts((prev: Post[]) =>
+        prev.map((post: Post) =>
+          post.id === postId ? { ...post, isRead } : post,
+        ),
       );
     } else {
-      communityFeed.setPosts((prev) =>
-        prev.map((post) => (post.id === postId ? { ...post, isRead } : post))
+      communityFeed.setPosts((prev: Post[]) =>
+        prev.map((post: Post) =>
+          post.id === postId ? { ...post, isRead } : post,
+        ),
       );
     }
   };
 
   const currentPosts =
-    filterState.mode === FEED_MODES.COMPANY ? companyPosts : communityFeed.posts;
+    filterState.mode === FEED_MODES.COMPANY
+      ? companyFeed.posts
+      : communityFeed.posts;
   const visiblePosts = getVisiblePosts(currentPosts);
 
   return (
     <div className="min-h-screen bg-background">
-      <Header 
-        onMenuClick={() => setIsMobileSidebarOpen(true)} 
+      <Header
+        onMenuClick={() => setIsMobileSidebarOpen(true)}
         currentMode={filterState.mode}
         onModeChange={handleModeChange}
       />
@@ -74,26 +80,30 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
         />
         <main className="flex-1 md:max-w-[728px] mx-auto px-4 md:px-6 py-6">
           {/* Community Mode일 때만 상단 필터 바 표시 */}
-          {filterState.mode === 'user' && (
-            <FilterBar 
+          {filterState.mode === "user" && (
+            <FilterBar
               filterState={filterState}
               onFilterChange={setFilterState}
             />
           )}
-          
-            {filterState.mode === "user" ? (
-              <CommunityFeedSection
-                posts={visiblePosts}
-                error={communityFeed.error}
-                hasNext={communityFeed.hasNext}
-                isLoading={communityFeed.isLoading}
-                isLoadingMore={communityFeed.isLoadingMore}
-                onLoadMore={communityFeed.loadMore}
-                onReadStatusChange={handleReadStatusChange}
-              />
-            ) : (
-              <PostList posts={visiblePosts} onReadStatusChange={handleReadStatusChange} />
-            )}
+
+          {filterState.mode === "user" ? (
+            <CommunityFeedSection
+              posts={visiblePosts}
+              error={communityFeed.error}
+              hasNext={communityFeed.hasNext}
+              isLoading={communityFeed.isLoading}
+              isLoadingMore={communityFeed.isLoadingMore}
+              onLoadMore={communityFeed.loadMore}
+              onReadStatusChange={handleReadStatusChange}
+            />
+          ) : (
+            <CompanyFeedSection
+              posts={visiblePosts}
+              isLoading={companyFeed.isLoading}
+              onReadStatusChange={handleReadStatusChange}
+            />
+          )}
         </main>
       </div>
     </div>
