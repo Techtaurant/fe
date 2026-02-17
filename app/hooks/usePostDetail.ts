@@ -79,7 +79,7 @@ export function usePostDetail(postId: string) {
     if (!user) {
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-      window.location.href = `${apiBaseUrl}/oauth2/authorization/google`;
+      window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
       return;
     }
 
@@ -107,7 +107,7 @@ export function usePostDetail(postId: string) {
       if (message === "UNAUTHORIZED") {
         const apiBaseUrl =
           process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-        window.location.href = `${apiBaseUrl}/oauth2/authorization/google`;
+        window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
         return;
       }
       if (message === "NOT_FOUND") {
