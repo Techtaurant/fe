@@ -14,6 +14,7 @@ import {
 } from "../services/comments/mappers";
 import { Comment } from "../types";
 import { CommentSort } from "../services/comments/types";
+import { ValidationErrors } from "../services/comments/apiError";
 
 const COMMENTS_PAGE_SIZE = 20;
 
@@ -28,6 +29,8 @@ export function useComments(
   const [commentsCursor, setCommentsCursor] = useState<string | null>(null);
   const [commentsHasNext, setCommentsHasNext] = useState(false);
   const [commentsSort, setCommentsSort] = useState<CommentSort>("LATEST");
+  const [createCommentFieldErrors, setCreateCommentFieldErrors] =
+    useState<ValidationErrors>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -59,6 +62,7 @@ export function useComments(
     setComments([]);
     setCommentsCursor(null);
     setCommentsHasNext(false);
+    setCreateCommentFieldErrors({});
     void loadComments();
     return () => {
       isMounted = false;
@@ -94,6 +98,8 @@ export function useComments(
       return;
     }
 
+    setCreateCommentFieldErrors({});
+
     try {
       const result = await createComment({
         content,
@@ -107,8 +113,20 @@ export function useComments(
 
       onCommentCreated?.();
     } catch (error) {
-      handleCreateCommentError(error);
+      const fieldErrors = handleCreateCommentError(error);
+      if (fieldErrors) {
+        setCreateCommentFieldErrors(fieldErrors);
+      }
     }
+  };
+
+  const clearCreateCommentFieldError = (fieldName: string) => {
+    setCreateCommentFieldErrors((prev) => {
+      if (!(fieldName in prev)) return prev;
+      const next = { ...prev };
+      delete next[fieldName];
+      return next;
+    });
   };
 
   return {
@@ -118,6 +136,8 @@ export function useComments(
     isCommentsLoadingMore,
     commentsSort,
     setCommentsSort,
+    createCommentFieldErrors,
+    clearCreateCommentFieldError,
     handleLoadMoreComments,
     handleCreateComment,
   };

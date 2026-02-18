@@ -16,6 +16,7 @@ import MarkdownRenderer from "./MarkdownRenderer";
 import { useUser } from "../hooks/useUser";
 import { Comment, FeedMode, Post } from "../types";
 import { CommentSort } from "../services/comments/types";
+import { ValidationErrors } from "../services/comments/apiError";
 
 interface PostDetailProps {
   post: Post;
@@ -29,12 +30,14 @@ interface PostDetailProps {
   commentsHasNext: boolean;
   isCommentsLoadingMore: boolean;
   commentsSort: CommentSort;
+  createCommentFieldErrors: ValidationErrors;
   onBack: () => void;
   onLike: () => void;
   onDislike?: () => void;
   onBookmark: () => void;
   onShare: () => void;
   onCreateComment: (content: string) => Promise<void>;
+  onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
 }
@@ -51,12 +54,14 @@ export default function PostDetail({
   commentsHasNext,
   isCommentsLoadingMore,
   commentsSort,
+  createCommentFieldErrors,
   onBack,
   onLike,
   onDislike,
   onBookmark,
   onShare,
   onCreateComment,
+  onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
 }: PostDetailProps) {
@@ -68,6 +73,11 @@ export default function PostDetail({
   const [commentValue, setCommentValue] = useState("");
   const collapsedTextareaHeight = "52px";
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const commentFieldErrorMessage =
+    createCommentFieldErrors.content ||
+    createCommentFieldErrors.postId ||
+    Object.values(createCommentFieldErrors)[0] ||
+    null;
 
   const formatCount = (count: number): string => {
     if (count >= 10000) return `${(count / 10000).toFixed(1)}만`;
@@ -258,13 +268,22 @@ export default function PostDetail({
                 ref={commentTextareaRef}
                 placeholder={isCommentExpanded ? "" : "의견을 나눠주세요"}
                 value={commentValue}
-                onChange={(e) => setCommentValue(e.target.value)}
+                onChange={(e) => {
+                  setCommentValue(e.target.value);
+                  if (createCommentFieldErrors.content) {
+                    onClearCommentFieldError("content");
+                  }
+                }}
                 onInput={(e) => {
                   const target = e.currentTarget;
                   target.style.height = "auto";
                   target.style.height = `${target.scrollHeight}px`;
                 }}
-                className={`w-full px-5 rounded-3xl border-2 border-border bg-background text-base resize-none focus:outline-none focus:border-ring transition-colors duration-200 placeholder:text-lg hover:bg-muted/85 ${
+                className={`w-full px-5 rounded-3xl border-2 border-border bg-background text-base resize-none focus:outline-none transition-colors duration-200 placeholder:text-lg hover:bg-muted/85 ${
+                  commentFieldErrorMessage
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-border focus:border-ring"
+                } ${
                   isCommentExpanded
                     ? "min-h-[120px] max-h-60 overflow-y-auto text-left py-4"
                     : "h-[52px] overflow-hidden text-left py-4 leading-5"
@@ -277,6 +296,11 @@ export default function PostDetail({
                   }
                 }}
               />
+              {commentFieldErrorMessage && (
+                <p className="mt-2 px-2 text-sm font-medium text-red-600">
+                  {commentFieldErrorMessage}
+                </p>
+              )}
               <div className="flex justify-end mt-2 gap-2">
                 <button
                   type="button"
