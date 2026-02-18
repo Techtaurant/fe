@@ -20,6 +20,22 @@ export interface CreateCommentResponse {
   message: string;
 }
 
+export interface ApiStatusResponse {
+  httpStatusCode: number;
+  code: number;
+  message: string;
+}
+
+export interface ValidationErrorResponseData {
+  errors: Record<string, string>;
+}
+
+export interface ValidationErrorApiResponse {
+  status: ApiStatusResponse | number | Record<string, unknown>;
+  data?: ValidationErrorResponseData;
+  message?: string;
+}
+
 export type CommentSort = "LATEST" | "LIKE" | "REPLY";
 
 export interface FetchCommentsRequest {

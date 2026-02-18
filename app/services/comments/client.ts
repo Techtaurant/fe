@@ -1,10 +1,29 @@
 import { httpClient } from "@/app/utils/httpClient";
+import { CommentApiError, ValidationErrors } from "./apiError";
 import {
   CreateCommentRequest,
   CreateCommentResponse,
   FetchCommentsRequest,
   FetchCommentsResponse,
+  ValidationErrorApiResponse,
 } from "./types";
+
+function isValidationErrors(
+  value: unknown,
+): value is ValidationErrors {
+  if (typeof value !== "object" || value === null) return false;
+  return Object.values(value).every((message) => typeof message === "string");
+}
+
+function extractValidationErrors(payload: unknown): ValidationErrors | undefined {
+  if (typeof payload !== "object" || payload === null) return undefined;
+  const data = (payload as ValidationErrorApiResponse).data;
+  if (!data || typeof data !== "object" || data === null) return undefined;
+  if (!("errors" in data)) return undefined;
+  const errors = data.errors;
+  if (!isValidationErrors(errors)) return undefined;
+  return errors;
+}
 
 export async function createCommentRequest(
   payload: CreateCommentRequest,
@@ -15,20 +34,34 @@ export async function createCommentRequest(
   });
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new CommentApiError("UNAUTHORIZED", {
+      status: response.status,
+    });
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new CommentApiError("NOT_FOUND", {
+      status: response.status,
+    });
   }
 
   if (response.status === 400) {
-    const body = (await response.json().catch(() => null)) as CreateCommentResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+    const body = (await response.json().catch(() => null)) as
+      | ValidationErrorApiResponse
+      | CreateCommentResponse
+      | null;
+    throw new CommentApiError("BAD_REQUEST", {
+      status: response.status,
+      validationErrors: extractValidationErrors(body),
+      message: "BAD_REQUEST",
+    });
   }
 
   if (!response.ok) {
-    throw new Error(`HTTP_${response.status}`);
+    throw new CommentApiError("HTTP_ERROR", {
+      status: response.status,
+      message: `HTTP_${response.status}`,
+    });
   }
 
   return (await response.json()) as CreateCommentResponse;
@@ -51,21 +84,35 @@ export async function fetchCommentsRequest(
   );
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new CommentApiError("UNAUTHORIZED", {
+      status: response.status,
+    });
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new CommentApiError("NOT_FOUND", {
+      status: response.status,
+    });
   }
 
   if (response.status === 400) {
     const body =
-      (await response.json().catch(() => null)) as FetchCommentsResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+      (await response.json().catch(() => null)) as
+        | ValidationErrorApiResponse
+        | FetchCommentsResponse
+        | null;
+    throw new CommentApiError("BAD_REQUEST", {
+      status: response.status,
+      validationErrors: extractValidationErrors(body),
+      message: "BAD_REQUEST",
+    });
   }
 
   if (!response.ok) {
-    throw new Error(`HTTP_${response.status}`);
+    throw new CommentApiError("HTTP_ERROR", {
+      status: response.status,
+      message: `HTTP_${response.status}`,
+    });
   }
 
   return (await response.json()) as FetchCommentsResponse;
