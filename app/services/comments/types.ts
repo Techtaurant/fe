@@ -5,14 +5,14 @@ export interface CreateCommentRequest {
 }
 
 export interface CreateCommentResponse {
-  status: number;
+  status: number | Record<string, unknown>;
   data: {
     id: string;
     content: string;
     postId: string;
     authorId: string;
     authorName: string;
-    parentId?: string;
+    parentId?: string | null;
     depth: number;
     createdAt: string;
     updatedAt: string;
@@ -36,11 +36,11 @@ export interface CommentListResponse {
   authorId: string;
   authorName: string;
   authorProfileImageUrl: string | null;
-  parentId?: string;
+  parentId?: string | null;
   depth: number;
   likeCount: number;
   replyCount: number;
-  likeStatus: "NONE" | "LIKE" | "DISLIKE";
+  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
   createdAt: string;
   updatedAt: string;
 }
@@ -53,7 +53,7 @@ export interface CursorPageResponse<T> {
 }
 
 export interface FetchCommentsResponse {
-  status: number;
+  status: number | Record<string, unknown>;
   data: CursorPageResponse<CommentListResponse>;
   message: string;
 }

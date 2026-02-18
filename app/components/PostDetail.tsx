@@ -15,6 +15,7 @@ import Header from "./Header";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { useUser } from "../hooks/useUser";
 import { Comment, FeedMode, Post } from "../types";
+import { CommentSort } from "../services/comments/types";
 
 interface PostDetailProps {
   post: Post;
@@ -27,6 +28,7 @@ interface PostDetailProps {
   isCommentsLoading: boolean;
   commentsHasNext: boolean;
   isCommentsLoadingMore: boolean;
+  commentsSort: CommentSort;
   onBack: () => void;
   onLike: () => void;
   onDislike?: () => void;
@@ -34,6 +36,7 @@ interface PostDetailProps {
   onShare: () => void;
   onCreateComment: (content: string) => Promise<void>;
   onLoadMoreComments: () => void;
+  onCommentsSortChange: (sort: CommentSort) => void;
 }
 
 export default function PostDetail({
@@ -47,6 +50,7 @@ export default function PostDetail({
   isCommentsLoading,
   commentsHasNext,
   isCommentsLoadingMore,
+  commentsSort,
   onBack,
   onLike,
   onDislike,
@@ -54,6 +58,7 @@ export default function PostDetail({
   onShare,
   onCreateComment,
   onLoadMoreComments,
+  onCommentsSortChange,
 }: PostDetailProps) {
   const { user } = useUser();
   const isOwner = Boolean(user?.id && post.author?.id && user.id === post.author.id);
@@ -314,6 +319,28 @@ export default function PostDetail({
 
           {/* 댓글 목록 */}
           <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-2">
+              {(
+                [
+                  { label: "최신순", value: "LATEST" },
+                  { label: "좋아요순", value: "LIKE" },
+                  { label: "답글순", value: "REPLY" },
+                ] as const
+              ).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onCommentsSortChange(option.value)}
+                  className={`px-3 py-1.5 rounded-full text-xs transition-colors duration-200 ${
+                    commentsSort === option.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             {isCommentsLoading && comments.length === 0 ? (
               <div className="text-sm text-muted-foreground py-4">
                 댓글을 불러오는 중입니다.
@@ -365,7 +392,7 @@ export default function PostDetail({
                         <span>{comment.likeCount}</span>
                       </button>
                       <button className="text-xs text-muted-foreground hover:text-foreground">
-                        답글
+                        답글 {comment.replyCount}
                       </button>
                     </div>
                   </div>

@@ -51,6 +51,7 @@ export interface Comment {
   author: User;
   createdAt: string;
   likeCount: number;
+  replyCount: number;
 }
 
 // 피드 모드 (기업 글 / 일반 사용자 글)
