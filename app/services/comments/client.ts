@@ -12,7 +12,10 @@ function isValidationErrors(
   value: unknown,
 ): value is ValidationErrors {
   if (typeof value !== "object" || value === null) return false;
-  return Object.values(value).every((message) => typeof message === "string");
+  for (const message of Object.values(value as Record<string, unknown>)) {
+    if (typeof message !== "string") return false;
+  }
+  return true;
 }
 
 function extractValidationErrors(payload: unknown): ValidationErrors | undefined {
@@ -23,6 +26,10 @@ function extractValidationErrors(payload: unknown): ValidationErrors | undefined
   const errors = data.errors;
   if (!isValidationErrors(errors)) return undefined;
   return errors;
+}
+
+async function parseJson(response: Response): Promise<unknown> {
+  return response.json();
 }
 
 export async function createCommentRequest(
@@ -46,7 +53,7 @@ export async function createCommentRequest(
   }
 
   if (response.status === 400) {
-    const body = (await response.json().catch(() => null)) as
+    const body = (await parseJson(response).catch(() => null)) as
       | ValidationErrorApiResponse
       | CreateCommentResponse
       | null;
@@ -64,7 +71,8 @@ export async function createCommentRequest(
     });
   }
 
-  return (await response.json()) as CreateCommentResponse;
+  const result = await parseJson(response);
+  return result as CreateCommentResponse;
 }
 
 export async function fetchCommentsRequest(
@@ -97,7 +105,7 @@ export async function fetchCommentsRequest(
 
   if (response.status === 400) {
     const body =
-      (await response.json().catch(() => null)) as
+      (await parseJson(response).catch(() => null)) as
         | ValidationErrorApiResponse
         | FetchCommentsResponse
         | null;
@@ -115,5 +123,6 @@ export async function fetchCommentsRequest(
     });
   }
 
-  return (await response.json()) as FetchCommentsResponse;
+  const result = await parseJson(response);
+  return result as FetchCommentsResponse;
 }
