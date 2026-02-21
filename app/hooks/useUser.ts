@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../lib/queryKeys';
 import { User } from '../types';
 import { httpClient } from '../utils/httpClient';
 
@@ -66,24 +67,16 @@ function toUser(value: unknown): User | null {
 }
 
 export function useUser(): UseUserResult {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchUser = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // httpClient 사용 - 자동 토큰 갱신 포함
+  const query = useQuery({
+    queryKey: queryKeys.user.me(),
+    queryFn: async (): Promise<User | null> => {
       const response = await httpClient('/api/users/me', {
         method: 'GET',
       });
 
       if (!response.ok) {
         if (response.status === 401) {
-          setUser(null);
-          return;
+          return null;
         }
         throw new Error('사용자 정보를 가져오는데 실패했습니다.');
       }
@@ -96,18 +89,17 @@ export function useUser(): UseUserResult {
       if (!userData) {
         throw new Error('사용자 응답 형식이 올바르지 않습니다.');
       }
-      setUser(userData);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('알 수 없는 오류'));
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
+
+      return userData;
+    },
+  });
+
+  return {
+    user: query.data ?? null,
+    isLoading: query.isPending,
+    error: query.error as Error | null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  return { user, isLoading, error, refetch: fetchUser };
 }
