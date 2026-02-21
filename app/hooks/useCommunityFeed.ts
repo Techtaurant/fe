@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Post } from "../types";
+import { useCallback, useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchCommunityPostList } from "../services/posts";
 import { PostListPeriod, PostListSort } from "../services/posts/types";
+import { queryKeys } from "../lib/queryKeys";
 
 interface UseCommunityFeedOptions {
   enabled: boolean;
@@ -18,81 +19,44 @@ export function useCommunityFeed({
   sort,
   size = 20,
 }: UseCommunityFeedOptions) {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasNext, setHasNext] = useState(true);
-  const [isLoading, setIsLoading] = useState(enabled);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  useEffect(() => {
-    if (!enabled) return;
-    let isMounted = true;
-
-    setPosts([]);
-    setNextCursor(null);
-    setHasNext(true);
-    setError(null);
-    setIsLoading(true);
-
-    const loadInitialPosts = async () => {
-      try {
-        const result = await fetchCommunityPostList({
-          size,
-          period,
-          sort,
-        });
-
-        if (!isMounted) return;
-        setPosts(result.posts);
-        setNextCursor(result.nextCursor ?? null);
-        setHasNext(Boolean(result.nextCursor));
-      } catch {
-        if (!isMounted) return;
-        setPosts([]);
-        setError("커뮤니티 게시물을 불러오지 못했습니다.");
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    void loadInitialPosts();
-    return () => {
-      isMounted = false;
-    };
-  }, [enabled, period, size, sort]);
-
-  const loadMore = useCallback(async () => {
-    if (!nextCursor || isLoading || isLoadingMore || !hasNext) {
-      return;
-    }
-
-    setIsLoadingMore(true);
-    try {
-      const result = await fetchCommunityPostList({
-        cursor: nextCursor,
+  const query = useInfiniteQuery({
+    queryKey: queryKeys.posts.communityList({
+      period,
+      sort,
+      size,
+    }),
+    enabled,
+    initialPageParam: undefined as string | undefined,
+    queryFn: async ({ pageParam }) =>
+      fetchCommunityPostList({
+        cursor: pageParam,
         size,
         period,
         sort,
-      });
-      setPosts((prev) => {
-        const merged = [...prev, ...result.posts];
-        const deduped = new Map(merged.map((post) => [post.id, post]));
-        return Array.from(deduped.values());
-      });
-      setNextCursor(result.nextCursor ?? null);
-      setHasNext(Boolean(result.nextCursor));
-      setError(null);
-    } catch {
-      setError("커뮤니티 게시물을 불러오지 못했습니다.");
-    } finally {
-      setIsLoadingMore(false);
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  });
+
+  const posts = useMemo(() => {
+    const merged = (query.data?.pages ?? []).flatMap((page) => page.posts);
+    const deduped = new Map(merged.map((post) => [post.id, post]));
+    return Array.from(deduped.values());
+  }, [query.data?.pages]);
+
+  const error = query.error ? "커뮤니티 게시물을 불러오지 못했습니다." : null;
+  const isLoading = query.isPending;
+  const isLoadingMore = query.isFetchingNextPage;
+  const hasNext = Boolean(query.hasNextPage);
+
+  const loadMore = useCallback(async () => {
+    if (!query.hasNextPage || query.isFetchingNextPage) {
+      return;
     }
-  }, [hasNext, isLoading, isLoadingMore, nextCursor, period, size, sort]);
+    await query.fetchNextPage();
+  }, [query]);
 
   return {
     posts,
-    setPosts,
     error,
     hasNext,
     isLoading,
