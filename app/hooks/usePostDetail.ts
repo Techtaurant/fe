@@ -1,22 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "./useUser";
 import { FEED_MODES } from "../constants/feed";
 import { fetchPostDetailWithMeta, updatePostLike } from "../services/posts";
 import { FeedMode, Post } from "../types";
+import { queryKeys } from "../lib/queryKeys";
 
 type ReactionState = "like" | "dislike" | "none";
 
 export function usePostDetail(postId: string) {
+  const queryClient = useQueryClient();
   const { user } = useUser();
-  const [post, setPost] = useState<Post | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [currentMode] = useState<FeedMode>(FEED_MODES.USER);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [reactionState, setReactionState] = useState<ReactionState>("none");
+  const currentMode: FeedMode = FEED_MODES.USER;
+  const [reactionOverride, setReactionOverride] = useState<{
+    postId: string;
+    value: ReactionState;
+  } | null>(null);
+
+  const detailQueryKey = queryKeys.posts.detail(postId);
+
+  const detailQuery = useQuery({
+    queryKey: detailQueryKey,
+    queryFn: () => fetchPostDetailWithMeta(postId),
+  });
+
+  const likeMutation = useMutation({
+    mutationFn: (likeStatus: "NONE" | "LIKE" | "DISLIKE") =>
+      updatePostLike(postId, likeStatus),
+  });
 
   const getStoredReaction = (id: string) => {
     if (typeof window === "undefined") return null;
@@ -40,41 +54,6 @@ export function usePostDetail(postId: string) {
     }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadDetail = async () => {
-      setIsLoading(true);
-      setErrorMessage(null);
-      try {
-        const result = await fetchPostDetailWithMeta(postId);
-
-        if (isMounted) {
-          setPost(result.post);
-          const stored = getStoredReaction(postId);
-          const nextReaction = stored ?? (result.isLiked ? "like" : "none");
-          setIsLiked(nextReaction === "like");
-          setReactionState(nextReaction);
-        }
-      } catch (error) {
-        if (!isMounted) return;
-        const message = error instanceof Error ? error.message : "UNKNOWN";
-        if (message === "NOT_FOUND") {
-          setErrorMessage("게시물을 찾을 수 없습니다.");
-        } else {
-          setErrorMessage("게시물을 불러오지 못했습니다.");
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    loadDetail();
-    return () => {
-      isMounted = false;
-    };
-  }, [postId]);
-
   const handleReaction = async (target: "like" | "dislike") => {
     if (!user) {
       const apiBaseUrl =
@@ -92,16 +71,10 @@ export function usePostDetail(postId: string) {
           : "DISLIKE";
 
     try {
-      await updatePostLike(postId, likeStatus);
-      setIsLiked(nextReaction === "like");
-      setReactionState(nextReaction);
+      await likeMutation.mutateAsync(likeStatus);
+      setReactionOverride({ postId, value: nextReaction });
       setStoredReaction(postId, nextReaction);
-      try {
-        const refreshed = await fetchPostDetailWithMeta(postId);
-        setPost(refreshed.post);
-      } catch {
-        // keep current UI if refresh fails
-      }
+      await queryClient.invalidateQueries({ queryKey: detailQueryKey });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "UNKNOWN";
       if (message === "UNAUTHORIZED") {
@@ -138,6 +111,39 @@ export function usePostDetail(postId: string) {
       alert("링크 복사에 실패했습니다.");
     }
   };
+
+  const setPost = (updater: (current: Post | null) => Post | null) => {
+    queryClient.setQueryData<{
+      post: Post;
+      isLiked: boolean;
+    } | null>(detailQueryKey, (current) => {
+      if (!current) return current;
+      const nextPost = updater(current.post);
+      if (!nextPost) return null;
+      return {
+        ...current,
+        post: nextPost,
+      };
+    });
+  };
+
+  const serverReaction: ReactionState = detailQuery.data?.isLiked ? "like" : "none";
+  const storedReaction = getStoredReaction(postId);
+  const overriddenReaction =
+    reactionOverride?.postId === postId ? reactionOverride.value : null;
+  const reactionState = overriddenReaction ?? storedReaction ?? serverReaction;
+  const isLiked = reactionState === "like";
+  const post = detailQuery.data?.post ?? null;
+  const isLoading = detailQuery.isPending;
+  const errorMessage = (() => {
+    if (!detailQuery.error) return null;
+    const message =
+      detailQuery.error instanceof Error ? detailQuery.error.message : "UNKNOWN";
+    if (message === "NOT_FOUND") {
+      return "게시물을 찾을 수 없습니다.";
+    }
+    return "게시물을 불러오지 못했습니다.";
+  })();
 
   return {
     post,

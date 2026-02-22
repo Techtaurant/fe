@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUser } from "../hooks/useUser";
+import { queryKeys } from "../lib/queryKeys";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 import ThemeModeDropdown from "./ThemeDropdown";
@@ -23,7 +25,8 @@ export default function Header({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { user, isLoading, refetch } = useUser();
+  const queryClient = useQueryClient();
+  const { user, isLoading } = useUser();
   const isLoggedIn = !!user;
   const router = useRouter();
 
@@ -77,7 +80,10 @@ export default function Header({
         credentials: "include",
       });
       setIsDropdownOpen(false);
-      refetch();
+      queryClient.setQueryData(queryKeys.user.me(), null);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.user.all,
+      });
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
@@ -8,7 +8,7 @@ import FilterBar from "./components/FilterBar";
 import CommunityFeedSection from "./components/feed/CommunityFeedSection";
 import CompanyFeedSection from "./components/feed/CompanyFeedSection";
 import { FEED_MODES } from "./constants/feed";
-import { FeedMode, Post } from "./types";
+import { FeedMode } from "./types";
 import { DUMMY_TECH_BLOGS } from "./data/dummyData";
 import { useCompanyFeed } from "./hooks/useCompanyFeed";
 import { useFeedFilters } from "./hooks/useFeedFilters";
@@ -16,6 +16,7 @@ import { useCommunityFeed } from "./hooks/useCommunityFeed";
 
 function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
 
   const {
     filterState,
@@ -40,26 +41,30 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   });
 
   const handleReadStatusChange = (postId: string, isRead: boolean) => {
-    if (filterState.mode === "company") {
-      companyFeed.setPosts((prev: Post[]) =>
-        prev.map((post: Post) =>
-          post.id === postId ? { ...post, isRead } : post,
-        ),
-      );
-    } else {
-      communityFeed.setPosts((prev: Post[]) =>
-        prev.map((post: Post) =>
-          post.id === postId ? { ...post, isRead } : post,
-        ),
-      );
-    }
+    setReadPostIds((prev) => {
+      const next = new Set(prev);
+      if (isRead) {
+        next.add(postId);
+      } else {
+        next.delete(postId);
+      }
+      return next;
+    });
   };
 
   const currentPosts =
     filterState.mode === FEED_MODES.COMPANY
       ? companyFeed.posts
       : communityFeed.posts;
-  const visiblePosts = getVisiblePosts(currentPosts);
+  const postsWithReadState = useMemo(
+    () =>
+      currentPosts.map((post) => ({
+        ...post,
+        isRead: post.isRead || readPostIds.has(post.id),
+      })),
+    [currentPosts, readPostIds],
+  );
+  const visiblePosts = getVisiblePosts(postsWithReadState);
 
   return (
     <div className="min-h-screen bg-background">

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../lib/queryKeys';
 import { Tag } from '../types';
 import { httpClient } from '../utils/httpClient';
 import { parseTagCache, TagCachePayload } from '../schemas/tagCache';
@@ -25,12 +26,14 @@ interface UseTagsResult {
 }
 
 const readCache = (): TagCachePayload | null => {
+  if (typeof window === "undefined") return null;
   const raw = localStorage.getItem(TAGS_CACHE_KEY);
   if (!raw) return null;
   return parseTagCache(raw);
 };
 
 const writeCache = (tags: Tag[]) => {
+  if (typeof window === "undefined") return;
   try {
     const payload: TagCachePayload = {
       tags,
@@ -51,51 +54,36 @@ const mapTags = (result: TagListResponse): Tag[] => {
 };
 
 export function useTags(initialTags: Tag[] = []): UseTagsResult {
-  const [tags, setTags] = useState<Tag[]>(initialTags);
-  const [isLoading, setIsLoading] = useState(initialTags.length === 0);
-  const [error, setError] = useState<Error | null>(null);
+  const cached = readCache();
 
-  const fetchTags = async (options?: { silent?: boolean }) => {
-    if (!options?.silent) {
-      setIsLoading(true);
-    }
-    setError(null);
-
-    try {
+  const query = useQuery({
+    queryKey: queryKeys.tags.list(),
+    queryFn: async () => {
       const response = await httpClient(TAGS_ENDPOINT, { method: 'GET' });
       if (!response.ok) {
         throw new Error(`Failed to fetch tags: ${response.status}`);
       }
-
       const result: TagListResponse = await response.json();
       const nextTags = mapTags(result);
-
-      setTags(nextTags);
       writeCache(nextTags);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to load tags'));
-    } finally {
-      if (!options?.silent) {
-        setIsLoading(false);
-      }
-    }
+      return nextTags;
+    },
+    staleTime: TAGS_TTL_MS,
+    initialData:
+      cached?.tags.length
+        ? cached.tags
+        : initialTags.length
+          ? initialTags
+          : undefined,
+    initialDataUpdatedAt: cached?.cachedAt,
+  });
+
+  return {
+    tags: query.data ?? [],
+    isLoading: query.isPending,
+    error: query.error as Error | null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    const cached = readCache();
-
-    if (cached && cached.tags.length > 0) {
-      setTags(cached.tags);
-      setIsLoading(false);
-      const isStale = Date.now() - cached.cachedAt > TAGS_TTL_MS;
-      if (isStale) {
-        fetchTags({ silent: true });
-      }
-      return;
-    }
-
-    fetchTags();
-  }, []);
-
-  return { tags, isLoading, error, refetch: fetchTags };
 }

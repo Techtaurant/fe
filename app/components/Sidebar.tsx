@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
 import SidebarSearchInput from './SidebarSearchInput';
 import { useTags } from '../hooks/useTags';
@@ -30,6 +30,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const { tags: fetchedTags, isLoading: isTagsLoading } = useTags(availableTags);
   const { techBlogs: fetchedTechBlogs, isLoading: isTechBlogsLoading } = useTechBlogsTags(availableTechBlogs);
+  const latestFilterStateRef = useRef(filterState);
   const shouldShowTechBlogSkeleton = isTechBlogsLoading || isTagsLoading;
   const [showAllTags, setShowAllTags] = useState(false);
   const [showAllTechBlogs, setShowAllTechBlogs] = useState(false);
@@ -50,15 +51,20 @@ export default function Sidebar({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    latestFilterStateRef.current = filterState;
+  }, [filterState]);
+
   // 검색어 디바운스 처리 (Community Mode)
   useEffect(() => {
     if (mode === 'user') {
       const timer = setTimeout(() => {
-        onFilterChange({ ...filterState, searchUser: userSearchQuery });
+        const latest = latestFilterStateRef.current;
+        onFilterChange({ ...latest, searchUser: userSearchQuery });
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [userSearchQuery, mode]); // removed filterState dependency
+  }, [userSearchQuery, mode, onFilterChange]);
 
   const toggleTag = (tagId: string) => {
     const newSelectedTags = filterState.selectedTags.includes(tagId)

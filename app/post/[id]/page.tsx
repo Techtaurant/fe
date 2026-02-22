@@ -5,6 +5,7 @@ import Header from "../../components/Header";
 import PostDetail from "../../components/PostDetail";
 import { useComments } from "../../hooks/useComments";
 import { usePostDetail } from "../../hooks/usePostDetail";
+import { useUser } from "../../hooks/useUser";
 
 /**
  * 게시물 상세 페이지 컴포넌트
@@ -14,11 +15,11 @@ export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
   const postId = params.id as string;
+  const { user } = useUser();
 
   const {
     post,
     setPost,
-    isLiked,
     isBookmarked,
     reactionState,
     currentMode,
@@ -86,9 +87,7 @@ export default function PostDetailPage() {
   return (
     <PostDetail
       post={post}
-      postId={postId}
       comments={comments}
-      isLiked={isLiked}
       isBookmarked={isBookmarked}
       reactionState={reactionState}
       currentMode={currentMode}
@@ -97,6 +96,7 @@ export default function PostDetailPage() {
       isCommentsLoadingMore={isCommentsLoadingMore}
       commentsSort={commentsSort}
       createCommentFieldErrors={createCommentFieldErrors}
+      currentUserId={user?.id ?? null}
       onBack={() => router.back()}
       onLike={handleLike}
       onDislike={handleDislike}

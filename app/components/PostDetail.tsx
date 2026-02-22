@@ -13,16 +13,13 @@ import {
 } from "lucide-react";
 import Header from "./Header";
 import MarkdownRenderer from "./MarkdownRenderer";
-import { useUser } from "../hooks/useUser";
 import { Comment, FeedMode, Post } from "../types";
 import { CommentSort } from "../services/comments/types";
 import { ValidationErrors } from "../services/comments/apiError";
 
 interface PostDetailProps {
   post: Post;
-  postId: string;
   comments: Comment[];
-  isLiked: boolean;
   isBookmarked: boolean;
   reactionState: "like" | "dislike" | "none";
   currentMode: FeedMode;
@@ -31,6 +28,7 @@ interface PostDetailProps {
   isCommentsLoadingMore: boolean;
   commentsSort: CommentSort;
   createCommentFieldErrors: ValidationErrors;
+  currentUserId?: string | null;
   onBack: () => void;
   onLike: () => void;
   onDislike?: () => void;
@@ -44,9 +42,7 @@ interface PostDetailProps {
 
 export default function PostDetail({
   post,
-  postId,
   comments,
-  isLiked,
   isBookmarked,
   reactionState,
   currentMode,
@@ -55,6 +51,7 @@ export default function PostDetail({
   isCommentsLoadingMore,
   commentsSort,
   createCommentFieldErrors,
+  currentUserId,
   onBack,
   onLike,
   onDislike,
@@ -65,8 +62,9 @@ export default function PostDetail({
   onLoadMoreComments,
   onCommentsSortChange,
 }: PostDetailProps) {
-  const { user } = useUser();
-  const isOwner = Boolean(user?.id && post.author?.id && user.id === post.author.id);
+  const isOwner = Boolean(
+    currentUserId && post.author?.id && currentUserId === post.author.id,
+  );
   const commentInputRef = useRef<HTMLDivElement | null>(null);
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isCommentExpanded, setIsCommentExpanded] = useState(false);
