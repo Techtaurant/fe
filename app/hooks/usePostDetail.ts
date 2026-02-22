@@ -26,6 +26,12 @@ export function usePostDetail(postId: string) {
     queryKey: detailQueryKey,
     queryFn: () => fetchPostDetailWithMeta(postId),
   });
+  const storedReactionQuery = useQuery({
+    queryKey: ["post-reaction", postId],
+    queryFn: async (): Promise<ReactionState | null> => getStoredReaction(postId),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
 
   const likeMutation = useMutation({
     mutationFn: (likeStatus: "NONE" | "LIKE" | "DISLIKE") =>
@@ -128,7 +134,7 @@ export function usePostDetail(postId: string) {
   };
 
   const serverReaction: ReactionState = detailQuery.data?.isLiked ? "like" : "none";
-  const storedReaction = getStoredReaction(postId);
+  const storedReaction = storedReactionQuery.data ?? null;
   const overriddenReaction =
     reactionOverride?.postId === postId ? reactionOverride.value : null;
   const reactionState = overriddenReaction ?? storedReaction ?? serverReaction;
