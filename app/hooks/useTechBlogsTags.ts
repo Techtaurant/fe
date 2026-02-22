@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { TechBlog } from "../types";
 import {
   parseTechBlogCache,
@@ -43,36 +43,46 @@ const writeCache = (techBlogs: TechBlog[]) => {
 export function useTechBlogsTags(
   initialTechBlogs: TechBlog[] = [],
 ): UseTechBlogsResult {
+  const queryClient = useQueryClient();
   const initialSignature = useMemo(
     () => initialTechBlogs.map((blog) => blog.id).join(","),
     [initialTechBlogs],
   );
-
-  const cached = readCache();
+  const queryKey = queryKeys.techBlogs.list(initialSignature);
 
   const query = useQuery({
-    queryKey: queryKeys.techBlogs.list(initialSignature),
+    queryKey,
     queryFn: async () => {
       const nextTechBlogs = initialTechBlogs;
       writeCache(nextTechBlogs);
       return nextTechBlogs;
     },
     staleTime: TECH_BLOGS_TTL_MS,
-    initialData:
-      cached?.techBlogs.length
-        ? cached.techBlogs
-        : initialTechBlogs.length
-          ? initialTechBlogs
-          : undefined,
-    initialDataUpdatedAt: cached?.cachedAt,
+    initialData: initialTechBlogs.length ? initialTechBlogs : undefined,
   });
+  const { refetch } = query;
+
+  useEffect(() => {
+    const cached = readCache();
+    if (!cached || cached.techBlogs.length === 0) return;
+
+    const current = queryClient.getQueryData<TechBlog[]>(queryKey);
+    if (!current || current.length === 0) {
+      queryClient.setQueryData(queryKey, cached.techBlogs);
+    }
+
+    const isStale = Date.now() - cached.cachedAt > TECH_BLOGS_TTL_MS;
+    if (isStale) {
+      void refetch();
+    }
+  }, [queryClient, queryKey, refetch]);
 
   return {
     techBlogs: query.data ?? [],
     isLoading: query.isPending,
     error: query.error as Error | null,
     refetch: () => {
-      void query.refetch();
+      void refetch();
     },
   };
 }

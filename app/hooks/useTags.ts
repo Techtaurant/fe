@@ -1,6 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../lib/queryKeys';
 import { Tag } from '../types';
 import { httpClient } from '../utils/httpClient';
@@ -54,10 +55,11 @@ const mapTags = (result: TagListResponse): Tag[] => {
 };
 
 export function useTags(initialTags: Tag[] = []): UseTagsResult {
-  const cached = readCache();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.tags.list();
 
   const query = useQuery({
-    queryKey: queryKeys.tags.list(),
+    queryKey,
     queryFn: async () => {
       const response = await httpClient(TAGS_ENDPOINT, { method: 'GET' });
       if (!response.ok) {
@@ -69,21 +71,31 @@ export function useTags(initialTags: Tag[] = []): UseTagsResult {
       return nextTags;
     },
     staleTime: TAGS_TTL_MS,
-    initialData:
-      cached?.tags.length
-        ? cached.tags
-        : initialTags.length
-          ? initialTags
-          : undefined,
-    initialDataUpdatedAt: cached?.cachedAt,
+    initialData: initialTags.length ? initialTags : undefined,
   });
+  const { refetch } = query;
+
+  useEffect(() => {
+    const cached = readCache();
+    if (!cached || cached.tags.length === 0) return;
+
+    const current = queryClient.getQueryData<Tag[]>(queryKey);
+    if (!current || current.length === 0) {
+      queryClient.setQueryData(queryKey, cached.tags);
+    }
+
+    const isStale = Date.now() - cached.cachedAt > TAGS_TTL_MS;
+    if (isStale) {
+      void refetch();
+    }
+  }, [queryClient, queryKey, refetch]);
 
   return {
     tags: query.data ?? [],
     isLoading: query.isPending,
     error: query.error as Error | null,
     refetch: () => {
-      void query.refetch();
+      void refetch();
     },
   };
 }
