@@ -35,6 +35,10 @@ export default function PostDetailPage() {
     isCommentsLoading,
     commentsHasNext,
     isCommentsLoadingMore,
+    commentsSort,
+    setCommentsSort,
+    createCommentFieldErrors,
+    clearCreateCommentFieldError,
     handleLoadMoreComments,
     handleCreateComment,
   } = useComments(postId, () => {
@@ -91,13 +95,17 @@ export default function PostDetailPage() {
       isCommentsLoading={isCommentsLoading}
       commentsHasNext={commentsHasNext}
       isCommentsLoadingMore={isCommentsLoadingMore}
+      commentsSort={commentsSort}
+      createCommentFieldErrors={createCommentFieldErrors}
       onBack={() => router.back()}
       onLike={handleLike}
       onDislike={handleDislike}
       onBookmark={handleBookmark}
       onShare={handleShare}
       onCreateComment={handleCreateComment}
+      onClearCommentFieldError={clearCreateCommentFieldError}
       onLoadMoreComments={handleLoadMoreComments}
+      onCommentsSortChange={setCommentsSort}
     />
   );
 }
