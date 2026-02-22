@@ -26,12 +26,14 @@ interface UseTagsResult {
 }
 
 const readCache = (): TagCachePayload | null => {
+  if (typeof window === "undefined") return null;
   const raw = localStorage.getItem(TAGS_CACHE_KEY);
   if (!raw) return null;
   return parseTagCache(raw);
 };
 
 const writeCache = (tags: Tag[]) => {
+  if (typeof window === "undefined") return;
   try {
     const payload: TagCachePayload = {
       tags,

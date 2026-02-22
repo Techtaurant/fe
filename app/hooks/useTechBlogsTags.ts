@@ -21,12 +21,14 @@ interface UseTechBlogsResult {
 }
 
 const readCache = (): TechBlogCachePayload | null => {
+  if (typeof window === "undefined") return null;
   const raw = localStorage.getItem(TECH_BLOGS_CACHE_KEY);
   if (!raw) return null;
   return parseTechBlogCache(raw);
 };
 
 const writeCache = (techBlogs: TechBlog[]) => {
+  if (typeof window === "undefined") return;
   try {
     const payload: TechBlogCachePayload = {
       techBlogs,
