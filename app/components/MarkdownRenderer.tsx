@@ -3,76 +3,111 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { useEffect, useRef, useCallback } from "react";
-import mermaid from "mermaid";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 interface MarkdownRendererProps {
   content: string;
 }
 
+const ALLOWED_HTML_TAGS = [
+  "a",
+  "abbr",
+  "b",
+  "bdi",
+  "bdo",
+  "blockquote",
+  "br",
+  "cite",
+  "code",
+  "del",
+  "details",
+  "summary",
+  "dfn",
+  "em",
+  "i",
+  "kbd",
+  "mark",
+  "q",
+  "rp",
+  "rt",
+  "ruby",
+  "s",
+  "samp",
+  "small",
+  "span",
+  "strong",
+  "sub",
+  "sup",
+  "time",
+  "u",
+  "var",
+  "wbr",
+  "p",
+  "div",
+  "hr",
+  "pre",
+  "ul",
+  "ol",
+  "li",
+  "dl",
+  "dt",
+  "dd",
+  "table",
+  "thead",
+  "tbody",
+  "tfoot",
+  "tr",
+  "th",
+  "td",
+  "caption",
+  "colgroup",
+  "col",
+  "img",
+  "picture",
+  "source",
+] as const;
+
+const sanitizedSchema = {
+  ...defaultSchema,
+  tagNames: ALLOWED_HTML_TAGS,
+  attributes: {
+    a: ["href", "title", "target", "rel"],
+    abbr: ["title"],
+    bdo: ["dir"],
+    blockquote: ["cite"],
+    code: ["className"],
+    del: ["cite", "dateTime"],
+    details: ["open"],
+    q: ["cite"],
+    span: ["className", "title"],
+    time: ["dateTime"],
+    div: ["className", "title", ["align", "left", "center", "right"]],
+    p: [["align", "left", "center", "right"]],
+    pre: ["className"],
+    ol: ["start", "reversed", "type"],
+    table: ["width", ["align", "left", "center", "right"]],
+    th: ["colSpan", "rowSpan", "scope", "abbr", "width", "height", ["align", "left", "center", "right"]],
+    td: ["colSpan", "rowSpan", "headers", "width", "height", ["align", "left", "center", "right"]],
+    col: ["span", "width"],
+    colgroup: ["span", "width"],
+    img: ["src", "width", "height", "loading", ["align", "left", "center", "right"]],
+    source: ["src", "srcSet", "type", "media", "sizes", "width", "height"],
+  },
+} as const;
+
 /**
- * 마크다운과 Mermaid 다이어그램을 렌더링하는 컴포넌트
- * - GitHub Flavored Markdown 지원 (테이블, 체크박스, 취소선 등)
+ * 마크다운을 화이트리스트 기반으로 렌더링하는 컴포넌트
+ * - GitHub Flavored Markdown 지원
  * - 코드 하이라이팅
- * - Mermaid 다이어그램 렌더링
+ * - 지정한 HTML 태그만 허용하고 나머지는 제거
  */
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Mermaid 초기화 및 다이어그램 렌더링
-   */
-  const renderMermaidDiagrams = useCallback(async () => {
-    if (!containerRef.current) return;
-
-    // Mermaid 초기화
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: "neutral",
-      securityLevel: "loose",
-      fontFamily: "var(--font-kr-sans)",
-    });
-
-    // mermaid 클래스를 가진 코드 블록 찾기
-    const mermaidBlocks = containerRef.current.querySelectorAll(
-      "code.language-mermaid"
-    );
-
-    for (let i = 0; i < mermaidBlocks.length; i++) {
-      const block = mermaidBlocks[i];
-      const parent = block.parentElement;
-      if (!parent) continue;
-
-      const code = block.textContent || "";
-
-      try {
-        const { svg } = await mermaid.render(`mermaid-diagram-${i}`, code);
-
-        // pre 태그를 svg로 교체
-        const wrapper = document.createElement("div");
-        wrapper.className = "mermaid-diagram";
-        wrapper.innerHTML = svg;
-        parent.replaceWith(wrapper);
-      } catch (error) {
-        console.error("Mermaid rendering error:", error);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    // DOM이 렌더링된 후 Mermaid 다이어그램 렌더링
-    const timer = setTimeout(() => {
-      renderMermaidDiagrams();
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [content, renderMermaidDiagrams]);
-
   return (
-    <div ref={containerRef} className="markdown-content">
+    <div className="markdown-content">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizedSchema], rehypeHighlight]}
       >
         {content}
       </ReactMarkdown>
@@ -199,11 +234,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           font-weight: 600;
         }
 
-        /* 체크박스 (GFM) */
-        .markdown-content input[type="checkbox"] {
-          margin-right: 0.5rem;
-        }
-
         /* 취소선 (GFM) */
         .markdown-content del {
           color: var(--muted-foreground);
@@ -222,22 +252,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           height: auto;
           border-radius: 8px;
           margin: 1rem 0;
-        }
-
-        /* Mermaid 다이어그램 */
-        .mermaid-diagram {
-          display: flex;
-          justify-content: center;
-          margin: 1.5rem 0;
-          background-color: var(--muted);
-          padding: 1rem;
-          border-radius: 8px;
-          overflow-x: auto;
-        }
-
-        .mermaid-diagram svg {
-          max-width: 100%;
-          height: auto;
         }
 
         /* highlight.js 코드 하이라이팅 - VS Code Dark+ 스타일 */
