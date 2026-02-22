@@ -20,6 +20,7 @@ export const queryKeys = {
   },
   techBlogs: {
     all: ["techBlogs"] as const,
-    list: () => [...queryKeys.techBlogs.all, "list"] as const,
+    list: (signature?: string) =>
+      [...queryKeys.techBlogs.all, "list", signature ?? "default"] as const,
   },
 };

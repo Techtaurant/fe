@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { TechBlog } from "../types";
 import {
   parseTechBlogCache,
@@ -10,6 +11,7 @@ import {
   TECH_BLOGS_CACHE_KEY,
   TECH_BLOGS_TTL_MS,
 } from "../constants/techBlogsTags";
+import { queryKeys } from "../lib/queryKeys";
 
 interface UseTechBlogsResult {
   techBlogs: TechBlog[];
@@ -39,49 +41,36 @@ const writeCache = (techBlogs: TechBlog[]) => {
 export function useTechBlogsTags(
   initialTechBlogs: TechBlog[] = [],
 ): UseTechBlogsResult {
-  const [techBlogs, setTechBlogs] = useState<TechBlog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchTechBlogs = useCallback(
-    async (options?: { silent?: boolean }) => {
-      if (!options?.silent) {
-        setIsLoading(true);
-      }
-      setError(null);
-
-      try {
-        const nextTechBlogs = initialTechBlogs;
-        setTechBlogs(nextTechBlogs);
-        writeCache(nextTechBlogs);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("Failed to load tech blogs"),
-        );
-      } finally {
-        if (!options?.silent) {
-          setIsLoading(false);
-        }
-      }
-    },
+  const initialSignature = useMemo(
+    () => initialTechBlogs.map((blog) => blog.id).join(","),
     [initialTechBlogs],
   );
 
-  useEffect(() => {
-    const cached = readCache();
+  const cached = readCache();
 
-    if (cached && cached.techBlogs.length > 0) {
-      setTechBlogs(cached.techBlogs);
-      setIsLoading(false);
-      const isStale = Date.now() - cached.cachedAt > TECH_BLOGS_TTL_MS;
-      if (isStale) {
-        fetchTechBlogs({ silent: true });
-      }
-      return;
-    }
+  const query = useQuery({
+    queryKey: queryKeys.techBlogs.list(initialSignature),
+    queryFn: async () => {
+      const nextTechBlogs = initialTechBlogs;
+      writeCache(nextTechBlogs);
+      return nextTechBlogs;
+    },
+    staleTime: TECH_BLOGS_TTL_MS,
+    initialData:
+      cached?.techBlogs.length
+        ? cached.techBlogs
+        : initialTechBlogs.length
+          ? initialTechBlogs
+          : undefined,
+    initialDataUpdatedAt: cached?.cachedAt,
+  });
 
-    void fetchTechBlogs();
-  }, [fetchTechBlogs]);
-
-  return { techBlogs, isLoading, error, refetch: fetchTechBlogs };
+  return {
+    techBlogs: query.data ?? [],
+    isLoading: query.isPending,
+    error: query.error as Error | null,
+    refetch: () => {
+      void query.refetch();
+    },
+  };
 }
