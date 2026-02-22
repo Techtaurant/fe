@@ -28,49 +28,91 @@ function getFirstValidationErrorMessage(errors: ValidationErrors) {
   return errors[firstKey];
 }
 
-export function handleFetchCommentsError(error: unknown) {
+export interface FetchCommentsErrorResolution {
+  shouldRedirectToLogin: boolean;
+  alertMessage: string | null;
+}
+
+export interface CreateCommentErrorResolution {
+  shouldRedirectToLogin: boolean;
+  fieldErrors: ValidationErrors | null;
+  alertMessage: string | null;
+}
+
+export function resolveFetchCommentsError(
+  error: unknown,
+): FetchCommentsErrorResolution {
   const message = getErrorMessage(error);
 
   if (message === "UNAUTHORIZED") {
-    redirectToGoogleLogin();
-    return;
+    return {
+      shouldRedirectToLogin: true,
+      alertMessage: null,
+    };
   }
 
   if (message === "NOT_FOUND") {
-    alert("게시물을 찾을 수 없습니다.");
-    return;
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: "게시물을 찾을 수 없습니다.",
+    };
   }
 
   if (message === "BAD_REQUEST") {
     const errors = getValidationErrors(error);
     const validationMessage = errors ? getFirstValidationErrorMessage(errors) : null;
-    alert(validationMessage || "댓글 목록 요청이 올바르지 않습니다.");
-    return;
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: validationMessage || "댓글 목록 요청이 올바르지 않습니다.",
+    };
   }
 
-  alert("댓글을 불러오지 못했습니다.");
+  return {
+    shouldRedirectToLogin: false,
+    alertMessage: "댓글을 불러오지 못했습니다.",
+  };
 }
 
-export function handleCreateCommentError(error: unknown): ValidationErrors | null {
+export function resolveCreateCommentError(
+  error: unknown,
+): CreateCommentErrorResolution {
   const message = getErrorMessage(error);
 
   if (message === "UNAUTHORIZED") {
-    redirectToGoogleLogin();
-    return null;
+    return {
+      shouldRedirectToLogin: true,
+      fieldErrors: null,
+      alertMessage: null,
+    };
   }
 
   if (message === "NOT_FOUND") {
-    alert("게시물 또는 부모 댓글을 찾을 수 없습니다.");
-    return null;
+    return {
+      shouldRedirectToLogin: false,
+      fieldErrors: null,
+      alertMessage: "게시물 또는 부모 댓글을 찾을 수 없습니다.",
+    };
   }
 
   if (message === "BAD_REQUEST") {
     const errors = getValidationErrors(error);
-    if (errors) return errors;
-    alert("댓글 내용이 올바르지 않습니다.");
-    return null;
+    if (errors) {
+      return {
+        shouldRedirectToLogin: false,
+        fieldErrors: errors,
+        alertMessage: null,
+      };
+    }
+    return {
+      shouldRedirectToLogin: false,
+      fieldErrors: null,
+      alertMessage: "댓글 내용이 올바르지 않습니다.",
+    };
   }
 
-  alert("댓글 작성에 실패했습니다.");
-  return null;
+  return {
+    shouldRedirectToLogin: false,
+    fieldErrors: null,
+    alertMessage: "댓글 작성에 실패했습니다.",
+  };
 }

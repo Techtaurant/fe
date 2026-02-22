@@ -5,9 +5,9 @@ import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@ta
 import { useUser } from "./useUser";
 import { createComment, fetchComments } from "../services/comments";
 import {
-  handleCreateCommentError,
-  handleFetchCommentsError,
   redirectToGoogleLogin,
+  resolveCreateCommentError,
+  resolveFetchCommentsError,
 } from "../services/comments/errors";
 import {
   mapCommentListItemToComment,
@@ -103,7 +103,14 @@ export function useComments(
 
   useEffect(() => {
     if (commentsQuery.error) {
-      handleFetchCommentsError(commentsQuery.error);
+      const resolved = resolveFetchCommentsError(commentsQuery.error);
+      if (resolved.shouldRedirectToLogin) {
+        redirectToGoogleLogin();
+        return;
+      }
+      if (resolved.alertMessage) {
+        alert(resolved.alertMessage);
+      }
     }
   }, [commentsQuery.error]);
 
@@ -136,9 +143,16 @@ export function useComments(
     try {
       await createCommentMutation.mutateAsync(content);
     } catch (error) {
-      const fieldErrors = handleCreateCommentError(error);
-      if (fieldErrors) {
-        setCreateCommentFieldErrors(fieldErrors);
+      const resolved = resolveCreateCommentError(error);
+      if (resolved.shouldRedirectToLogin) {
+        redirectToGoogleLogin();
+        return;
+      }
+      if (resolved.fieldErrors) {
+        setCreateCommentFieldErrors(resolved.fieldErrors);
+      }
+      if (resolved.alertMessage) {
+        alert(resolved.alertMessage);
       }
     }
   };
