@@ -5,68 +5,11 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import { ALLOWED_HTML_TAGS } from "@/app/constants/markdownAllowedHtml";
 
 interface MarkdownRendererProps {
   content: string;
 }
-
-const ALLOWED_HTML_TAGS = [
-  "a",
-  "abbr",
-  "b",
-  "bdi",
-  "bdo",
-  "blockquote",
-  "br",
-  "cite",
-  "code",
-  "del",
-  "details",
-  "summary",
-  "dfn",
-  "em",
-  "i",
-  "kbd",
-  "mark",
-  "q",
-  "rp",
-  "rt",
-  "ruby",
-  "s",
-  "samp",
-  "small",
-  "span",
-  "strong",
-  "sub",
-  "sup",
-  "time",
-  "u",
-  "var",
-  "wbr",
-  "p",
-  "div",
-  "hr",
-  "pre",
-  "ul",
-  "ol",
-  "li",
-  "dl",
-  "dt",
-  "dd",
-  "table",
-  "thead",
-  "tbody",
-  "tfoot",
-  "tr",
-  "th",
-  "td",
-  "caption",
-  "colgroup",
-  "col",
-  "img",
-  "picture",
-  "source",
-] as const;
 
 const sanitizedSchema = {
   ...defaultSchema,
