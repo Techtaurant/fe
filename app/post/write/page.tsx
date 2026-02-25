@@ -1,32 +1,128 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  InfiniteData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
-import { createPost } from "@/app/services/posts";
-import { CreatePostRequest, CreatePostResponse, Post } from "@/app/types";
+import {
+  createPost,
+  fetchDraftPostList,
+  fetchDraftPostDetail,
+  updatePost,
+} from "@/app/services/posts";
+import { queryKeys } from "@/app/lib/queryKeys";
+import { DraftPostListResult } from "@/app/services/posts/types";
+import { CreatePostRequest, CreatePostResponse, PostStatus } from "@/app/types";
+
+interface FieldErrors {
+  title: boolean;
+  content: boolean;
+}
+
+interface SavePostVariables {
+  status: PostStatus;
+}
+
+interface SavePostResult {
+  result: CreatePostResponse;
+  status: PostStatus;
+  requestedDraftId: string | null;
+}
 
 /**
- * 게시물 작성 페이지
+ * 게시물 작성/수정 페이지
  * - 왼쪽: 마크다운 에디터
  * - 오른쪽: 실시간 프리뷰
  */
 export default function WritePostPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draftId");
+  const draftCountQueryKey = [...queryKeys.posts.all, "drafts-count"] as const;
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categoryPath, setCategoryPath] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
     title: false,
     content: false,
-    categoryPath: false,
   });
+  const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
+
+  const draftDetailQuery = useQuery({
+    queryKey: queryKeys.posts.draftDetail(draftId ?? ""),
+    queryFn: () => fetchDraftPostDetail(draftId as string),
+    enabled: Boolean(draftId),
+    staleTime: Infinity,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+  });
+
+  const draftCountQuery = useQuery({
+    queryKey: draftCountQueryKey,
+    queryFn: async () => {
+      try {
+        const firstPage = await fetchDraftPostList({ size: 100 });
+        if (typeof firstPage.totalCount === "number") {
+          return firstPage.totalCount;
+        }
+
+        const draftIds = new Set<string>();
+        firstPage.drafts.forEach((draft) => draftIds.add(draft.id));
+
+        let hasNext = firstPage.hasNext;
+        let cursor: string | undefined = firstPage.nextCursor ?? undefined;
+
+        while (hasNext) {
+          if (cursor === undefined || cursor === null) break;
+
+          const nextPage = await fetchDraftPostList({ cursor, size: 100 });
+          nextPage.drafts.forEach((draft) => draftIds.add(draft.id));
+          hasNext = nextPage.hasNext;
+          cursor = nextPage.nextCursor ?? undefined;
+        }
+
+        return draftIds.size;
+      } catch (error) {
+        if (error instanceof Error && error.message === "UNAUTHORIZED") {
+          return null;
+        }
+        throw error;
+      }
+    },
+    staleTime: 30_000,
+  });
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasHydratedDraft(false);
+    setError(null);
+    setSuccess(null);
+  }, [draftId]);
+
+  useEffect(() => {
+    if (!draftDetailQuery.data || hasHydratedDraft) return;
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTitle(draftDetailQuery.data.post.title || "");
+    setContent(draftDetailQuery.data.post.content || "");
+    setCategoryPath(draftDetailQuery.data.categoryPath || "");
+    setTags(draftDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
+    setHasHydratedDraft(true);
+  }, [draftDetailQuery.data, hasHydratedDraft]);
 
   /**
    * 태그 추가 처리
@@ -56,14 +152,13 @@ export default function WritePostPage() {
     }
   };
 
-  const validateForm = () => {
+  const validateRequiredFields = () => {
     const nextFieldErrors = {
       title: !title.trim(),
       content: !content.trim(),
-      categoryPath: !categoryPath.trim(),
     };
 
-    if (nextFieldErrors.title || nextFieldErrors.content || nextFieldErrors.categoryPath) {
+    if (nextFieldErrors.title || nextFieldErrors.content) {
       setError(null);
       setFieldErrors(nextFieldErrors);
       return false;
@@ -72,109 +167,195 @@ export default function WritePostPage() {
     return true;
   };
 
-  /**
-   * 게시물 작성 제출
-   */
-  const handleSubmit = async (status: CreatePostRequest["status"]) => {
-    if (!validateForm()) return;
+  const buildPostPayload = (status: PostStatus): CreatePostRequest => {
+    const trimmedTitle = title.trim();
+    const trimmedContent = content.trim();
+    const trimmedCategory = categoryPath.trim();
 
-    setIsSubmitting(true);
-    setError(null);
-    setSuccess(null);
-    setFieldErrors({ title: false, content: false, categoryPath: false });
+    return {
+      ...(trimmedTitle ? { title: trimmedTitle } : {}),
+      ...(trimmedContent ? { content: trimmedContent } : {}),
+      ...(trimmedCategory ? { categoryPath: trimmedCategory } : {}),
+      ...(tags.length > 0 ? { tags } : {}),
+      status,
+    };
+  };
 
-    try {
-      const postData: CreatePostRequest = {
-        title: title.trim(),
-        content: content.trim(),
-        categoryPath: categoryPath.trim(),
-        tags,
+  const clearEditorState = () => {
+    setTitle("");
+    setContent("");
+    setCategoryPath("");
+    setTagInput("");
+    setTags([]);
+    setFieldErrors({ title: false, content: false });
+  };
+
+  const removeDraftFromLocalCaches = (targetDraftId: string) => {
+    queryClient.setQueriesData<InfiniteData<DraftPostListResult>>(
+      { queryKey: [...queryKeys.posts.all, "drafts"] as const },
+      (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            drafts: page.drafts.filter((draft) => draft.id !== targetDraftId),
+          })),
+        };
+      },
+    );
+
+    queryClient.setQueryData<number | null>(draftCountQueryKey, (current) => {
+      if (typeof current !== "number") return current;
+      return Math.max(0, current - 1);
+    });
+  };
+
+  const resolveSaveErrorMessage = (saveError: unknown) => {
+    const message = saveError instanceof Error ? saveError.message : "UNKNOWN";
+    if (message === "UNAUTHORIZED") {
+      return "인증되지 않은 사용자입니다. 로그인 후 다시 시도해주세요.";
+    }
+    if (message === "NOT_FOUND") {
+      return "대상 게시물을 찾을 수 없습니다.";
+    }
+    if (message === "BAD_REQUEST") {
+      return "잘못된 요청입니다. 입력값을 확인해주세요.";
+    }
+    if (message.startsWith("HTTP_")) {
+      return `요청에 실패했습니다. (${message.replace("HTTP_", "")})`;
+    }
+    return message || "게시물 저장 중 오류가 발생했습니다.";
+  };
+
+  const savePostMutation = useMutation<SavePostResult, Error, SavePostVariables>({
+    mutationFn: async ({ status }) => {
+      const postData = buildPostPayload(status);
+      const result = draftId
+        ? await updatePost(draftId, postData)
+        : await createPost(postData);
+      return {
+        result,
         status,
+        requestedDraftId: draftId,
       };
-
-      let result: CreatePostResponse;
-
-      try {
-        result = await createPost(postData);
-      } catch (apiError) {
-        const message = apiError instanceof Error ? apiError.message : "UNKNOWN";
-        if (message === "UNAUTHORIZED") {
-          setError("인증되지 않은 사용자입니다. 로그인 후 다시 시도해주세요.");
-          return;
-        }
-        if (message === "BAD_REQUEST") {
-          setError("잘못된 요청입니다. 입력값을 확인해주세요.");
-          return;
-        }
-        if (message.startsWith("HTTP_")) {
-          setError(`요청에 실패했습니다. (${message.replace("HTTP_", "")})`);
-          return;
-        }
-        setError(message || "게시물 작성 중 오류가 발생했습니다.");
-        return;
-      }
-
-      const createdAt = new Date(result.data.createdAt);
-      const resolvedTags = result.data.tags.map((name) => ({
-        id: name,
-        name,
-      }));
-      const newPost: Post = {
-        id: result.data.id,
-        type: "community",
-        title: result.data.title,
-        content: result.data.content,
-        viewCount: 0,
-        likeCount: 0,
-        commentCount: 0,
-        tags: resolvedTags,
-        author: {
-          id: result.data.authorId,
-          name: result.data.authorName,
-          email: "",
-          profileImageUrl: "",
-          role: "USER",
-        },
-        isRead: false,
-        publishedAt: createdAt.toISOString().slice(0, 10),
-        url: `/post/${result.data.id}`,
-      };
+    },
+    onMutate: () => {
+      setError(null);
+      setSuccess(null);
+      setFieldErrors({ title: false, content: false });
+    },
+    onSuccess: async ({ result, status, requestedDraftId }) => {
+      setTitle(result.data.title ?? "");
+      setContent(result.data.content ?? "");
+      setTags(result.data.tags ?? []);
+      setTagInput("");
 
       if (status === "DRAFT") {
         setSuccess("게시물이 임시저장되었습니다.");
-      } else if (status === "PRIVATE") {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: [...queryKeys.posts.all, "drafts"] as const,
+          }),
+          queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
+        ]);
+        if (!requestedDraftId) {
+          router.replace(`/post/write?draftId=${result.data.id}`);
+        }
+        return;
+      }
+
+      if (requestedDraftId) {
+        removeDraftFromLocalCaches(requestedDraftId);
+        queryClient.removeQueries({
+          queryKey: queryKeys.posts.draftDetail(requestedDraftId),
+        });
+      }
+
+      clearEditorState();
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...queryKeys.posts.all, "drafts"] as const,
+        }),
+        queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
+        queryClient.invalidateQueries({
+          queryKey: [...queryKeys.posts.all, "community"] as const,
+        }),
+      ]);
+
+      if (status === "PRIVATE") {
         setSuccess("게시물이 비공개로 저장되었습니다.");
       } else {
         setSuccess("게시물이 성공적으로 작성되었습니다!");
       }
-      setTitle("");
-      setContent("");
-      setCategoryPath("");
-      setTags([]);
-      setTagInput("");
-      setFieldErrors({ title: false, content: false, categoryPath: false });
 
-      if (status === "PUBLISHED") {
-        router.push("/?mode=user");
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "게시물 작성 중 오류가 발생했습니다.";
-      setError(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+      router.push("/?mode=user");
+    },
+    onError: (saveError) => {
+      setError(resolveSaveErrorMessage(saveError));
+    },
+  });
+
+  /**
+   * 게시물 작성/수정 제출
+   */
+  const handleSubmit = async (status: PostStatus) => {
+    if (!validateRequiredFields()) return;
+    if (draftId && draftDetailQuery.isError) return;
+    await savePostMutation.mutateAsync({ status });
   };
+
+  const isDraftLoading = Boolean(draftId) && draftDetailQuery.isPending;
+  const draftErrorMessage = (() => {
+    if (!draftDetailQuery.error) return null;
+    const message =
+      draftDetailQuery.error instanceof Error
+        ? draftDetailQuery.error.message
+        : "UNKNOWN";
+    if (message === "NOT_FOUND") {
+      return "임시 저장 게시물을 찾을 수 없거나 접근 권한이 없습니다.";
+    }
+    if (message === "UNAUTHORIZED") {
+      return "로그인 후 임시 저장 게시물을 조회할 수 있습니다.";
+    }
+    return "임시 저장 게시물을 불러오지 못했습니다.";
+  })();
+
+  const draftCountLabel = (() => {
+    if (draftCountQuery.isPending) return "...";
+    if (draftCountQuery.data === null) return "-";
+    if (typeof draftCountQuery.data !== "number") return "0";
+    return String(draftCountQuery.data);
+  })();
+  const isSubmitting = savePostMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background px-3 py-4 md:px-4 md:py-6">
       <div className="mx-auto max-w-[1400px]">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {draftId ? "임시글 수정 모드" : "새 글 작성 모드"}
+          </p>
+        </div>
+
+        {isDraftLoading && (
+          <div className="mb-4 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+            임시글 정보를 불러오는 중입니다.
+          </div>
+        )}
+
+        {draftErrorMessage && (
+          <div className="mb-4 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
+            {draftErrorMessage}
+          </div>
+        )}
+
         {/* 입력 영역 */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             if (!isSubmitting) {
-              if (validateForm()) setIsPublishModalOpen(true);
+              if (validateRequiredFields()) setIsPublishModalOpen(true);
             }
           }}
           className="rounded-lg bg-card p-4 shadow-sm md:rounded-xl md:p-6 lg:p-8"
@@ -209,7 +390,7 @@ export default function WritePostPage() {
           {/* 카테고리 */}
           <div className="mb-4 md:mb-6">
             <label htmlFor="category" className="mb-2 block text-sm font-semibold text-foreground">
-              카테고리 <span className="text-red-600">*</span>
+              카테고리
             </label>
             <input
               id="category"
@@ -217,20 +398,10 @@ export default function WritePostPage() {
               value={categoryPath}
               onChange={(e) => {
                 setCategoryPath(e.target.value);
-                if (fieldErrors.categoryPath) {
-                  setFieldErrors((prev) => ({ ...prev, categoryPath: false }));
-                }
               }}
               placeholder="예: java/spring/deepdive"
-              className={`w-full rounded-lg border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
-                fieldErrors.categoryPath
-                  ? "border-red-500 focus:border-red-500"
-                  : "border-border focus:border-primary"
-              }`}
+              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
             />
-            {fieldErrors.categoryPath && (
-              <p className="mt-2 text-sm font-medium text-red-600">카테고리를 입력해주세요.</p>
-            )}
           </div>
 
           {/* 태그 */}
@@ -274,7 +445,7 @@ export default function WritePostPage() {
           </div>
 
           {/* 에러/성공 메시지 */}
-          {error && !(fieldErrors.title || fieldErrors.content || fieldErrors.categoryPath) && (
+          {error && !(fieldErrors.title || fieldErrors.content) && (
             <div className="mb-6 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
               {error}
             </div>
@@ -286,8 +457,8 @@ export default function WritePostPage() {
           )}
 
           {/* 콘텐츠 에디터 */}
-          <div className="grid grid-cols-1 gap-0 mb-6 lg:mb-8 lg:grid-cols-2 lg:gap-6 lg:min-h-[500px]">
-            <div className="min-h-[400px] flex flex-col overflow-hidden rounded-lg border border-border bg-background lg:min-h-0">
+          <div className="mb-6 grid grid-cols-1 gap-0 lg:mb-8 lg:min-h-[500px] lg:grid-cols-2 lg:gap-6">
+            <div className="flex min-h-[400px] flex-col overflow-hidden rounded-lg border border-border bg-background lg:min-h-0">
               <div className="border-b border-border bg-muted p-4">
                 <h2 className="text-base font-semibold text-foreground">
                   마크다운 편집 <span className="text-red-600">*</span>
@@ -314,7 +485,7 @@ export default function WritePostPage() {
             </div>
 
             {/* 프리뷰 */}
-            <div className="min-h-[400px] flex flex-col overflow-hidden rounded-lg border border-border border-t-0 bg-background lg:min-h-0 lg:border-t">
+            <div className="flex min-h-[400px] flex-col overflow-hidden rounded-lg border border-border border-t-0 bg-background lg:min-h-0 lg:border-t">
               <div className="border-b border-border bg-muted p-4">
                 <h2 className="text-base font-semibold text-foreground">미리보기</h2>
               </div>
@@ -332,19 +503,29 @@ export default function WritePostPage() {
 
           {/* 제출 버튼 */}
           <div className="flex justify-end gap-3">
+            <div className="inline-flex overflow-hidden rounded-lg border border-border">
+              <button
+                type="button"
+                disabled={isSubmitting || isDraftLoading || Boolean(draftErrorMessage)}
+                onClick={() => handleSubmit("DRAFT")}
+                className="px-5 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? "저장 중..." : "임시저장"}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/post/drafts")}
+                className="min-w-14 border-l border-border px-4 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                aria-label="임시저장 게시글 목록 보기"
+              >
+                {draftCountLabel}
+              </button>
+            </div>
             <button
               type="button"
-              disabled={isSubmitting}
-              onClick={() => handleSubmit("DRAFT")}
-              className="rounded-lg border border-border px-6 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              임시저장
-            </button>
-            <button
-              type="button"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isDraftLoading || Boolean(draftErrorMessage)}
               onClick={() => {
-                if (validateForm()) setIsPublishModalOpen(true);
+                if (validateRequiredFields()) setIsPublishModalOpen(true);
               }}
               className="rounded-lg bg-primary px-8 py-3 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >

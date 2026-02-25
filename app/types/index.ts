@@ -74,13 +74,24 @@ export interface FilterState {
   selectedTechBlogs: string[];
 }
 
+export type PostStatus = "DRAFT" | "PUBLISHED" | "PRIVATE";
+
 // 게시물 작성 요청
 export interface CreatePostRequest {
-  title: string;
-  content: string;
-  categoryPath: string;
-  tags: string[];
-  status: "DRAFT" | "PUBLISHED" | "PRIVATE";
+  title?: string;
+  content?: string;
+  categoryPath?: string;
+  tags?: string[];
+  status?: PostStatus;
+}
+
+// 게시물 수정 요청
+export interface UpdatePostRequest {
+  title?: string;
+  content?: string;
+  categoryPath?: string;
+  tags?: string[];
+  status?: PostStatus;
 }
 
 // 게시물 작성 응답
