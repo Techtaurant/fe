@@ -1,6 +1,11 @@
 import { httpClient } from "@/app/utils/httpClient";
-import { CreatePostRequest, CreatePostResponse } from "@/app/types";
 import {
+  CreatePostRequest,
+  CreatePostResponse,
+  UpdatePostRequest,
+} from "@/app/types";
+import {
+  DraftPostListResponse,
   PostDetailResponse,
   PostListPeriod,
   PostListResponse,
@@ -17,6 +22,35 @@ export async function createPostRequest(
 
   if (response.status === 401) {
     throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 400) {
+    const body = (await response.json().catch(() => null)) as CreatePostResponse | null;
+    throw new Error(body?.message || "BAD_REQUEST");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as CreatePostResponse;
+}
+
+export async function updatePostRequest(
+  postId: string,
+  payload: UpdatePostRequest,
+): Promise<CreatePostResponse> {
+  const response = await httpClient(`/api/posts/${postId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
   }
 
   if (response.status === 400) {
@@ -63,6 +97,50 @@ export async function fetchPostDetail(postId: string): Promise<PostDetailRespons
   const response = await httpClient(`/open-api/posts/${postId}`, {
     method: "GET",
   });
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as PostDetailResponse;
+}
+
+export async function fetchDraftPosts(params?: {
+  cursor?: string;
+  size?: number;
+}): Promise<DraftPostListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params && params.cursor !== undefined) searchParams.set("cursor", params.cursor);
+  searchParams.set("size", String(params?.size ?? 20));
+
+  const query = searchParams.toString();
+  const response = await httpClient(`/api/posts/drafts${query ? `?${query}` : ""}`, {
+    method: "GET",
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as DraftPostListResponse;
+}
+
+export async function fetchDraftDetail(postId: string): Promise<PostDetailResponse> {
+  const response = await httpClient(`/api/posts/drafts/${postId}`, {
+    method: "GET",
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
 
   if (response.status === 404) {
     throw new Error("NOT_FOUND");

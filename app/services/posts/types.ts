@@ -15,6 +15,8 @@ export interface PostListItem {
   likeCount: number;
   commentCount: number;
   createdAt: string;
+  updatedAt?: string;
+  publishedAt?: string;
 }
 
 export interface PostListResponse {
@@ -30,25 +32,25 @@ export interface PostDetailResponse {
   status: number;
   data: {
     id: string;
-    title: string;
-    content: string;
+    title?: string;
+    content?: string;
     author: {
       id: string;
       name: string;
       profileImageUrl?: string;
     };
-    category: {
+    category?: {
       id: string;
       name: string;
       path: string;
       depth: number;
       parentId?: string;
-    };
-    tags: { id: string; name: string }[];
-    viewCount: number;
-    likeCount: number;
-    commentCount: number;
-    isLiked: boolean;
+    } | null;
+    tags?: { id: string; name: string }[];
+    viewCount?: number;
+    likeCount?: number;
+    commentCount?: number;
+    isLiked?: boolean;
     createdAt: string;
     updatedAt: string;
   };
@@ -58,4 +60,31 @@ export interface PostDetailResponse {
 export interface CommunityPostListResult {
   posts: Post[];
   nextCursor?: string;
+}
+
+export interface DraftPostListItem {
+  id: string;
+  title: string;
+  contentPreview: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DraftPostListResponse {
+  status: number;
+  data: {
+    content: DraftPostListItem[];
+    nextCursor: string | null;
+    hasNext: boolean;
+    size: number;
+    totalCount?: number;
+  };
+  message: string;
+}
+
+export interface DraftPostListResult {
+  drafts: DraftPostListItem[];
+  nextCursor: string | null;
+  hasNext: boolean;
+  totalCount?: number;
 }

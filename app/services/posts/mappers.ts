@@ -11,6 +11,9 @@ function normalizeUrl(url?: string) {
 }
 
 export function mapListItemToPost(item: PostListItem): Post {
+  const resolvedPublishedAt =
+    item.publishedAt || item.updatedAt || item.createdAt;
+
   return {
     id: item.id,
     type: "community",
@@ -27,7 +30,7 @@ export function mapListItemToPost(item: PostListItem): Post {
       role: "USER",
     },
     isRead: item.isRead,
-    publishedAt: item.createdAt.slice(0, 10),
+    publishedAt: resolvedPublishedAt.slice(0, 10),
     url: `/post/${item.id}`,
     thumbnailUrl: normalizeUrl(item.thumbnailUrl),
   };
@@ -37,12 +40,12 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
   return {
     id: detail.id,
     type: "community",
-    title: detail.title,
-    content: detail.content,
-    viewCount: detail.viewCount,
+    title: detail.title || "새 게시물",
+    content: detail.content || "",
+    viewCount: detail.viewCount ?? 0,
     likeCount: detail.likeCount ?? 0,
-    commentCount: detail.commentCount,
-    tags: detail.tags,
+    commentCount: detail.commentCount ?? 0,
+    tags: detail.tags ?? [],
     author: {
       id: detail.author.id,
       name: detail.author.name,

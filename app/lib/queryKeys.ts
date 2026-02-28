@@ -7,7 +7,11 @@ export const queryKeys = {
     all: ["posts"] as const,
     communityList: (params: { period: string; sort: string; size: number }) =>
       [...queryKeys.posts.all, "community", params] as const,
+    draftsList: (params: { size: number }) =>
+      [...queryKeys.posts.all, "drafts", params] as const,
     detail: (postId: string) => [...queryKeys.posts.all, "detail", postId] as const,
+    draftDetail: (postId: string) =>
+      [...queryKeys.posts.all, "draft-detail", postId] as const,
   },
   comments: {
     all: ["comments"] as const,

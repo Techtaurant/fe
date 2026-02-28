@@ -1,12 +1,21 @@
-import { CreatePostRequest, CreatePostResponse, Post } from "@/app/types";
+import {
+  CreatePostRequest,
+  CreatePostResponse,
+  Post,
+  UpdatePostRequest,
+} from "@/app/types";
 import {
   createPostRequest,
+  fetchDraftDetail,
+  fetchDraftPosts,
   fetchCommunityPosts,
   fetchPostDetail,
   setPostLike,
+  updatePostRequest,
 } from "./client";
 import { mapDetailToPost, mapListItemToPost } from "./mappers";
 import {
+  DraftPostListResult,
   CommunityPostListResult,
   PostListPeriod,
   PostListSort,
@@ -16,6 +25,13 @@ export async function createPost(
   payload: CreatePostRequest,
 ): Promise<CreatePostResponse> {
   return createPostRequest(payload);
+}
+
+export async function updatePost(
+  postId: string,
+  payload: UpdatePostRequest,
+): Promise<CreatePostResponse> {
+  return updatePostRequest(postId, payload);
 }
 
 export async function fetchCommunityPostList(params?: {
@@ -38,7 +54,37 @@ export async function fetchPostDetailWithMeta(postId: string): Promise<{
   const result = await fetchPostDetail(postId);
   return {
     post: mapDetailToPost(result.data),
-    isLiked: result.data.isLiked,
+    isLiked: Boolean(result.data.isLiked),
+  };
+}
+
+export async function fetchDraftPostList(params?: {
+  cursor?: string;
+  size?: number;
+}): Promise<DraftPostListResult> {
+  const result = await fetchDraftPosts(params);
+  return {
+    drafts: result.data.content,
+    nextCursor: result.data.nextCursor,
+    hasNext: result.data.hasNext,
+    totalCount: result.data.totalCount,
+  };
+}
+
+export async function fetchDraftPostDetail(postId: string): Promise<{
+  post: Post;
+  isLiked: boolean;
+  categoryPath: string;
+}> {
+  const result = await fetchDraftDetail(postId);
+  const mappedPost = mapDetailToPost(result.data);
+  return {
+    post: {
+      ...mappedPost,
+      viewCount: 0,
+    },
+    isLiked: Boolean(result.data.isLiked),
+    categoryPath: result.data.category?.path || "",
   };
 }
 
