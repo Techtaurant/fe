@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   InfiniteData,
@@ -15,6 +15,7 @@ import {
   fetchDraftPostDetail,
   updatePost,
 } from "@/app/services/posts";
+import { useUser } from "@/app/hooks/useUser";
 import { queryKeys } from "@/app/lib/queryKeys";
 import { DraftPostListResult } from "@/app/services/posts/types";
 import { CreatePostRequest, CreatePostResponse, PostStatus } from "@/app/types";
@@ -34,6 +35,26 @@ interface SavePostResult {
   requestedDraftId: string | null;
 }
 
+interface LocalDraftSnapshot {
+  version: 1;
+  savedAt: number;
+  draftId: string | null;
+  title: string;
+  content: string;
+  categoryPath: string;
+  tags: string[];
+}
+
+const LOCAL_DRAFT_VERSION = 1 as const;
+const LOCAL_DRAFT_TTL_MS = 14 * 24 * 60 * 60 * 1000;
+const AUTO_SAVE_DEBOUNCE_MS = 2000;
+const AUTO_SAVE_RETRY_BASE_MS = 3000;
+const AUTO_SAVE_RETRY_MAX_MS = 30000;
+
+function getLocalDraftStorageKey(draftId: string | null) {
+  return `post:write:autosave:${draftId ?? "new"}`;
+}
+
 /**
  * 게시물 작성/수정 페이지
  * - 왼쪽: 마크다운 에디터
@@ -43,7 +64,9 @@ export default function WritePostPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const { user } = useUser();
   const draftId = searchParams.get("draftId");
+  const localDraftStorageKey = getLocalDraftStorageKey(draftId);
   const draftCountQueryKey = [...queryKeys.posts.all, "drafts-count"] as const;
 
   const [title, setTitle] = useState("");
@@ -54,11 +77,21 @@ export default function WritePostPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [autoSaveNotice, setAutoSaveNotice] = useState<string | null>(null);
+  const [recoverableLocalDraft, setRecoverableLocalDraft] =
+    useState<LocalDraftSnapshot | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
     title: false,
     content: false,
   });
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
+  const autoSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveAbortControllerRef = useRef<AbortController | null>(null);
+  const autoSaveRequestSequenceRef = useRef(0);
+  const autoSaveAppliedSequenceRef = useRef(0);
+  const autoSaveRetryDelayRef = useRef(AUTO_SAVE_RETRY_BASE_MS);
+  const isRestoringLocalDraftRef = useRef(false);
 
   const draftDetailQuery = useQuery({
     queryKey: queryKeys.posts.draftDetail(draftId ?? ""),
@@ -106,8 +139,18 @@ export default function WritePostPage() {
     staleTime: 30_000,
   });
 
+  const contentFingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        title,
+        content,
+        categoryPath,
+        tags,
+      }),
+    [categoryPath, content, tags, title],
+  );
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasHydratedDraft(false);
     setError(null);
     setSuccess(null);
@@ -116,13 +159,223 @@ export default function WritePostPage() {
   useEffect(() => {
     if (!draftDetailQuery.data || hasHydratedDraft) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTitle(draftDetailQuery.data.post.title || "");
     setContent(draftDetailQuery.data.post.content || "");
     setCategoryPath(draftDetailQuery.data.categoryPath || "");
     setTags(draftDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
     setHasHydratedDraft(true);
   }, [draftDetailQuery.data, hasHydratedDraft]);
+
+  const writeLocalDraftSnapshot = () => {
+    if (typeof window === "undefined") return;
+    const snapshot: LocalDraftSnapshot = {
+      version: LOCAL_DRAFT_VERSION,
+      savedAt: Date.now(),
+      draftId,
+      title,
+      content,
+      categoryPath,
+      tags,
+    };
+    window.localStorage.setItem(localDraftStorageKey, JSON.stringify(snapshot));
+  };
+
+  const clearLocalDraftSnapshot = () => {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(localDraftStorageKey);
+  };
+
+  const scheduleAutoSaveRetry = () => {
+    if (autoSaveRetryTimerRef.current) {
+      clearTimeout(autoSaveRetryTimerRef.current);
+      autoSaveRetryTimerRef.current = null;
+    }
+
+    const retryDelay = autoSaveRetryDelayRef.current;
+    autoSaveRetryDelayRef.current = Math.min(
+      autoSaveRetryDelayRef.current * 2,
+      AUTO_SAVE_RETRY_MAX_MS,
+    );
+
+    autoSaveRetryTimerRef.current = setTimeout(() => {
+      void runAutoSave();
+    }, retryDelay);
+  };
+
+  const runAutoSave = async () => {
+    if (!user) return;
+    if (isRestoringLocalDraftRef.current) return;
+    if (draftId && draftDetailQuery.isError) return;
+    if (!title.trim() && !content.trim() && !categoryPath.trim() && tags.length === 0) return;
+
+    if (autoSaveAbortControllerRef.current) {
+      autoSaveAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    autoSaveAbortControllerRef.current = abortController;
+
+    const requestSequence = ++autoSaveRequestSequenceRef.current;
+
+    try {
+      const payload = buildPostPayload("DRAFT");
+      const result = draftId
+        ? await updatePost(draftId, payload, abortController.signal)
+        : await createPost(payload, abortController.signal);
+
+      if (requestSequence < autoSaveAppliedSequenceRef.current) {
+        return;
+      }
+      autoSaveAppliedSequenceRef.current = requestSequence;
+      autoSaveRetryDelayRef.current = AUTO_SAVE_RETRY_BASE_MS;
+      clearLocalDraftSnapshot();
+      setAutoSaveNotice("자동 저장되었습니다.");
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...queryKeys.posts.all, "drafts"] as const,
+        }),
+        queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
+      ]);
+
+      if (!draftId) {
+        router.replace(`/post/write?draftId=${result.data.id}`);
+      }
+    } catch (saveError) {
+      if (
+        saveError instanceof DOMException &&
+        saveError.name === "AbortError"
+      ) {
+        return;
+      }
+      setAutoSaveNotice(
+        "네트워크 오류로 로컬에 임시 저장했습니다. 자동 재시도합니다.",
+      );
+      scheduleAutoSaveRetry();
+    }
+  };
+
+  const handleRestoreLocalDraft = () => {
+    if (!recoverableLocalDraft) return;
+    isRestoringLocalDraftRef.current = true;
+    setTitle(recoverableLocalDraft.title);
+    setContent(recoverableLocalDraft.content);
+    setCategoryPath(recoverableLocalDraft.categoryPath);
+    setTags(recoverableLocalDraft.tags);
+    setTagInput("");
+    setRecoverableLocalDraft(null);
+    setAutoSaveNotice("로컬 임시본을 복구했습니다.");
+    setTimeout(() => {
+      isRestoringLocalDraftRef.current = false;
+    }, 0);
+  };
+
+  const handleDiscardLocalDraft = () => {
+    clearLocalDraftSnapshot();
+    setRecoverableLocalDraft(null);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.localStorage.getItem(localDraftStorageKey);
+    if (!raw) {
+      setRecoverableLocalDraft(null);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<LocalDraftSnapshot>;
+      if (
+        parsed.version !== LOCAL_DRAFT_VERSION ||
+        typeof parsed.savedAt !== "number" ||
+        Date.now() - parsed.savedAt > LOCAL_DRAFT_TTL_MS
+      ) {
+        window.localStorage.removeItem(localDraftStorageKey);
+        setRecoverableLocalDraft(null);
+        return;
+      }
+
+      setRecoverableLocalDraft({
+        version: LOCAL_DRAFT_VERSION,
+        savedAt: parsed.savedAt,
+        draftId: typeof parsed.draftId === "string" ? parsed.draftId : null,
+        title: typeof parsed.title === "string" ? parsed.title : "",
+        content: typeof parsed.content === "string" ? parsed.content : "",
+        categoryPath:
+          typeof parsed.categoryPath === "string" ? parsed.categoryPath : "",
+        tags: Array.isArray(parsed.tags)
+          ? parsed.tags.filter((tag): tag is string => typeof tag === "string")
+          : [],
+      });
+    } catch {
+      window.localStorage.removeItem(localDraftStorageKey);
+      setRecoverableLocalDraft(null);
+    }
+  }, [localDraftStorageKey]);
+
+  useEffect(() => {
+    if (recoverableLocalDraft) return;
+    if (isRestoringLocalDraftRef.current) return;
+    if (!title && !content && !categoryPath && tags.length === 0) return;
+
+    writeLocalDraftSnapshot();
+    setAutoSaveNotice("로컬 임시 저장됨");
+
+    if (autoSaveDebounceTimerRef.current) {
+      clearTimeout(autoSaveDebounceTimerRef.current);
+      autoSaveDebounceTimerRef.current = null;
+    }
+    if (autoSaveRetryTimerRef.current) {
+      clearTimeout(autoSaveRetryTimerRef.current);
+      autoSaveRetryTimerRef.current = null;
+    }
+
+    autoSaveDebounceTimerRef.current = setTimeout(() => {
+      void runAutoSave();
+    }, AUTO_SAVE_DEBOUNCE_MS);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentFingerprint, recoverableLocalDraft]);
+
+  useEffect(() => {
+    const flushAutoSave = () => {
+      if (document.visibilityState === "hidden") {
+        if (autoSaveDebounceTimerRef.current) {
+          clearTimeout(autoSaveDebounceTimerRef.current);
+          autoSaveDebounceTimerRef.current = null;
+        }
+        void runAutoSave();
+      }
+    };
+
+    const flushBeforeUnload = () => {
+      if (autoSaveDebounceTimerRef.current) {
+        clearTimeout(autoSaveDebounceTimerRef.current);
+        autoSaveDebounceTimerRef.current = null;
+      }
+      void runAutoSave();
+    };
+
+    document.addEventListener("visibilitychange", flushAutoSave);
+    window.addEventListener("beforeunload", flushBeforeUnload);
+
+    return () => {
+      document.removeEventListener("visibilitychange", flushAutoSave);
+      window.removeEventListener("beforeunload", flushBeforeUnload);
+    };
+  });
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveDebounceTimerRef.current) {
+        clearTimeout(autoSaveDebounceTimerRef.current);
+      }
+      if (autoSaveRetryTimerRef.current) {
+        clearTimeout(autoSaveRetryTimerRef.current);
+      }
+      if (autoSaveAbortControllerRef.current) {
+        autoSaveAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   /**
    * 태그 추가 처리
@@ -243,6 +496,7 @@ export default function WritePostPage() {
     onMutate: () => {
       setError(null);
       setSuccess(null);
+      setAutoSaveNotice(null);
       setFieldErrors({ title: false, content: false });
     },
     onSuccess: async ({ result, status, requestedDraftId }) => {
@@ -253,6 +507,7 @@ export default function WritePostPage() {
 
       if (status === "DRAFT") {
         setSuccess("게시물이 임시저장되었습니다.");
+        clearLocalDraftSnapshot();
         await Promise.all([
           queryClient.invalidateQueries({
             queryKey: [...queryKeys.posts.all, "drafts"] as const,
@@ -273,6 +528,7 @@ export default function WritePostPage() {
       }
 
       clearEditorState();
+      clearLocalDraftSnapshot();
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: [...queryKeys.posts.all, "drafts"] as const,
@@ -347,6 +603,36 @@ export default function WritePostPage() {
         {draftErrorMessage && (
           <div className="mb-4 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
             {draftErrorMessage}
+          </div>
+        )}
+
+        {recoverableLocalDraft && (
+          <div className="mb-4 rounded-lg border border-border bg-card p-4">
+            <p className="text-sm font-medium text-foreground">
+              이전에 로컬에 저장된 임시본이 있습니다. 복구할까요?
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={handleRestoreLocalDraft}
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                복구
+              </button>
+              <button
+                type="button"
+                onClick={handleDiscardLocalDraft}
+                className="rounded-md border border-border px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                버리기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {autoSaveNotice && (
+          <div className="mb-4 rounded-lg border border-border bg-card p-3 text-sm text-muted-foreground">
+            {autoSaveNotice}
           </div>
         )}
 
