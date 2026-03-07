@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Post } from "../../types";
 import PostList from "../PostList";
 import FeedSkeleton from "../skeleton/FeedSkeleton";
@@ -24,6 +25,7 @@ export default function CommunityFeedSection({
   onLoadMore,
   onReadStatusChange,
 }: CommunityFeedSectionProps) {
+  const t = useTranslations("CommunityFeed");
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
   const showInitialSkeleton =
     (isLoading || isLoadingMore) && posts.length === 0;
@@ -69,7 +71,7 @@ export default function CommunityFeedSection({
           )}
           {!hasNext && !isLoading && !isLoadingMore && posts.length > 0 && (
             <div className="py-4 text-center text-sm text-muted-foreground">
-              마지막 게시물까지 모두 불러왔습니다 🎉
+              {t("reachedEnd")}
             </div>
           )}
         </>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
 import SidebarSearchInput from './SidebarSearchInput';
 import { useTags } from '../hooks/useTags';
@@ -28,6 +29,7 @@ export default function Sidebar({
   isOpen = false,
   onClose = () => {},
 }: SidebarProps) {
+  const t = useTranslations('Sidebar');
   const { tags: fetchedTags, isLoading: isTagsLoading } = useTags(availableTags);
   const { techBlogs: fetchedTechBlogs, isLoading: isTechBlogsLoading } = useTechBlogsTags(availableTechBlogs);
   const latestFilterStateRef = useRef(filterState);
@@ -156,7 +158,7 @@ export default function Sidebar({
         <button
           onClick={onClose}
           className="md:hidden absolute top-4 right-4 p-2 rounded-md hover:bg-muted transition-colors duration-200"
-          aria-label="필터 닫기"
+          aria-label={t('closeFilter')}
         >
           <svg
             className="w-6 h-6 text-muted-foreground"
@@ -180,7 +182,7 @@ export default function Sidebar({
           <div className="mt-12 md:mt-0">
             {/* 정렬 */}
             <div className="mb-8">
-              <h3 className="text-sm font-bold mb-3 text-foreground">정렬</h3>
+              <h3 className="text-sm font-bold mb-3 text-foreground">{t('sort.title')}</h3>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => handleSortChange('latest')}
@@ -191,7 +193,7 @@ export default function Sidebar({
                         : 'bg-transparent text-muted-foreground hover:bg-muted'
                     }`}
                 >
-                  최신순
+                  {t('sort.latest')}
                 </button>
                 <button
                   onClick={() => handleSortChange('popular')}
@@ -202,7 +204,7 @@ export default function Sidebar({
                         : 'bg-transparent text-muted-foreground hover:bg-muted'
                     }`}
                 >
-                  인기순
+                  {t('sort.popular')}
                 </button>
               </div>
             </div>
@@ -217,20 +219,20 @@ export default function Sidebar({
                   className="w-5 h-5 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
                 />
                 <span className="text-sm text-muted-foreground">
-                  읽은 게시물 제외
+                  {t('hideReadPosts')}
                 </span>
               </label>
             </div>
 
              {/* 기술 블로그 필터 */}
              <div className="mb-8">
-              <h3 className="text-sm font-bold mb-3 text-foreground">기술 블로그</h3>
-              <div className="mb-3">
-                <SidebarSearchInput
-                  placeholder="기술 블로그 검색"
-                  value={techBlogSearchQuery}
-                  onChange={setTechBlogSearchQuery}
-                  onEnter={selectTopTechBlog}
+               <h3 className="text-sm font-bold mb-3 text-foreground">{t('techBlog.title')}</h3>
+               <div className="mb-3">
+                 <SidebarSearchInput
+                   placeholder={t('techBlog.searchPlaceholder')}
+                   value={techBlogSearchQuery}
+                   onChange={setTechBlogSearchQuery}
+                   onEnter={selectTopTechBlog}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -259,9 +261,9 @@ export default function Sidebar({
                     onClick={() => setShowAllTechBlogs((prev) => !prev)}
                     className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
                   >
-                    {showAllTechBlogs
-                      ? '접기'
-                      : `더보기 (${filteredTechBlogs.length - MAX_VISIBLE_ITEMS}개)`}
+                     {showAllTechBlogs
+                      ? t('collapse')
+                      : t('showMoreCount', { count: filteredTechBlogs.length - MAX_VISIBLE_ITEMS })}
                   </button>
                 )}
               </div>
@@ -277,13 +279,13 @@ export default function Sidebar({
           <div className="mt-12 md:mt-0">
              {/* 사용자 검색 */}
              <div className="mb-8">
-              <h3 className="text-sm font-bold mb-3 text-foreground">사용자 검색</h3>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="사용자 이름"
-                  value={userSearchQuery}
-                  onChange={(e) => setUserSearchQuery(e.target.value)}
+               <h3 className="text-sm font-bold mb-3 text-foreground">{t('userSearch.title')}</h3>
+               <div className="relative">
+                 <input
+                   type="text"
+                   placeholder={t('userSearch.placeholder')}
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
                   className="w-full bg-muted border-none rounded-full
                           py-2 pl-10 pr-4 text-sm text-foreground
                           transition-colors duration-200
@@ -312,10 +314,10 @@ export default function Sidebar({
            ================================================================= */}
         {/* 태그 필터 */}
         <div className="mb-8">
-          <h3 className="text-sm font-bold mb-3 text-foreground">태그</h3>
+          <h3 className="text-sm font-bold mb-3 text-foreground">{t('tag.title')}</h3>
           <div className="mb-3">
             <SidebarSearchInput
-              placeholder="태그 검색"
+              placeholder={t('tag.searchPlaceholder')}
               value={tagSearchQuery}
               onChange={setTagSearchQuery}
               onEnter={selectTopTag}
@@ -348,8 +350,8 @@ export default function Sidebar({
                 className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
               >
                 {showAllTags
-                  ? '접기'
-                  : `더보기 (${filteredTags.length - MAX_VISIBLE_ITEMS}개)`}
+                  ? t('collapse')
+                  : t('showMoreCount', { count: filteredTags.length - MAX_VISIBLE_ITEMS })}
               </button>
             )}
           </div>

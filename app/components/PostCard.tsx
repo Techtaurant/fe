@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Post } from "../types";
 
 interface PostCardProps {
@@ -11,6 +12,8 @@ interface PostCardProps {
 
 export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
   const router = useRouter();
+  const t = useTranslations("PostCard");
+  const locale = useLocale();
 
   const handleCardClick = () => {
     // 게시물을 읽음으로 표시
@@ -20,20 +23,29 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
 
     // 커뮤니티 글은 상세 페이지로, 기업 글은 외부 링크로 이동
     if (post.type === "community") {
-      router.push(`/post/${post.id}`);
+      router.push(`/${locale}/post/${post.id}`);
     } else {
       window.open(post.url, "_blank");
     }
   };
 
   const formatCount = (count: number): string => {
-    if (count >= 10000) {
-      return `${(count / 10000).toFixed(1)}만`;
+    if (locale === "ko") {
+      if (count >= 10000) {
+        return `${(count / 10000).toFixed(1)}만`;
+      }
+      if (count >= 1000) {
+        return `${(count / 1000).toFixed(1)}천`;
+      }
+      return count.toString();
+    }
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
     }
     if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}천`;
+      return `${(count / 1000).toFixed(1)}K`;
     }
-    return count.toString();
+    return String(count);
   };
 
   // 작성자 정보 (기업 또는 사용자)
@@ -43,14 +55,6 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
     post.type === "company"
       ? post.techBlog?.iconUrl
       : post.author?.profileImageUrl;
-
-  // 작성자 클릭 시 사용자 페이지로 이동 (커뮤니티 글만)
-  const handleAuthorClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (post.type === "community" && post.author?.id) {
-      router.push(`/user/${post.author.id}`);
-    }
-  };
 
   return (
     <article
@@ -99,7 +103,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
                     clipRule="evenodd"
                   />
                 </svg>
-                읽음
+                {t("read")}
               </span>
             )}
           </div>
@@ -136,7 +140,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
               {/* View Count */}
               <div
                 className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
-                title="조회수"
+                title={t("views")}
               >
                 <svg
                   className="w-4 h-4"
@@ -164,7 +168,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
               {post.likeCount !== undefined && (
                 <div
                   className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
-                  title="좋아요"
+                  title={t("likes")}
                 >
                   <svg
                     className="w-4 h-4"
@@ -187,7 +191,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
               {post.commentCount !== undefined && (
                 <div
                   className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
-                  title="댓글"
+                  title={t("comments")}
                 >
                   <svg
                     className="w-4 h-4"
