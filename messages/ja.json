@@ -1,0 +1,137 @@
+{
+  "Header": {
+    "openMenu": "メニューを開く",
+    "companyBlogs": "企業ブログ",
+    "community": "コミュニティ",
+    "searchPlaceholder": "検索...",
+    "writePost": "投稿作成",
+    "profile": "プロフィール",
+    "logout": "ログアウト",
+    "login": "ログイン"
+  },
+  "BottomNav": {
+    "home": "ホーム",
+    "search": "検索",
+    "newPost": "新規投稿",
+    "companyBlogs": "企業",
+    "community": "コミュニティ"
+  },
+  "Locale": {
+    "switchTo": "{locale}に切り替え"
+  },
+  "Theme": {
+    "label": "テーマ",
+    "mode": {
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム"
+    }
+  },
+  "Sidebar": {
+    "closeFilter": "フィルターを閉じる",
+    "collapse": "折りたたむ",
+    "showMoreCount": "もっと見る ({count})",
+    "hideReadPosts": "既読投稿を除外",
+    "sort": {
+      "title": "並び替え",
+      "latest": "新着順",
+      "popular": "人気順"
+    },
+    "techBlog": {
+      "title": "技術ブログ",
+      "searchPlaceholder": "技術ブログを検索"
+    },
+    "userSearch": {
+      "title": "ユーザー検索",
+      "placeholder": "ユーザー名"
+    },
+    "tag": {
+      "title": "タグ",
+      "searchPlaceholder": "タグを検索"
+    }
+  },
+  "FilterBar": {
+    "date": {
+      "7d": "7日",
+      "30d": "30日",
+      "365d": "365日",
+      "all": "全体"
+    },
+    "sort": {
+      "latest": "新着順",
+      "comments": "コメント順",
+      "views": "閲覧順",
+      "likes": "いいね順"
+    }
+  },
+  "PostList": {
+    "noPosts": "条件に一致する投稿がありません。"
+  },
+  "PostCard": {
+    "read": "既読",
+    "views": "閲覧数",
+    "likes": "いいね",
+    "comments": "コメント"
+  },
+  "PostDetail": {
+    "back": "戻る",
+    "minRead": "{minutes}分で読めます",
+    "follow": "フォロー",
+    "ariaLike": "いいね",
+    "ariaDislike": "よくない",
+    "commentPlaceholder": "意見を共有してください",
+    "cancel": "キャンセル",
+    "comment": "コメント",
+    "sortLatest": "新着順",
+    "sortLikes": "いいね順",
+    "sortReplies": "返信順",
+    "loadingComments": "コメントを読み込み中です。",
+    "replies": "返信 {count}",
+    "noComments": "まだコメントがありません。最初のコメントを投稿しましょう！",
+    "loadingMore": "読み込み中...",
+    "loadMore": "もっと見る"
+  },
+  "CommunityFeed": {
+    "loadFailed": "コミュニティ投稿の読み込みに失敗しました。",
+    "reachedEnd": "最後の投稿まで読み込みました 🎉"
+  },
+  "SearchPage": {
+    "placeholder": "キーワードを入力してください",
+    "emptyPrompt": "キーワードを入力すると検索結果が表示されます。",
+    "noResults": "検索結果がありません。"
+  },
+  "DraftsPage": {
+    "title": "下書き",
+    "description": "保存した下書きを編集または公開できます。",
+    "newPost": "新規投稿",
+    "loadingUser": "ユーザー情報を読み込み中です。",
+    "signInRequired": "下書きを表示するにはログインしてください。",
+    "empty": "保存された下書きはありません。",
+    "updatedAt": "最終更新",
+    "loadingMore": "下書きをさらに読み込み中...",
+    "reachedEnd": "最後の下書きまで読み込みました。",
+    "loadFailed": "下書きの読み込みに失敗しました。"
+  },
+  "PostDetailPage": {
+    "loading": "投稿を読み込み中です。",
+    "notFound": "投稿が見つかりません。",
+    "loadFailed": "投稿の読み込みに失敗しました。",
+    "reactionFailed": "リアクションの処理に失敗しました。",
+    "linkCopied": "リンクをコピーしました！",
+    "copyFailed": "リンクのコピーに失敗しました。"
+  },
+  "OAuthCallback": {
+    "processing": "ログイン処理中..."
+  },
+  "OAuthError": {
+    "title": "ログイン失敗",
+    "backHome": "ホームに戻る",
+    "error": {
+      "4001": "サポートされていないログイン方式です。",
+      "4002": "メール情報を取得できません。Googleアカウント設定を確認してください。",
+      "4003": "ログインに失敗しました。もう一度お試しください。",
+      "4004": "サーバーエラーが発生しました。しばらくしてからお試しください。",
+      "unknown": "不明なエラーが発生しました。"
+    }
+  }
+}

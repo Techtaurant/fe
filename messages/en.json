@@ -1,0 +1,137 @@
+{
+  "Header": {
+    "openMenu": "Open menu",
+    "companyBlogs": "Company blogs",
+    "community": "Community",
+    "searchPlaceholder": "Search...",
+    "writePost": "Write post",
+    "profile": "Profile",
+    "logout": "Log out",
+    "login": "Log in"
+  },
+  "BottomNav": {
+    "home": "Home",
+    "search": "Search",
+    "newPost": "New post",
+    "companyBlogs": "Company",
+    "community": "Community"
+  },
+  "Locale": {
+    "switchTo": "Switch to {locale}"
+  },
+  "Theme": {
+    "label": "Theme",
+    "mode": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    }
+  },
+  "Sidebar": {
+    "closeFilter": "Close filters",
+    "collapse": "Collapse",
+    "showMoreCount": "Show more ({count})",
+    "hideReadPosts": "Hide read posts",
+    "sort": {
+      "title": "Sort",
+      "latest": "Latest",
+      "popular": "Popular"
+    },
+    "techBlog": {
+      "title": "Tech blogs",
+      "searchPlaceholder": "Search tech blogs"
+    },
+    "userSearch": {
+      "title": "User search",
+      "placeholder": "Username"
+    },
+    "tag": {
+      "title": "Tags",
+      "searchPlaceholder": "Search tags"
+    }
+  },
+  "FilterBar": {
+    "date": {
+      "7d": "7d",
+      "30d": "30d",
+      "365d": "365d",
+      "all": "All"
+    },
+    "sort": {
+      "latest": "Latest",
+      "comments": "Comments",
+      "views": "Views",
+      "likes": "Likes"
+    }
+  },
+  "PostList": {
+    "noPosts": "No posts match your filters."
+  },
+  "PostCard": {
+    "read": "Read",
+    "views": "Views",
+    "likes": "Likes",
+    "comments": "Comments"
+  },
+  "PostDetail": {
+    "back": "Back",
+    "minRead": "{minutes} min read",
+    "follow": "Follow",
+    "ariaLike": "Like",
+    "ariaDislike": "Dislike",
+    "commentPlaceholder": "Share your thoughts",
+    "cancel": "Cancel",
+    "comment": "Comment",
+    "sortLatest": "Latest",
+    "sortLikes": "Likes",
+    "sortReplies": "Replies",
+    "loadingComments": "Loading comments...",
+    "replies": "Replies {count}",
+    "noComments": "No comments yet. Be the first to comment!",
+    "loadingMore": "Loading...",
+    "loadMore": "Load more"
+  },
+  "CommunityFeed": {
+    "loadFailed": "Failed to load community posts.",
+    "reachedEnd": "You reached the last post 🎉"
+  },
+  "SearchPage": {
+    "placeholder": "Enter a keyword",
+    "emptyPrompt": "Results appear when you enter a search term.",
+    "noResults": "No search results."
+  },
+  "DraftsPage": {
+    "title": "My drafts",
+    "description": "Edit or publish your saved drafts.",
+    "newPost": "New post",
+    "loadingUser": "Loading user info...",
+    "signInRequired": "Sign in to view drafts.",
+    "empty": "No saved drafts.",
+    "updatedAt": "Last updated",
+    "loadingMore": "Loading more drafts...",
+    "reachedEnd": "You reached the last draft.",
+    "loadFailed": "Failed to load drafts."
+  },
+  "PostDetailPage": {
+    "loading": "Loading post...",
+    "notFound": "Post not found.",
+    "loadFailed": "Failed to load post.",
+    "reactionFailed": "Failed to process reaction.",
+    "linkCopied": "Link copied!",
+    "copyFailed": "Failed to copy link."
+  },
+  "OAuthCallback": {
+    "processing": "Processing sign in..."
+  },
+  "OAuthError": {
+    "title": "Sign-in failed",
+    "backHome": "Back to home",
+    "error": {
+      "4001": "Unsupported sign-in method.",
+      "4002": "Unable to read email information. Check your Google account settings.",
+      "4003": "Sign in failed. Please try again.",
+      "4004": "A server error occurred. Please try again later.",
+      "unknown": "An unknown error occurred."
+    }
+  }
+}

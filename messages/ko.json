@@ -1,0 +1,137 @@
+{
+  "Header": {
+    "openMenu": "메뉴 열기",
+    "companyBlogs": "기업 블로그",
+    "community": "커뮤니티",
+    "searchPlaceholder": "검색...",
+    "writePost": "게시물 작성",
+    "profile": "프로필",
+    "logout": "로그아웃",
+    "login": "로그인"
+  },
+  "BottomNav": {
+    "home": "홈",
+    "search": "검색",
+    "newPost": "새 글",
+    "companyBlogs": "기업블로그",
+    "community": "커뮤니티"
+  },
+  "Locale": {
+    "switchTo": "{locale}(으)로 전환"
+  },
+  "Theme": {
+    "label": "테마",
+    "mode": {
+      "light": "라이트",
+      "dark": "다크",
+      "system": "시스템"
+    }
+  },
+  "Sidebar": {
+    "closeFilter": "필터 닫기",
+    "collapse": "접기",
+    "showMoreCount": "더보기 ({count}개)",
+    "hideReadPosts": "읽은 게시물 제외",
+    "sort": {
+      "title": "정렬",
+      "latest": "최신순",
+      "popular": "인기순"
+    },
+    "techBlog": {
+      "title": "기술 블로그",
+      "searchPlaceholder": "기술 블로그 검색"
+    },
+    "userSearch": {
+      "title": "사용자 검색",
+      "placeholder": "사용자 이름"
+    },
+    "tag": {
+      "title": "태그",
+      "searchPlaceholder": "태그 검색"
+    }
+  },
+  "FilterBar": {
+    "date": {
+      "7d": "7일",
+      "30d": "30일",
+      "365d": "365일",
+      "all": "전체"
+    },
+    "sort": {
+      "latest": "최신순",
+      "comments": "댓글순",
+      "views": "조회순",
+      "likes": "추천순"
+    }
+  },
+  "PostList": {
+    "noPosts": "조건에 맞는 게시물이 없습니다."
+  },
+  "PostCard": {
+    "read": "읽음",
+    "views": "조회수",
+    "likes": "좋아요",
+    "comments": "댓글"
+  },
+  "PostDetail": {
+    "back": "돌아가기",
+    "minRead": "{minutes}분 읽기",
+    "follow": "팔로우",
+    "ariaLike": "좋아요",
+    "ariaDislike": "싫어요",
+    "commentPlaceholder": "의견을 나눠주세요",
+    "cancel": "취소",
+    "comment": "댓글",
+    "sortLatest": "최신순",
+    "sortLikes": "좋아요순",
+    "sortReplies": "답글순",
+    "loadingComments": "댓글을 불러오는 중입니다.",
+    "replies": "답글 {count}",
+    "noComments": "아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!",
+    "loadingMore": "불러오는 중...",
+    "loadMore": "더보기"
+  },
+  "CommunityFeed": {
+    "loadFailed": "커뮤니티 게시물을 불러오지 못했습니다.",
+    "reachedEnd": "마지막 게시물까지 모두 불러왔습니다 🎉"
+  },
+  "SearchPage": {
+    "placeholder": "검색어를 입력하세요",
+    "emptyPrompt": "검색어를 입력하면 결과가 표시됩니다.",
+    "noResults": "검색 결과가 없습니다."
+  },
+  "DraftsPage": {
+    "title": "내 임시글",
+    "description": "임시 저장한 게시물을 수정하거나 발행할 수 있습니다.",
+    "newPost": "새 글 작성",
+    "loadingUser": "사용자 정보를 불러오는 중입니다.",
+    "signInRequired": "로그인 후 임시글을 조회할 수 있습니다.",
+    "empty": "임시 저장한 게시물이 없습니다.",
+    "updatedAt": "최종 수정일",
+    "loadingMore": "임시글을 더 불러오는 중입니다...",
+    "reachedEnd": "마지막 임시글까지 모두 불러왔습니다.",
+    "loadFailed": "임시 저장 글을 불러오지 못했습니다."
+  },
+  "PostDetailPage": {
+    "loading": "게시물을 불러오는 중입니다.",
+    "notFound": "게시물을 찾을 수 없습니다.",
+    "loadFailed": "게시물을 불러오지 못했습니다.",
+    "reactionFailed": "반응 처리에 실패했습니다.",
+    "linkCopied": "링크가 복사되었습니다!",
+    "copyFailed": "링크 복사에 실패했습니다."
+  },
+  "OAuthCallback": {
+    "processing": "로그인 처리 중..."
+  },
+  "OAuthError": {
+    "title": "로그인 실패",
+    "backHome": "홈으로 돌아가기",
+    "error": {
+      "4001": "지원하지 않는 로그인 방식입니다.",
+      "4002": "이메일 정보를 가져올 수 없습니다. Google 계정 설정을 확인해주세요.",
+      "4003": "로그인에 실패했습니다. 다시 시도해주세요.",
+      "4004": "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+      "unknown": "알 수 없는 오류가 발생했습니다."
+    }
+  }
+}
