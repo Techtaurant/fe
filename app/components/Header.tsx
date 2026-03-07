@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 import { useUser } from "../hooks/useUser";
 import { queryKeys } from "../lib/queryKeys";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 import ThemeModeDropdown from "./ThemeDropdown";
 import MobileBottomNav from "./BottomNav";
+import LocaleSwitcher from "./LocaleSwitcher";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -22,6 +24,8 @@ export default function Header({
   currentMode = FEED_MODES.COMPANY,
   onModeChange,
 }: HeaderProps) {
+  const t = useTranslations("Header");
+  const locale = useLocale();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -48,12 +52,12 @@ export default function Header({
     e.preventDefault();
     const trimmedQuery = searchQuery.trim();
     if (!trimmedQuery) return;
-    router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+    router.push(`/${locale}/search?q=${encodeURIComponent(trimmedQuery)}`);
   };
 
   const handleModeNavigate = (mode: FeedMode) => {
     onModeChange?.(mode);
-    router.push(`/?mode=${mode}`);
+    router.push(`/${locale}?mode=${mode}`);
   };
 
   const handleAuthClick = () => {
@@ -65,7 +69,7 @@ export default function Header({
         "Redirecting to OAuth URL:",
         `${apiBaseUrl}/oauth2/authorization/google`,
       );
-      window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
+      window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}&redirect=/${locale}`;
     } else {
       setIsDropdownOpen(!isDropdownOpen);
     }
@@ -85,12 +89,12 @@ export default function Header({
         queryKey: queryKeys.user.all,
       });
     } catch (error) {
-      console.error("로그아웃 실패:", error);
+      console.error("Logout failed:", error);
     }
   };
 
   const handleLogoClick = () => {
-    window.location.href = "/";
+    window.location.href = `/${locale}`;
   };
 
   return (
@@ -100,7 +104,7 @@ export default function Header({
         <button
           onClick={onMenuClick}
           className="md:hidden p-2 rounded-md hover:bg-muted transition-colors duration-200"
-          aria-label="메뉴 열기"
+          aria-label={t("openMenu")}
         >
           <svg
             className="w-6 h-6 text-foreground"
@@ -139,7 +143,7 @@ export default function Header({
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
             >
-              기업 블로그
+              {t("companyBlogs")}
             </button>
             <button
               onClick={() => handleModeNavigate(FEED_MODES.USER)}
@@ -150,7 +154,7 @@ export default function Header({
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
             >
-              커뮤니티
+              {t("community")}
             </button>
           </div>
         </div>
@@ -163,7 +167,7 @@ export default function Header({
           <div className="relative w-full">
             <input
               type="text"
-              placeholder="검색..."
+               placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-muted border-none rounded-full
@@ -191,7 +195,7 @@ export default function Header({
           {/* Write Post Button (로그인 사용자만) */}
           {isLoggedIn && !isLoading && (
             <button
-              onClick={() => router.push("/post/write")}
+              onClick={() => router.push(`/${locale}/post/write`)}
               className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-full
                      bg-secondary text-secondary-foreground text-sm font-medium
                      transition-colors duration-200
@@ -210,7 +214,7 @@ export default function Header({
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              <span>게시물 작성</span>
+              <span>{t("writePost")}</span>
             </button>
           )}
 
@@ -228,7 +232,7 @@ export default function Header({
                 {user.profileImageUrl ? (
                   <Image
                     src={user.profileImageUrl}
-                    alt={user.name || "프로필"}
+                    alt={user.name || t("profile")}
                     width={36}
                     height={36}
                     className="rounded-full"
@@ -259,7 +263,7 @@ export default function Header({
                     onClick={handleLogout}
                     className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors"
                   >
-                    로그아웃
+                    {t("logout")}
                   </button>
                 </div>
               )}
@@ -285,10 +289,11 @@ export default function Header({
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
               </svg>
-              <span className="hidden md:inline">로그인</span>
+              <span className="hidden md:inline">{t("login")}</span>
             </button>
           )}
 
+          <LocaleSwitcher />
           <ThemeModeDropdown />
         </div>
       </div>

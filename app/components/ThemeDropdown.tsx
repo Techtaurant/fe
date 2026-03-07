@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "./ThemeProvider";
 
 type ThemeMode = "light" | "dark" | "system";
 
-const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "system", label: "System" },
-];
+const THEME_OPTIONS: ThemeMode[] = ["light", "dark", "system"];
 
 export default function ThemeModeDropdown() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
-  const [isMounted, setIsMounted] = useState(false);
+  const t = useTranslations("Theme");
+  const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -21,10 +18,6 @@ export default function ThemeModeDropdown() {
     theme === "light" || theme === "dark" || theme === "system"
       ? theme
       : "system";
-
-  // useEffect(() => {
-  //   setIsMounted(true);
-  // }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,17 +42,14 @@ export default function ThemeModeDropdown() {
     setIsOpen(false);
   };
 
-  const isDarkActive =
-    isMounted &&
-    (displayTheme === "dark" ||
-      (displayTheme === "system" && resolvedTheme === "dark"));
+  const isDarkActive = displayTheme === "dark";
 
   return (
     <div className="relative" ref={wrapperRef}>
       <button
         type="button"
         onClick={handleToggle}
-        aria-label="Theme"
+        aria-label={t("label")}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className="inline-flex items-center gap-2 px-3 py-2 rounded-full
@@ -73,7 +63,7 @@ export default function ThemeModeDropdown() {
           }`}
         />
         <span className="text-xs text-muted-foreground" suppressHydrationWarning>
-          {isMounted ? displayTheme : "system"}
+          {t(`mode.${displayTheme}`)}
         </span>
         <svg
           className="w-4 h-4 text-muted-foreground"
@@ -95,21 +85,21 @@ export default function ThemeModeDropdown() {
           className="absolute right-0 mt-2 w-36 rounded-md border border-border bg-popover text-popover-foreground shadow-lg py-1 z-[400]"
         >
           {THEME_OPTIONS.map((option) => {
-            const isSelected = displayTheme === option.value;
+            const isSelected = displayTheme === option;
             return (
               <button
-                key={option.value}
+                key={option}
                 type="button"
                 role="option"
                 aria-selected={isSelected}
-                onClick={() => handleSelect(option.value)}
+                onClick={() => handleSelect(option)}
                 className={`w-full px-3 py-2 text-left text-sm transition-colors ${
                   isSelected
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
                 }`}
               >
-                {option.label}
+                {t(`mode.${option}`)}
               </button>
             );
           })}
