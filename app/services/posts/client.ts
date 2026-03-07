@@ -14,10 +14,12 @@ import {
 
 export async function createPostRequest(
   payload: CreatePostRequest,
+  signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
   const response = await httpClient("/api/posts", {
     method: "POST",
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (response.status === 401) {
@@ -39,10 +41,12 @@ export async function createPostRequest(
 export async function updatePostRequest(
   postId: string,
   payload: UpdatePostRequest,
+  signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
   const response = await httpClient(`/api/posts/${postId}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (response.status === 401) {

@@ -37,6 +37,9 @@ export function mapListItemToPost(item: PostListItem): Post {
 }
 
 export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
+  const resolvedPublishedAt =
+    detail.publishedAt || detail.updatedAt || detail.createdAt;
+
   return {
     id: detail.id,
     type: "community",
@@ -54,7 +57,7 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
       role: "USER",
     },
     isRead: false,
-    publishedAt: detail.createdAt.slice(0, 10),
+    publishedAt: resolvedPublishedAt.slice(0, 10),
     url: `/post/${detail.id}`,
   };
 }

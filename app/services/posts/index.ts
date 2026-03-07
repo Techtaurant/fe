@@ -23,15 +23,17 @@ import {
 
 export async function createPost(
   payload: CreatePostRequest,
+  signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
-  return createPostRequest(payload);
+  return createPostRequest(payload, signal);
 }
 
 export async function updatePost(
   postId: string,
   payload: UpdatePostRequest,
+  signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
-  return updatePostRequest(postId, payload);
+  return updatePostRequest(postId, payload, signal);
 }
 
 export async function fetchCommunityPostList(params?: {

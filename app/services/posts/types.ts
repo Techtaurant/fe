@@ -34,6 +34,7 @@ export interface PostDetailResponse {
     id: string;
     title?: string;
     content?: string;
+    publishedAt?: string;
     author: {
       id: string;
       name: string;

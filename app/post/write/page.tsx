@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   InfiniteData,
@@ -15,6 +15,7 @@ import {
   fetchDraftPostDetail,
   updatePost,
 } from "@/app/services/posts";
+import { useUser } from "@/app/hooks/useUser";
 import { queryKeys } from "@/app/lib/queryKeys";
 import { DraftPostListResult } from "@/app/services/posts/types";
 import { CreatePostRequest, CreatePostResponse, PostStatus } from "@/app/types";
@@ -26,12 +27,55 @@ interface FieldErrors {
 
 interface SavePostVariables {
   status: PostStatus;
+  payload: CreatePostRequest;
+  requestId: string;
+  source: "manual" | "resume";
 }
 
 interface SavePostResult {
   result: CreatePostResponse;
   status: PostStatus;
   requestedDraftId: string | null;
+  source: "manual" | "resume";
+}
+
+interface PendingPublishSnapshot {
+  version: 1;
+  createdAt: number;
+  retried: boolean;
+  requestId: string;
+  path: string;
+  draftId: string | null;
+  status: "PUBLISHED" | "PRIVATE";
+  payload: CreatePostRequest;
+}
+
+interface LocalDraftSnapshot {
+  version: 1;
+  savedAt: number;
+  draftId: string | null;
+  title: string;
+  content: string;
+  categoryPath: string;
+  tags: string[];
+}
+
+const LOCAL_DRAFT_VERSION = 1 as const;
+const LOCAL_SAVE_DEBOUNCE_MS = 5000;
+const AUTO_SAVE_DEBOUNCE_MS = 30_000;
+const AUTO_SAVE_RETRY_BASE_MS = 3000;
+const AUTO_SAVE_RETRY_MAX_MS = 30000;
+const PENDING_PUBLISH_VERSION = 1 as const;
+const PENDING_PUBLISH_STORAGE_KEY = "post:write:pendingPublish";
+const PENDING_PUBLISH_TTL_MS = 30 * 60 * 1000;
+const AUTH_RETURN_TO_STORAGE_KEY = "auth:returnTo";
+
+function getLocalDraftStorageKey(draftId: string | null) {
+  return `post:write:autosave:${draftId ?? "new"}`;
+}
+
+function createRequestId() {
+  return `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
 /**
@@ -43,7 +87,9 @@ export default function WritePostPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const { user } = useUser();
   const draftId = searchParams.get("draftId");
+  const localDraftStorageKey = getLocalDraftStorageKey(draftId);
   const draftCountQueryKey = [...queryKeys.posts.all, "drafts-count"] as const;
 
   const [title, setTitle] = useState("");
@@ -54,11 +100,21 @@ export default function WritePostPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isAuthExpiredModalOpen, setIsAuthExpiredModalOpen] = useState(false);
+  const [autoSaveNotice, setAutoSaveNotice] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
     title: false,
     content: false,
   });
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
+  const autoSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveAbortControllerRef = useRef<AbortController | null>(null);
+  const autoSaveRequestSequenceRef = useRef(0);
+  const autoSaveAppliedSequenceRef = useRef(0);
+  const autoSaveRetryDelayRef = useRef(AUTO_SAVE_RETRY_BASE_MS);
+  const hasIncrementedDraftCountForCurrentCreateRef = useRef(false);
 
   const draftDetailQuery = useQuery({
     queryKey: queryKeys.posts.draftDetail(draftId ?? ""),
@@ -106,8 +162,19 @@ export default function WritePostPage() {
     staleTime: 30_000,
   });
 
+  const contentFingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        title,
+        content,
+        categoryPath,
+        tags,
+      }),
+    [categoryPath, content, tags, title],
+  );
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    hasIncrementedDraftCountForCurrentCreateRef.current = false;
     setHasHydratedDraft(false);
     setError(null);
     setSuccess(null);
@@ -116,13 +183,234 @@ export default function WritePostPage() {
   useEffect(() => {
     if (!draftDetailQuery.data || hasHydratedDraft) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTitle(draftDetailQuery.data.post.title || "");
     setContent(draftDetailQuery.data.post.content || "");
     setCategoryPath(draftDetailQuery.data.categoryPath || "");
     setTags(draftDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
     setHasHydratedDraft(true);
   }, [draftDetailQuery.data, hasHydratedDraft]);
+
+  const writeLocalDraftSnapshot = () => {
+    if (typeof window === "undefined") return;
+    const snapshot: LocalDraftSnapshot = {
+      version: LOCAL_DRAFT_VERSION,
+      savedAt: Date.now(),
+      draftId,
+      title,
+      content,
+      categoryPath,
+      tags,
+    };
+    window.localStorage.setItem(localDraftStorageKey, JSON.stringify(snapshot));
+  };
+
+  const clearLocalDraftSnapshot = () => {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(localDraftStorageKey);
+  };
+
+  const readPendingPublishSnapshot = (): PendingPublishSnapshot | null => {
+    if (typeof window === "undefined") return null;
+    const raw = window.sessionStorage.getItem(PENDING_PUBLISH_STORAGE_KEY);
+    if (!raw) return null;
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<PendingPublishSnapshot>;
+      if (
+        parsed.version !== PENDING_PUBLISH_VERSION ||
+        typeof parsed.createdAt !== "number" ||
+        Date.now() - parsed.createdAt > PENDING_PUBLISH_TTL_MS
+      ) {
+        window.sessionStorage.removeItem(PENDING_PUBLISH_STORAGE_KEY);
+        return null;
+      }
+      if (
+        parsed.status !== "PUBLISHED" &&
+        parsed.status !== "PRIVATE"
+      ) {
+        window.sessionStorage.removeItem(PENDING_PUBLISH_STORAGE_KEY);
+        return null;
+      }
+      if (!parsed.payload || typeof parsed.payload !== "object") {
+        window.sessionStorage.removeItem(PENDING_PUBLISH_STORAGE_KEY);
+        return null;
+      }
+      if (typeof parsed.path !== "string" || parsed.path.length === 0) {
+        window.sessionStorage.removeItem(PENDING_PUBLISH_STORAGE_KEY);
+        return null;
+      }
+
+      return {
+        version: PENDING_PUBLISH_VERSION,
+        createdAt: parsed.createdAt,
+        retried: Boolean(parsed.retried),
+        requestId:
+          typeof parsed.requestId === "string" ? parsed.requestId : createRequestId(),
+        path: parsed.path,
+        draftId: typeof parsed.draftId === "string" ? parsed.draftId : null,
+        status: parsed.status,
+        payload: parsed.payload as CreatePostRequest,
+      };
+    } catch {
+      window.sessionStorage.removeItem(PENDING_PUBLISH_STORAGE_KEY);
+      return null;
+    }
+  };
+
+  const writePendingPublishSnapshot = (snapshot: PendingPublishSnapshot) => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(
+      PENDING_PUBLISH_STORAGE_KEY,
+      JSON.stringify(snapshot),
+    );
+  };
+
+  const clearPendingPublishSnapshot = () => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.removeItem(PENDING_PUBLISH_STORAGE_KEY);
+  };
+
+  const scheduleAutoSaveRetry = () => {
+    if (autoSaveRetryTimerRef.current) {
+      clearTimeout(autoSaveRetryTimerRef.current);
+      autoSaveRetryTimerRef.current = null;
+    }
+
+    const retryDelay = autoSaveRetryDelayRef.current;
+    autoSaveRetryDelayRef.current = Math.min(
+      autoSaveRetryDelayRef.current * 2,
+      AUTO_SAVE_RETRY_MAX_MS,
+    );
+
+    autoSaveRetryTimerRef.current = setTimeout(() => {
+      void runAutoSave();
+    }, retryDelay);
+  };
+
+  const runAutoSave = async () => {
+    if (!user) return;
+    if (draftId && draftDetailQuery.isError) return;
+    if (!title.trim() && !content.trim() && !categoryPath.trim() && tags.length === 0) return;
+
+    if (autoSaveAbortControllerRef.current) {
+      autoSaveAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    autoSaveAbortControllerRef.current = abortController;
+
+    const requestSequence = ++autoSaveRequestSequenceRef.current;
+
+    try {
+      const payload = buildPostPayload("DRAFT");
+      const result = draftId
+        ? await updatePost(draftId, payload, abortController.signal)
+        : await createPost(payload, abortController.signal);
+
+      if (requestSequence < autoSaveAppliedSequenceRef.current) {
+        return;
+      }
+      autoSaveAppliedSequenceRef.current = requestSequence;
+      autoSaveRetryDelayRef.current = AUTO_SAVE_RETRY_BASE_MS;
+      clearLocalDraftSnapshot();
+      setAutoSaveNotice("자동 저장되었습니다.");
+
+      if (!draftId && !hasIncrementedDraftCountForCurrentCreateRef.current) {
+        queryClient.setQueryData<number | null>(draftCountQueryKey, (current) => {
+          if (typeof current !== "number") return current;
+          return current + 1;
+        });
+        hasIncrementedDraftCountForCurrentCreateRef.current = true;
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...queryKeys.posts.all, "drafts"] as const,
+        }),
+        queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
+      ]);
+
+      if (!draftId) {
+        router.replace(`/post/write?draftId=${result.data.id}`);
+      }
+    } catch (saveError) {
+      if (
+        saveError instanceof DOMException &&
+        saveError.name === "AbortError"
+      ) {
+        return;
+      }
+      setAutoSaveNotice(
+        "네트워크 오류로 로컬에 임시 저장했습니다. 자동 재시도합니다.",
+      );
+      scheduleAutoSaveRetry();
+    }
+  };
+
+  useEffect(() => {
+    if (!title && !content && !categoryPath && tags.length === 0) return;
+
+    if (localSaveDebounceTimerRef.current) {
+      clearTimeout(localSaveDebounceTimerRef.current);
+      localSaveDebounceTimerRef.current = null;
+    }
+
+    localSaveDebounceTimerRef.current = setTimeout(() => {
+      writeLocalDraftSnapshot();
+      setAutoSaveNotice("로컬 임시 저장됨");
+    }, LOCAL_SAVE_DEBOUNCE_MS);
+
+    if (autoSaveDebounceTimerRef.current) {
+      clearTimeout(autoSaveDebounceTimerRef.current);
+      autoSaveDebounceTimerRef.current = null;
+    }
+    if (autoSaveRetryTimerRef.current) {
+      clearTimeout(autoSaveRetryTimerRef.current);
+      autoSaveRetryTimerRef.current = null;
+    }
+    autoSaveDebounceTimerRef.current = setTimeout(() => {
+      void runAutoSave();
+    }, AUTO_SAVE_DEBOUNCE_MS);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentFingerprint]);
+
+  useEffect(() => {
+    const flushAutoSave = () => {
+      if (document.visibilityState === "hidden") {
+        writeLocalDraftSnapshot();
+        void runAutoSave();
+      }
+    };
+
+    const flushBeforeUnload = () => {
+      writeLocalDraftSnapshot();
+      void runAutoSave();
+    };
+
+    document.addEventListener("visibilitychange", flushAutoSave);
+    window.addEventListener("beforeunload", flushBeforeUnload);
+
+    return () => {
+      document.removeEventListener("visibilitychange", flushAutoSave);
+      window.removeEventListener("beforeunload", flushBeforeUnload);
+    };
+  });
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveDebounceTimerRef.current) {
+        clearTimeout(autoSaveDebounceTimerRef.current);
+      }
+      if (localSaveDebounceTimerRef.current) {
+        clearTimeout(localSaveDebounceTimerRef.current);
+      }
+      if (autoSaveRetryTimerRef.current) {
+        clearTimeout(autoSaveRetryTimerRef.current);
+      }
+      if (autoSaveAbortControllerRef.current) {
+        autoSaveAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   /**
    * 태그 추가 처리
@@ -229,23 +517,27 @@ export default function WritePostPage() {
   };
 
   const savePostMutation = useMutation<SavePostResult, Error, SavePostVariables>({
-    mutationFn: async ({ status }) => {
-      const postData = buildPostPayload(status);
+    mutationFn: async ({ status, payload, source }) => {
       const result = draftId
-        ? await updatePost(draftId, postData)
-        : await createPost(postData);
+        ? await updatePost(draftId, payload)
+        : await createPost(payload);
       return {
         result,
         status,
         requestedDraftId: draftId,
+        source,
       };
     },
     onMutate: () => {
       setError(null);
       setSuccess(null);
+      setAutoSaveNotice(null);
       setFieldErrors({ title: false, content: false });
     },
-    onSuccess: async ({ result, status, requestedDraftId }) => {
+    onSuccess: async ({ result, status, requestedDraftId, source }) => {
+      if (source === "resume") {
+        setAutoSaveNotice("로그인 후 자동으로 발행을 다시 시도했습니다.");
+      }
       setTitle(result.data.title ?? "");
       setContent(result.data.content ?? "");
       setTags(result.data.tags ?? []);
@@ -253,6 +545,7 @@ export default function WritePostPage() {
 
       if (status === "DRAFT") {
         setSuccess("게시물이 임시저장되었습니다.");
+        clearLocalDraftSnapshot();
         await Promise.all([
           queryClient.invalidateQueries({
             queryKey: [...queryKeys.posts.all, "drafts"] as const,
@@ -273,6 +566,9 @@ export default function WritePostPage() {
       }
 
       clearEditorState();
+      clearLocalDraftSnapshot();
+      clearPendingPublishSnapshot();
+      setIsAuthExpiredModalOpen(false);
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: [...queryKeys.posts.all, "drafts"] as const,
@@ -291,7 +587,34 @@ export default function WritePostPage() {
 
       router.push("/?mode=user");
     },
-    onError: (saveError) => {
+    onError: (saveError, variables) => {
+      const message = saveError instanceof Error ? saveError.message : "UNKNOWN";
+      if (
+        message === "UNAUTHORIZED" &&
+        (variables.status === "PUBLISHED" || variables.status === "PRIVATE")
+      ) {
+        const pendingStatus: "PUBLISHED" | "PRIVATE" = variables.status;
+        if (variables.source === "resume") {
+          setIsAuthExpiredModalOpen(true);
+          setError("로그인 이후 자동 발행 재시도에 실패했습니다. 다시 시도해주세요.");
+          return;
+        }
+        if (typeof window !== "undefined") {
+          const currentPath = `${window.location.pathname}${window.location.search}`;
+          writePendingPublishSnapshot({
+            version: PENDING_PUBLISH_VERSION,
+            createdAt: Date.now(),
+            retried: false,
+            requestId: variables.requestId,
+            path: currentPath,
+            draftId,
+            status: pendingStatus,
+            payload: variables.payload,
+          });
+        }
+        setIsAuthExpiredModalOpen(true);
+        return;
+      }
       setError(resolveSaveErrorMessage(saveError));
     },
   });
@@ -302,8 +625,31 @@ export default function WritePostPage() {
   const handleSubmit = async (status: PostStatus) => {
     if (!validateRequiredFields()) return;
     if (draftId && draftDetailQuery.isError) return;
-    await savePostMutation.mutateAsync({ status });
+    const payload = buildPostPayload(status);
+    await savePostMutation.mutateAsync({
+      status,
+      payload,
+      requestId: createRequestId(),
+      source: "manual",
+    });
   };
+
+  useEffect(() => {
+    if (!user) return;
+    const pending = readPendingPublishSnapshot();
+    if (!pending) return;
+
+    if (typeof window !== "undefined") {
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      if (pending.path !== currentPath) {
+        return;
+      }
+    }
+
+    clearPendingPublishSnapshot();
+    setIsAuthExpiredModalOpen(false);
+    setAutoSaveNotice("로그인되었습니다. 발행 버튼을 눌러 게시를 완료해주세요.");
+  }, [user]);
 
   const isDraftLoading = Boolean(draftId) && draftDetailQuery.isPending;
   const draftErrorMessage = (() => {
@@ -328,6 +674,20 @@ export default function WritePostPage() {
     return String(draftCountQuery.data);
   })();
   const isSubmitting = savePostMutation.isPending;
+  const isPublishActionDisabled =
+    isSubmitting ||
+    isDraftLoading ||
+    Boolean(draftErrorMessage) ||
+    isAuthExpiredModalOpen;
+
+  const handleGoToLogin = () => {
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+    if (typeof window === "undefined") return;
+    const redirectPath = `${window.location.pathname}${window.location.search}`;
+    window.sessionStorage.setItem(AUTH_RETURN_TO_STORAGE_KEY, redirectPath);
+    window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}&redirect=${encodeURIComponent(redirectPath)}`;
+  };
 
   return (
     <div className="min-h-screen bg-background px-3 py-4 md:px-4 md:py-6">
@@ -347,6 +707,12 @@ export default function WritePostPage() {
         {draftErrorMessage && (
           <div className="mb-4 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
             {draftErrorMessage}
+          </div>
+        )}
+
+        {autoSaveNotice && (
+          <div className="mb-4 rounded-lg border border-border bg-card p-3 text-sm text-muted-foreground">
+            {autoSaveNotice}
           </div>
         )}
 
@@ -506,7 +872,7 @@ export default function WritePostPage() {
             <div className="inline-flex overflow-hidden rounded-lg border border-border">
               <button
                 type="button"
-                disabled={isSubmitting || isDraftLoading || Boolean(draftErrorMessage)}
+                disabled={isPublishActionDisabled}
                 onClick={() => handleSubmit("DRAFT")}
                 className="px-5 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -523,7 +889,7 @@ export default function WritePostPage() {
             </div>
             <button
               type="button"
-              disabled={isSubmitting || isDraftLoading || Boolean(draftErrorMessage)}
+              disabled={isPublishActionDisabled}
               onClick={() => {
                 if (validateRequiredFields()) setIsPublishModalOpen(true);
               }}
@@ -546,7 +912,7 @@ export default function WritePostPage() {
               <div className="mt-6 flex flex-col gap-3">
                 <button
                   type="button"
-                  disabled={isSubmitting}
+                  disabled={isPublishActionDisabled}
                   onClick={() => {
                     setIsPublishModalOpen(false);
                     handleSubmit("PUBLISHED");
@@ -557,7 +923,7 @@ export default function WritePostPage() {
                 </button>
                 <button
                   type="button"
-                  disabled={isSubmitting}
+                  disabled={isPublishActionDisabled}
                   onClick={() => {
                     setIsPublishModalOpen(false);
                     handleSubmit("PRIVATE");
@@ -568,11 +934,64 @@ export default function WritePostPage() {
                 </button>
                 <button
                   type="button"
-                  disabled={isSubmitting}
+                  disabled={isPublishActionDisabled}
                   onClick={() => setIsPublishModalOpen(false)}
                   className="w-full rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
                 >
                   취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isAuthExpiredModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-[620px] rounded-[28px] bg-[#f6f6f7] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+              <div className="mb-6 flex items-start justify-between">
+                <h2 className="text-5xl font-bold leading-none text-[#101115] md:text-[44px]">
+                  Login required
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearPendingPublishSnapshot();
+                    setIsAuthExpiredModalOpen(false);
+                  }}
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#ececee] text-3xl leading-none text-[#5c5f66] transition-colors hover:bg-[#e2e3e7]"
+                  aria-label="닫기"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="rounded-3xl bg-[#ececef] p-6">
+                <p className="text-base leading-relaxed text-[#484b54]">
+                  로그인 세션이 만료되었습니다.
+                  <br />
+                  작성 중이던 내용은 안전하게 저장되었습니다.
+                  <br />
+                  로그인 후 자동으로 발행이 다시 시도됩니다.
+                </p>
+              </div>
+
+              <div className="mt-8 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearPendingPublishSnapshot();
+                    setIsAuthExpiredModalOpen(false);
+                  }}
+                  className="rounded-full border border-[#d2d5dc] bg-[#f6f6f7] px-7 py-3 text-2xl font-semibold text-[#17191f] transition-colors hover:bg-[#ececef]"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGoToLogin}
+                  className="rounded-full bg-[#111217] px-7 py-3 text-2xl font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  로그인 하러가기
                 </button>
               </div>
             </div>
