@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { fetchDraftPostList } from "../services/posts";
 import { queryKeys } from "../lib/queryKeys";
 
@@ -11,6 +12,7 @@ interface UseDraftPostsOptions {
 }
 
 export function useDraftPosts({ enabled, size = 20 }: UseDraftPostsOptions) {
+  const t = useTranslations("DraftsPage");
   const query = useInfiniteQuery({
     queryKey: queryKeys.posts.draftsList({ size }),
     enabled,
@@ -37,9 +39,9 @@ export function useDraftPosts({ enabled, size = 20 }: UseDraftPostsOptions) {
     if (!query.error) return null;
     const message = query.error instanceof Error ? query.error.message : "UNKNOWN";
     if (message === "UNAUTHORIZED") {
-      return "로그인이 필요합니다.";
+      return t("signInRequired");
     }
-    return "임시 저장 글을 불러오지 못했습니다.";
+    return t("loadFailed");
   })();
 
   const loadMore = useCallback(async () => {

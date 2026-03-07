@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 
 const AUTH_RETURN_TO_STORAGE_KEY = 'auth:returnTo';
 const PENDING_PUBLISH_STORAGE_KEY = 'post:write:pendingPublish';
@@ -12,6 +13,8 @@ function isSafeInternalPath(path: string | null): path is string {
 }
 
 export default function OAuthCallback() {
+  const t = useTranslations('OAuthCallback');
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,14 +55,14 @@ export default function OAuthCallback() {
 
     // 쿠키는 자동으로 설정되어 있음 (HttpOnly라 JS에서 접근 불가)
     // fallback은 메인 페이지로 이동
-    router.replace('/');
-  }, [router, searchParams]);
+    router.replace(`/${locale}`);
+  }, [locale, router, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
-        <p className="text-muted-foreground">로그인 처리 중...</p>
+        <p className="text-muted-foreground">{t('processing')}</p>
       </div>
     </div>
   );

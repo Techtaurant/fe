@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { fetchCommunityPostList } from "../services/posts";
 import { PostListPeriod, PostListSort } from "../services/posts/types";
 import { queryKeys } from "../lib/queryKeys";
@@ -19,6 +20,7 @@ export function useCommunityFeed({
   sort,
   size = 20,
 }: UseCommunityFeedOptions) {
+  const t = useTranslations("CommunityFeed");
   const query = useInfiniteQuery({
     queryKey: queryKeys.posts.communityList({
       period,
@@ -43,7 +45,7 @@ export function useCommunityFeed({
     return Array.from(deduped.values());
   }, [query.data?.pages]);
 
-  const error = query.error ? "커뮤니티 게시물을 불러오지 못했습니다." : null;
+  const error = query.error ? t("loadFailed") : null;
   const isLoading = query.isPending;
   const isLoadingMore = query.isFetchingNextPage;
   const hasNext = Boolean(query.hasNextPage);
