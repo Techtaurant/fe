@@ -131,7 +131,7 @@ export default function WritePostPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-3 py-4 md:px-4 md:py-6">
+    <div className="min-h-screen bg-background px-3 py-4 pb-28 md:px-4 md:py-6 md:pb-32">
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -198,15 +198,21 @@ export default function WritePostPage() {
             setFieldErrors={form.setFieldErrors}
           />
 
-          <WriteActions
-            isSubmitting={publishFlow.isSubmitting}
-            isPublishActionDisabled={isPublishActionDisabled}
-            draftCountLabel={draftBootstrap.draftCountLabel}
-            onSaveDraft={() => void publishFlow.handleSubmit("DRAFT")}
-            onOpenPublishModal={publishFlow.openPublishModal}
-            onGoDraftList={() => router.push("/post/drafts")}
-          />
         </form>
+
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm">
+          <div className="mx-auto max-w-[1400px] px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:px-4">
+            <WriteActions
+              isSubmitting={publishFlow.isSubmitting}
+              isPublishActionDisabled={isPublishActionDisabled}
+              draftCountLabel={draftBootstrap.draftCountLabel}
+              onGoBack={() => router.push("/?mode=user")}
+              onSaveDraft={() => void publishFlow.handleSubmit("DRAFT")}
+              onOpenPublishModal={publishFlow.openPublishModal}
+              onGoDraftList={() => router.push("/post/drafts")}
+            />
+          </div>
+        </div>
 
         <PublishScopeModal
           isOpen={form.isPublishModalOpen}
