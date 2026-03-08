@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { InfiniteData, QueryClient, useMutation } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createPost, updatePost } from "@/app/services/posts";
 import { queryKeys } from "@/app/lib/queryKeys";
@@ -57,6 +58,9 @@ export function usePublishFlow({
   setIsPublishModalOpen,
 }: UsePublishFlowParams) {
   const router = useRouter();
+  const tPublish = useTranslations("WritePage.publish");
+  const tNotice = useTranslations("WritePage.notice");
+  const tError = useTranslations("WritePage.errors");
 
   const removeDraftFromLocalCaches = (targetDraftId: string) => {
     queryClient.setQueriesData<InfiniteData<DraftPostListResult>>(
@@ -82,18 +86,18 @@ export function usePublishFlow({
   const resolveSaveErrorMessage = (saveError: unknown) => {
     const message = saveError instanceof Error ? saveError.message : "UNKNOWN";
     if (message === "UNAUTHORIZED") {
-      return "인증되지 않은 사용자입니다. 로그인 후 다시 시도해주세요.";
+      return tError("unauthorized");
     }
     if (message === "NOT_FOUND") {
-      return "대상 게시물을 찾을 수 없습니다.";
+      return tError("notFound");
     }
     if (message === "BAD_REQUEST") {
-      return "잘못된 요청입니다. 입력값을 확인해주세요.";
+      return tError("badRequest");
     }
     if (message.startsWith("HTTP_")) {
-      return `요청에 실패했습니다. (${message.replace("HTTP_", "")})`;
+      return tError("http", { code: message.replace("HTTP_", "") });
     }
-    return message || "게시물 저장 중 오류가 발생했습니다.";
+    return message || tError("saveFailed");
   };
 
   const savePostMutation = useMutation<SavePostResult, Error, SavePostVariables>({
@@ -114,7 +118,7 @@ export function usePublishFlow({
     },
     onSuccess: async ({ result, status, requestedDraftId, source }) => {
       if (source === "resume") {
-        setAutoSaveNotice("로그인 후 자동으로 발행을 다시 시도했습니다.");
+        setAutoSaveNotice(tNotice("resumedPublish"));
       }
       setTitle(result.data.title ?? "");
       setContent(result.data.content ?? "");
@@ -122,7 +126,7 @@ export function usePublishFlow({
       setTagInput("");
 
       if (status === "DRAFT") {
-        setSuccess("게시물이 임시저장되었습니다.");
+        setSuccess(tPublish("draftSaved"));
         clearLocalDraftSnapshot();
         await Promise.all([
           queryClient.invalidateQueries({
@@ -158,9 +162,9 @@ export function usePublishFlow({
       ]);
 
       if (status === "PRIVATE") {
-        setSuccess("게시물이 비공개로 저장되었습니다.");
+        setSuccess(tPublish("privateSaved"));
       } else {
-        setSuccess("게시물이 성공적으로 작성되었습니다!");
+        setSuccess(tPublish("published"));
       }
 
       router.push("/?mode=user");
@@ -174,7 +178,7 @@ export function usePublishFlow({
         const pendingStatus: "PUBLISHED" | "PRIVATE" = variables.status;
         if (variables.source === "resume") {
           setIsAuthExpiredModalOpen(true);
-          setError("로그인 이후 자동 발행 재시도에 실패했습니다. 다시 시도해주세요.");
+          setError(tError("resumeFailed"));
           return;
         }
         if (typeof window !== "undefined") {
@@ -223,8 +227,8 @@ export function usePublishFlow({
 
     clearPendingPublishSnapshot();
     setIsAuthExpiredModalOpen(false);
-    setAutoSaveNotice("로그인되었습니다. 발행 버튼을 눌러 게시를 완료해주세요.");
-  }, [setAutoSaveNotice, setIsAuthExpiredModalOpen, user]);
+    setAutoSaveNotice(tNotice("signedInContinue"));
+  }, [setAutoSaveNotice, setIsAuthExpiredModalOpen, tNotice, user]);
 
   const handleGoToLogin = () => {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";

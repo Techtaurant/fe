@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { queryKeys } from "@/app/lib/queryKeys";
 import { fetchDraftPostDetail, fetchDraftPostList } from "@/app/services/posts";
 
@@ -20,6 +21,7 @@ export function useDraftBootstrap({
   setCategoryPath,
   setTags,
 }: UseDraftBootstrapParams) {
+  const t = useTranslations("WritePage.draft");
   const hydratedDraftIdRef = useRef<string | null>(null);
 
   const draftDetailQuery = useQuery({
@@ -94,12 +96,12 @@ export function useDraftBootstrap({
         ? draftDetailQuery.error.message
         : "UNKNOWN";
     if (message === "NOT_FOUND") {
-      return "임시 저장 게시물을 찾을 수 없거나 접근 권한이 없습니다.";
+      return t("notFound");
     }
     if (message === "UNAUTHORIZED") {
-      return "로그인 후 임시 저장 게시물을 조회할 수 있습니다.";
+      return t("unauthorized");
     }
-    return "임시 저장 게시물을 불러오지 못했습니다.";
+    return t("loadFailed");
   })();
 
   const draftCountLabel = (() => {

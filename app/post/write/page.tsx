@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import type { KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useUser } from "@/app/hooks/useUser";
 import { queryKeys } from "@/app/lib/queryKeys";
 import AuthExpiredModal from "./components/AuthExpiredModal";
@@ -24,6 +25,7 @@ import {
 } from "./lib/storage";
 
 export default function WritePostPage() {
+  const t = useTranslations("WritePage");
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -65,7 +67,7 @@ export default function WritePostPage() {
 
   const openAuthExpiredModal = () => {
     form.setIsPublishModalOpen(false);
-    form.setError("세션이 만료되어 다시 로그인이 필요합니다.");
+    form.setError(t("errors.authExpired"));
     form.setIsAuthExpiredModalOpen(true);
   };
 
@@ -134,14 +136,14 @@ export default function WritePostPage() {
     <div className="min-h-screen bg-background px-3 py-4 pb-28 md:px-4 md:py-6 md:pb-32">
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {draftId ? "임시글 수정 모드" : "새 글 작성 모드"}
+            <p className="text-sm text-muted-foreground">
+            {draftId ? t("mode.edit") : t("mode.create")}
           </p>
         </div>
 
         {draftBootstrap.isDraftLoading && (
           <div className="mb-4 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-            임시글 정보를 불러오는 중입니다.
+            {t("loadingDraft")}
           </div>
         )}
 

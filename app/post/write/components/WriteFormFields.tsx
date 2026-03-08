@@ -1,4 +1,5 @@
 import type { Dispatch, KeyboardEvent, SetStateAction } from "react";
+import { useTranslations } from "next-intl";
 import { FieldErrors } from "../lib/types";
 
 interface WriteFormFieldsProps {
@@ -28,11 +29,13 @@ export default function WriteFormFields({
   handleTagKeyPress,
   handleRemoveTag,
 }: WriteFormFieldsProps) {
+  const t = useTranslations("WritePage.form");
+
   return (
     <>
       <div className="mb-4 md:mb-6">
         <label htmlFor="title" className="mb-2 block text-sm font-semibold text-foreground">
-          제목 <span className="text-red-600">*</span>
+          {t("title")} <span className="text-red-600">*</span>
         </label>
         <input
           id="title"
@@ -44,7 +47,7 @@ export default function WriteFormFields({
               setFieldErrors((prev) => ({ ...prev, title: false }));
             }
           }}
-          placeholder="게시물의 제목을 입력하세요"
+          placeholder={t("titlePlaceholder")}
           className={`w-full rounded-lg border bg-background px-4 py-3 text-base font-semibold text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
             fieldErrors.title
               ? "border-red-500 focus:border-red-500"
@@ -52,27 +55,27 @@ export default function WriteFormFields({
           }`}
         />
         {fieldErrors.title && (
-          <p className="mt-2 text-sm font-medium text-red-600">제목을 입력해주세요.</p>
+          <p className="mt-2 text-sm font-medium text-red-600">{t("titleRequired")}</p>
         )}
       </div>
 
       <div className="mb-4 md:mb-6">
         <label htmlFor="category" className="mb-2 block text-sm font-semibold text-foreground">
-          카테고리
+          {t("category")}
         </label>
         <input
           id="category"
           type="text"
           value={categoryPath}
           onChange={(e) => setCategoryPath(e.target.value)}
-          placeholder="예: java/spring/deepdive"
+          placeholder={t("categoryPlaceholder")}
           className="w-full rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
         />
       </div>
 
       <div className="mb-4 md:mb-6">
         <label htmlFor="tags" className="mb-2 block text-sm font-semibold text-foreground">
-          태그
+          {t("tags")}
         </label>
         <div className="flex flex-col gap-2 md:flex-row">
           <input
@@ -81,7 +84,7 @@ export default function WriteFormFields({
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyPress={handleTagKeyPress}
-            placeholder="태그를 입력하고 Enter를 누르세요"
+            placeholder={t("tagsPlaceholder")}
             className="w-full flex-1 rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
           />
         </div>
@@ -98,7 +101,7 @@ export default function WriteFormFields({
                   type="button"
                   onClick={() => handleRemoveTag(tag)}
                   className="cursor-pointer border-0 bg-transparent p-0 text-lg text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label={`${tag} 제거`}
+                  aria-label={t("removeTag", { tag })}
                 >
                   ×
                 </button>

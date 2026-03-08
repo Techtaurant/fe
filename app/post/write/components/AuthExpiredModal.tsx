@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 interface AuthExpiredModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,6 +11,8 @@ export default function AuthExpiredModal({
   onClose,
   onGoToLogin,
 }: AuthExpiredModalProps) {
+  const t = useTranslations("WritePage.authModal");
+
   if (!isOpen) return null;
 
   return (
@@ -17,13 +21,13 @@ export default function AuthExpiredModal({
         <div className="mb-5">
           <div>
             <p className="mb-2 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-              Session expired
+              {t("badge")}
             </p>
             <h2 className="text-xl font-semibold text-foreground md:text-2xl">
-              다시 로그인이 필요합니다.
+              {t("title")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              세션이 만료되어 로그인 페이지로 이동합니다.
+              {t("description")}
             </p>
           </div>
         </div>
@@ -34,14 +38,14 @@ export default function AuthExpiredModal({
             onClick={onClose}
             className="rounded-full border border-border px-6 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            나중에
+            {t("later")}
           </button>
           <button
             type="button"
             onClick={onGoToLogin}
             className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            로그인
+            {t("login")}
           </button>
         </div>
       </div>
