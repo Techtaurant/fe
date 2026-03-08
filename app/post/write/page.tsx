@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   InfiniteData,
@@ -15,6 +15,7 @@ import {
   fetchDraftPostDetail,
   updatePost,
 } from "@/app/services/posts";
+import { httpClient } from "@/app/utils/httpClient";
 import { useUser } from "@/app/hooks/useUser";
 import { queryKeys } from "@/app/lib/queryKeys";
 import { DraftPostListResult } from "@/app/services/posts/types";
@@ -63,8 +64,10 @@ interface LocalDraftSnapshot {
 const LOCAL_DRAFT_VERSION = 1 as const;
 const LOCAL_SAVE_DEBOUNCE_MS = 5000;
 const AUTO_SAVE_DEBOUNCE_MS = 30_000;
-const AUTO_SAVE_RETRY_BASE_MS = 3000;
+const AUTO_SAVE_RETRY_BASE_MS = 5000;
 const AUTO_SAVE_RETRY_MAX_MS = 30000;
+const AUTH_PRECHECK_DEBOUNCE_MS = 15_000;
+const AUTH_HEARTBEAT_MS = 30_000;
 const PENDING_PUBLISH_VERSION = 1 as const;
 const PENDING_PUBLISH_STORAGE_KEY = "post:write:pendingPublish";
 const PENDING_PUBLISH_TTL_MS = 30 * 60 * 1000;
@@ -110,7 +113,10 @@ export default function WritePostPage() {
   const autoSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const localSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoSaveRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const authPrecheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const authHeartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoSaveAbortControllerRef = useRef<AbortController | null>(null);
+  const isSessionRefreshInFlightRef = useRef(false);
   const autoSaveRequestSequenceRef = useRef(0);
   const autoSaveAppliedSequenceRef = useRef(0);
   const autoSaveRetryDelayRef = useRef(AUTO_SAVE_RETRY_BASE_MS);
@@ -172,6 +178,40 @@ export default function WritePostPage() {
       }),
     [categoryPath, content, tags, title],
   );
+
+  const hasEditableContent =
+    title.trim().length > 0 ||
+    content.trim().length > 0 ||
+    categoryPath.trim().length > 0 ||
+    tags.length > 0;
+
+  const openAuthExpiredModal = useCallback(() => {
+    setIsPublishModalOpen(false);
+    setError("세션이 만료되어 다시 로그인이 필요합니다.");
+    setIsAuthExpiredModalOpen(true);
+  }, []);
+
+  const tryBackgroundSessionRefresh = useCallback(async () => {
+    if (!user || !hasEditableContent || isAuthExpiredModalOpen) return;
+    if (isSessionRefreshInFlightRef.current) return;
+
+    isSessionRefreshInFlightRef.current = true;
+    try {
+      const sessionProbe = await httpClient("/api/users/me", {
+        method: "GET",
+      });
+
+      if (sessionProbe.ok) {
+        return;
+      }
+
+      if (sessionProbe.status === 401) {
+        openAuthExpiredModal();
+      }
+    } finally {
+      isSessionRefreshInFlightRef.current = false;
+    }
+  }, [hasEditableContent, isAuthExpiredModalOpen, openAuthExpiredModal, user]);
 
   useEffect(() => {
     hasIncrementedDraftCountForCurrentCreateRef.current = false;
@@ -374,6 +414,64 @@ export default function WritePostPage() {
   }, [contentFingerprint]);
 
   useEffect(() => {
+    if (!user || !hasEditableContent || isAuthExpiredModalOpen) {
+      if (authPrecheckTimerRef.current) {
+        clearTimeout(authPrecheckTimerRef.current);
+        authPrecheckTimerRef.current = null;
+      }
+      return;
+    }
+
+    if (authPrecheckTimerRef.current) {
+      clearTimeout(authPrecheckTimerRef.current);
+      authPrecheckTimerRef.current = null;
+    }
+
+    authPrecheckTimerRef.current = setTimeout(() => {
+      void tryBackgroundSessionRefresh();
+    }, AUTH_PRECHECK_DEBOUNCE_MS);
+
+    return () => {
+      if (authPrecheckTimerRef.current) {
+        clearTimeout(authPrecheckTimerRef.current);
+        authPrecheckTimerRef.current = null;
+      }
+    };
+  }, [
+    contentFingerprint,
+    hasEditableContent,
+    isAuthExpiredModalOpen,
+    tryBackgroundSessionRefresh,
+    user,
+  ]);
+
+  useEffect(() => {
+    if (!user || !hasEditableContent || isAuthExpiredModalOpen) {
+      if (authHeartbeatTimerRef.current) {
+        clearInterval(authHeartbeatTimerRef.current);
+        authHeartbeatTimerRef.current = null;
+      }
+      return;
+    }
+
+    authHeartbeatTimerRef.current = setInterval(() => {
+      void tryBackgroundSessionRefresh();
+    }, AUTH_HEARTBEAT_MS);
+
+    return () => {
+      if (authHeartbeatTimerRef.current) {
+        clearInterval(authHeartbeatTimerRef.current);
+        authHeartbeatTimerRef.current = null;
+      }
+    };
+  }, [
+    hasEditableContent,
+    isAuthExpiredModalOpen,
+    tryBackgroundSessionRefresh,
+    user,
+  ]);
+
+  useEffect(() => {
     const flushAutoSave = () => {
       if (document.visibilityState === "hidden") {
         writeLocalDraftSnapshot();
@@ -405,6 +503,12 @@ export default function WritePostPage() {
       }
       if (autoSaveRetryTimerRef.current) {
         clearTimeout(autoSaveRetryTimerRef.current);
+      }
+      if (authPrecheckTimerRef.current) {
+        clearTimeout(authPrecheckTimerRef.current);
+      }
+      if (authHeartbeatTimerRef.current) {
+        clearInterval(authHeartbeatTimerRef.current);
       }
       if (autoSaveAbortControllerRef.current) {
         autoSaveAbortControllerRef.current.abort();
