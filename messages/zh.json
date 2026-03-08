@@ -133,5 +133,84 @@
       "4004": "服务器错误，请稍后再试。",
       "unknown": "发生未知错误。"
     }
+  },
+  "WritePage": {
+    "mode": {
+      "edit": "草稿编辑模式",
+      "create": "新建文章模式"
+    },
+    "loadingDraft": "正在加载草稿信息。",
+    "errors": {
+      "authExpired": "会话已过期，需要重新登录。",
+      "unauthorized": "未授权，请登录后重试。",
+      "notFound": "未找到目标文章。",
+      "badRequest": "请求无效，请检查输入内容。",
+      "http": "请求失败。({code})",
+      "saveFailed": "保存文章时发生错误。",
+      "resumeFailed": "登录后的自动重试失败，请重试。"
+    },
+    "notice": {
+      "autoSaved": "已自动保存。",
+      "autoSaveRetry": "网络异常，已本地保存并将自动重试。",
+      "localSaved": "已本地临时保存",
+      "resumedPublish": "登录后已自动重试发布。",
+      "signedInContinue": "已登录，请点击发布完成操作。"
+    },
+    "publish": {
+      "draftSaved": "草稿已保存。",
+      "privateSaved": "已保存为私密文章。",
+      "published": "文章发布成功！"
+    },
+    "draft": {
+      "notFound": "未找到草稿文章或无访问权限。",
+      "unauthorized": "请登录后查看草稿文章。",
+      "loadFailed": "加载草稿文章失败。"
+    },
+    "actions": {
+      "exit": "退出",
+      "saveDraft": "保存草稿",
+      "saving": "保存中...",
+      "publish": "发布",
+      "publishing": "发布中...",
+      "draftListAria": "打开草稿列表"
+    },
+    "form": {
+      "title": "标题",
+      "titlePlaceholder": "请输入文章标题",
+      "titleRequired": "请输入标题。",
+      "category": "分类",
+      "categoryPlaceholder": "例如：java/spring/deepdive",
+      "tags": "标签",
+      "tagsPlaceholder": "输入标签后按 Enter",
+      "removeTag": "移除 {tag}"
+    },
+    "editor": {
+      "markdownEdit": "Markdown 编辑",
+      "contentPlaceholder": "请使用 Markdown 格式输入内容\n\n# 标题\n## 副标题\n\n**粗体**\n*斜体*\n\n- 列表项\n\n```code\n代码块\n```",
+      "contentRequired": "请输入内容。",
+      "preview": "预览",
+      "previewEmpty": "输入 Markdown 内容后将在此显示预览"
+    },
+    "publishModal": {
+      "badge": "Publish options",
+      "title": "文章可见性设置",
+      "publicTitle": "公开发布",
+      "publicDescription": "将在动态与搜索中展示，所有人可见。",
+      "privateTitle": "私密发布",
+      "privateDescription": "仅作者本人可见，不会出现在动态中。",
+      "close": "关闭"
+    },
+    "authModal": {
+      "badge": "Session expired",
+      "title": "需要重新登录。",
+      "description": "会话已过期，将跳转到登录页面。",
+      "later": "稍后",
+      "login": "登录"
+    }
+  },
+  "UserPage": {
+    "title": "用户页面准备中",
+    "description": "已移除 Dummy 数据。完成用户详情 API 对接后将提供该页面。",
+    "userId": "请求的用户 ID：{userId}"
   }
 }

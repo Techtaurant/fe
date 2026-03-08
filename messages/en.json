@@ -133,5 +133,84 @@
       "4004": "A server error occurred. Please try again later.",
       "unknown": "An unknown error occurred."
     }
+  },
+  "WritePage": {
+    "mode": {
+      "edit": "Draft edit mode",
+      "create": "New post mode"
+    },
+    "loadingDraft": "Loading draft post information.",
+    "errors": {
+      "authExpired": "Session expired. Please sign in again.",
+      "unauthorized": "You are not authorized. Please sign in and try again.",
+      "notFound": "Target post was not found.",
+      "badRequest": "Invalid request. Please check your input.",
+      "http": "Request failed. ({code})",
+      "saveFailed": "An error occurred while saving the post.",
+      "resumeFailed": "Automatic retry after sign-in failed. Please try again."
+    },
+    "notice": {
+      "autoSaved": "Auto-saved.",
+      "autoSaveRetry": "Network issue detected. Saved locally and will retry automatically.",
+      "localSaved": "Saved locally",
+      "resumedPublish": "Publish was retried automatically after sign-in.",
+      "signedInContinue": "Signed in. Press publish to complete posting."
+    },
+    "publish": {
+      "draftSaved": "Draft has been saved.",
+      "privateSaved": "Post has been saved as private.",
+      "published": "Post has been published successfully!"
+    },
+    "draft": {
+      "notFound": "Draft post not found or you do not have access.",
+      "unauthorized": "Please sign in to view draft posts.",
+      "loadFailed": "Failed to load draft post."
+    },
+    "actions": {
+      "exit": "Exit",
+      "saveDraft": "Save draft",
+      "saving": "Saving...",
+      "publish": "Publish",
+      "publishing": "Publishing...",
+      "draftListAria": "Open draft posts list"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Enter the post title",
+      "titleRequired": "Please enter a title.",
+      "category": "Category",
+      "categoryPlaceholder": "e.g. java/spring/deepdive",
+      "tags": "Tags",
+      "tagsPlaceholder": "Type a tag and press Enter",
+      "removeTag": "Remove {tag}"
+    },
+    "editor": {
+      "markdownEdit": "Markdown editor",
+      "contentPlaceholder": "Write your content in markdown format\n\n# Title\n## Subtitle\n\n**Bold text**\n*Italic text*\n\n- List item\n\n```code\ncode block\n```",
+      "contentRequired": "Please enter content.",
+      "preview": "Preview",
+      "previewEmpty": "Type markdown content to see the preview here"
+    },
+    "publishModal": {
+      "badge": "Publish options",
+      "title": "Post visibility settings",
+      "publicTitle": "Publish publicly",
+      "publicDescription": "Visible in feed and search to everyone.",
+      "privateTitle": "Publish privately",
+      "privateDescription": "Visible only to you and hidden from feed.",
+      "close": "Close"
+    },
+    "authModal": {
+      "badge": "Session expired",
+      "title": "Sign-in required again.",
+      "description": "Your session expired and you will be redirected to sign in.",
+      "later": "Later",
+      "login": "Sign in"
+    }
+  },
+  "UserPage": {
+    "title": "User page coming soon",
+    "description": "Dummy data has been removed. This page will be available after user-detail API integration.",
+    "userId": "Requested user ID: {userId}"
   }
 }
