@@ -16,36 +16,53 @@ export default function PublishScopeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-lg">
-        <h2 className="text-lg font-semibold text-foreground">게시물 공개 설정</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          발행할 게시물의 공개 범위를 선택해주세요.
-        </p>
-        <div className="mt-6 flex flex-col gap-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-xl rounded-2xl border border-border bg-card p-6 shadow-xl md:p-7">
+        <div className="mb-5">
+          <div>
+            <p className="mb-2 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              Publish options
+            </p>
+            <h2 className="text-xl font-semibold text-foreground md:text-2xl">
+              게시물 공개 설정
+            </h2>
+          </div>
+        </div>
+
+        <div className="space-y-3">
           <button
             type="button"
             disabled={isDisabled}
             onClick={onPublishPublic}
-            className="w-full rounded-lg bg-primary px-4 py-3 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="group w-full rounded-xl border border-primary/30 bg-primary/5 p-4 text-left transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            전체 공개로 발행
+            <p className="text-base font-semibold text-foreground">전체 공개로 발행</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              피드와 검색에 노출되어 누구나 조회할 수 있습니다.
+            </p>
           </button>
+
           <button
             type="button"
             disabled={isDisabled}
             onClick={onPublishPrivate}
-            className="w-full rounded-lg border border-border px-4 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+            className="group w-full rounded-xl border border-border bg-background p-4 text-left transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            비공개로 발행
+            <p className="text-base font-semibold text-foreground">비공개로 발행</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              작성자 본인만 확인할 수 있으며 피드에는 노출되지 않습니다.
+            </p>
           </button>
+        </div>
+
+        <div className="mt-5 flex justify-end">
           <button
             type="button"
             disabled={isDisabled}
             onClick={onClose}
-            className="w-full rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+            className="rounded-full border border-border px-6 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            취소
+            닫기
           </button>
         </div>
       </div>

@@ -12,46 +12,36 @@ export default function AuthExpiredModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-[620px] rounded-[28px] bg-[#f6f6f7] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-        <div className="mb-6 flex items-start justify-between">
-          <h2 className="text-5xl font-bold leading-none text-[#101115] md:text-[44px]">
-            Login required
-          </h2>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-[480px] rounded-2xl border border-border bg-card p-6 shadow-xl md:p-7">
+        <div className="mb-5">
+          <div>
+            <p className="mb-2 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+              Session expired
+            </p>
+            <h2 className="text-xl font-semibold text-foreground md:text-2xl">
+              다시 로그인이 필요합니다.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              세션이 만료되어 로그인 페이지로 이동합니다.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-end gap-2.5">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#ececee] text-3xl leading-none text-[#5c5f66] transition-colors hover:bg-[#e2e3e7]"
-            aria-label="닫기"
+            className="rounded-full border border-border px-6 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            ×
-          </button>
-        </div>
-
-        <div className="rounded-3xl bg-[#ececef] p-6">
-          <p className="text-base leading-relaxed text-[#484b54]">
-            로그인 세션이 만료되었습니다.
-            <br />
-            작성 중이던 내용은 안전하게 저장되었습니다.
-            <br />
-            로그인 후 자동으로 발행이 다시 시도됩니다.
-          </p>
-        </div>
-
-        <div className="mt-8 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-[#d2d5dc] bg-[#f6f6f7] px-7 py-3 text-2xl font-semibold text-[#17191f] transition-colors hover:bg-[#ececef]"
-          >
-            취소
+            나중에
           </button>
           <button
             type="button"
             onClick={onGoToLogin}
-            className="rounded-full bg-[#111217] px-7 py-3 text-2xl font-semibold text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            로그인 하러가기
+            로그인
           </button>
         </div>
       </div>
