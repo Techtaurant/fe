@@ -1,0 +1,250 @@
+import { useEffect } from "react";
+import { InfiniteData, QueryClient, useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { createPost, updatePost } from "@/app/services/posts";
+import { queryKeys } from "@/app/lib/queryKeys";
+import { DraftPostListResult } from "@/app/services/posts/types";
+import { CreatePostRequest, PostStatus } from "@/app/types";
+import { AUTH_RETURN_TO_STORAGE_KEY, PENDING_PUBLISH_VERSION, createRequestId } from "../lib/constants";
+import {
+  clearPendingPublishSnapshot,
+  readPendingPublishSnapshot,
+  writePendingPublishSnapshot,
+} from "../lib/storage";
+import { SavePostResult, SavePostVariables } from "../lib/types";
+
+interface UsePublishFlowParams {
+  user: unknown;
+  draftId: string | null;
+  draftDetailHasError: boolean;
+  queryClient: QueryClient;
+  draftCountQueryKey: readonly unknown[];
+  validateRequiredFields: () => boolean;
+  buildPostPayload: (status: PostStatus) => CreatePostRequest;
+  clearEditorState: () => void;
+  clearLocalDraftSnapshot: () => void;
+  setTitle: (value: string) => void;
+  setContent: (value: string) => void;
+  setTags: (value: string[]) => void;
+  setTagInput: (value: string) => void;
+  setError: (value: string | null) => void;
+  setSuccess: (value: string | null) => void;
+  setAutoSaveNotice: (value: string | null) => void;
+  setFieldErrors: (value: { title: boolean; content: boolean }) => void;
+  setIsAuthExpiredModalOpen: (value: boolean) => void;
+  setIsPublishModalOpen: (value: boolean) => void;
+}
+
+export function usePublishFlow({
+  user,
+  draftId,
+  draftDetailHasError,
+  queryClient,
+  draftCountQueryKey,
+  validateRequiredFields,
+  buildPostPayload,
+  clearEditorState,
+  clearLocalDraftSnapshot,
+  setTitle,
+  setContent,
+  setTags,
+  setTagInput,
+  setError,
+  setSuccess,
+  setAutoSaveNotice,
+  setFieldErrors,
+  setIsAuthExpiredModalOpen,
+  setIsPublishModalOpen,
+}: UsePublishFlowParams) {
+  const router = useRouter();
+
+  const removeDraftFromLocalCaches = (targetDraftId: string) => {
+    queryClient.setQueriesData<InfiniteData<DraftPostListResult>>(
+      { queryKey: [...queryKeys.posts.all, "drafts"] as const },
+      (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            drafts: page.drafts.filter((draft) => draft.id !== targetDraftId),
+          })),
+        };
+      },
+    );
+
+    queryClient.setQueryData<number | null>(draftCountQueryKey, (current) => {
+      if (typeof current !== "number") return current;
+      return Math.max(0, current - 1);
+    });
+  };
+
+  const resolveSaveErrorMessage = (saveError: unknown) => {
+    const message = saveError instanceof Error ? saveError.message : "UNKNOWN";
+    if (message === "UNAUTHORIZED") {
+      return "인증되지 않은 사용자입니다. 로그인 후 다시 시도해주세요.";
+    }
+    if (message === "NOT_FOUND") {
+      return "대상 게시물을 찾을 수 없습니다.";
+    }
+    if (message === "BAD_REQUEST") {
+      return "잘못된 요청입니다. 입력값을 확인해주세요.";
+    }
+    if (message.startsWith("HTTP_")) {
+      return `요청에 실패했습니다. (${message.replace("HTTP_", "")})`;
+    }
+    return message || "게시물 저장 중 오류가 발생했습니다.";
+  };
+
+  const savePostMutation = useMutation<SavePostResult, Error, SavePostVariables>({
+    mutationFn: async ({ status, payload, source }) => {
+      const result = draftId ? await updatePost(draftId, payload) : await createPost(payload);
+      return {
+        result,
+        status,
+        requestedDraftId: draftId,
+        source,
+      };
+    },
+    onMutate: () => {
+      setError(null);
+      setSuccess(null);
+      setAutoSaveNotice(null);
+      setFieldErrors({ title: false, content: false });
+    },
+    onSuccess: async ({ result, status, requestedDraftId, source }) => {
+      if (source === "resume") {
+        setAutoSaveNotice("로그인 후 자동으로 발행을 다시 시도했습니다.");
+      }
+      setTitle(result.data.title ?? "");
+      setContent(result.data.content ?? "");
+      setTags(result.data.tags ?? []);
+      setTagInput("");
+
+      if (status === "DRAFT") {
+        setSuccess("게시물이 임시저장되었습니다.");
+        clearLocalDraftSnapshot();
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: [...queryKeys.posts.all, "drafts"] as const,
+          }),
+          queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
+        ]);
+        if (!requestedDraftId) {
+          router.replace(`/post/write?draftId=${result.data.id}`);
+        }
+        return;
+      }
+
+      if (requestedDraftId) {
+        removeDraftFromLocalCaches(requestedDraftId);
+        queryClient.removeQueries({
+          queryKey: queryKeys.posts.draftDetail(requestedDraftId),
+        });
+      }
+
+      clearEditorState();
+      clearLocalDraftSnapshot();
+      clearPendingPublishSnapshot();
+      setIsAuthExpiredModalOpen(false);
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...queryKeys.posts.all, "drafts"] as const,
+        }),
+        queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
+        queryClient.invalidateQueries({
+          queryKey: [...queryKeys.posts.all, "community"] as const,
+        }),
+      ]);
+
+      if (status === "PRIVATE") {
+        setSuccess("게시물이 비공개로 저장되었습니다.");
+      } else {
+        setSuccess("게시물이 성공적으로 작성되었습니다!");
+      }
+
+      router.push("/?mode=user");
+    },
+    onError: (saveError, variables) => {
+      const message = saveError instanceof Error ? saveError.message : "UNKNOWN";
+      if (
+        message === "UNAUTHORIZED" &&
+        (variables.status === "PUBLISHED" || variables.status === "PRIVATE")
+      ) {
+        const pendingStatus: "PUBLISHED" | "PRIVATE" = variables.status;
+        if (variables.source === "resume") {
+          setIsAuthExpiredModalOpen(true);
+          setError("로그인 이후 자동 발행 재시도에 실패했습니다. 다시 시도해주세요.");
+          return;
+        }
+        if (typeof window !== "undefined") {
+          const currentPath = `${window.location.pathname}${window.location.search}`;
+          writePendingPublishSnapshot({
+            version: PENDING_PUBLISH_VERSION,
+            createdAt: Date.now(),
+            retried: false,
+            requestId: variables.requestId,
+            path: currentPath,
+            draftId,
+            status: pendingStatus,
+            payload: variables.payload,
+          });
+        }
+        setIsAuthExpiredModalOpen(true);
+        return;
+      }
+      setError(resolveSaveErrorMessage(saveError));
+    },
+  });
+
+  const handleSubmit = async (status: PostStatus) => {
+    if (!validateRequiredFields()) return;
+    if (draftId && draftDetailHasError) return;
+    const payload = buildPostPayload(status);
+    await savePostMutation.mutateAsync({
+      status,
+      payload,
+      requestId: createRequestId(),
+      source: "manual",
+    });
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    const pending = readPendingPublishSnapshot();
+    if (!pending) return;
+
+    if (typeof window !== "undefined") {
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      if (pending.path !== currentPath) {
+        return;
+      }
+    }
+
+    clearPendingPublishSnapshot();
+    setIsAuthExpiredModalOpen(false);
+    setAutoSaveNotice("로그인되었습니다. 발행 버튼을 눌러 게시를 완료해주세요.");
+  }, [setAutoSaveNotice, setIsAuthExpiredModalOpen, user]);
+
+  const handleGoToLogin = () => {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+    if (typeof window === "undefined") return;
+    const redirectPath = `${window.location.pathname}${window.location.search}`;
+    window.sessionStorage.setItem(AUTH_RETURN_TO_STORAGE_KEY, redirectPath);
+    window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}&redirect=${encodeURIComponent(redirectPath)}`;
+  };
+
+  const openPublishModal = () => {
+    if (validateRequiredFields()) {
+      setIsPublishModalOpen(true);
+    }
+  };
+
+  return {
+    savePostMutation,
+    handleSubmit,
+    handleGoToLogin,
+    openPublishModal,
+    isSubmitting: savePostMutation.isPending,
+  };
+}
