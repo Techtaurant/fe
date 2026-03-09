@@ -13,6 +13,7 @@ import {
 } from "../lib/constants";
 
 interface UseAutoSaveParams {
+  enabled?: boolean;
   user: unknown;
   draftId: string | null;
   draftDetailError: boolean;
@@ -31,6 +32,7 @@ interface UseAutoSaveParams {
 }
 
 export function useAutoSave({
+  enabled = true,
   user,
   draftId,
   draftDetailError,
@@ -63,6 +65,7 @@ export function useAutoSave({
   }, [draftId]);
 
   const runAutoSave = useCallback(async () => {
+    if (!enabled) return;
     if (!user) return;
     if (draftId && draftDetailError) return;
     if (!title.trim() && !content.trim() && !categoryPath.trim() && tags.length === 0) return;
@@ -142,6 +145,7 @@ export function useAutoSave({
     tags.length,
     t,
     title,
+    enabled,
     user,
   ]);
 
@@ -150,6 +154,7 @@ export function useAutoSave({
   }, [runAutoSave]);
 
   useEffect(() => {
+    if (!enabled) return;
     if (!title && !content && !categoryPath && tags.length === 0) return;
 
     if (localSaveDebounceTimerRef.current) {
@@ -185,9 +190,11 @@ export function useAutoSave({
     title,
     writeLocalDraftSnapshot,
     runAutoSave,
+    enabled,
   ]);
 
   useEffect(() => {
+    if (!enabled) return;
     const flushAutoSave = () => {
       if (document.visibilityState === "hidden") {
         writeLocalDraftSnapshot();
@@ -207,7 +214,7 @@ export function useAutoSave({
       document.removeEventListener("visibilitychange", flushAutoSave);
       window.removeEventListener("beforeunload", flushBeforeUnload);
     };
-  });
+  }, [enabled, runAutoSave, writeLocalDraftSnapshot]);
 
   useEffect(() => {
     return () => {

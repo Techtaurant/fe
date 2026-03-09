@@ -106,7 +106,7 @@ export default function PostDetailPage() {
       createCommentFieldErrors={createCommentFieldErrors}
       currentUserId={user?.id ?? null}
       onBack={() => router.back()}
-      onEdit={() => alert(t("editNotReady"))}
+      onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
       onToggleVisibility={handleToggleVisibility}
       onDelete={async () => {
         const deleted = await handleDelete();

@@ -17,6 +17,7 @@ import { SavePostResult, SavePostVariables } from "../lib/types";
 interface UsePublishFlowParams {
   user: unknown;
   draftId: string | null;
+  postId: string | null;
   draftDetailHasError: boolean;
   queryClient: QueryClient;
   draftCountQueryKey: readonly unknown[];
@@ -39,6 +40,7 @@ interface UsePublishFlowParams {
 export function usePublishFlow({
   user,
   draftId,
+  postId,
   draftDetailHasError,
   queryClient,
   draftCountQueryKey,
@@ -61,6 +63,7 @@ export function usePublishFlow({
   const tPublish = useTranslations("WritePage.publish");
   const tNotice = useTranslations("WritePage.notice");
   const tError = useTranslations("WritePage.errors");
+  const editablePostId = draftId ?? postId;
 
   const removeDraftFromLocalCaches = (targetDraftId: string) => {
     queryClient.setQueriesData<InfiniteData<DraftPostListResult>>(
@@ -102,7 +105,9 @@ export function usePublishFlow({
 
   const savePostMutation = useMutation<SavePostResult, Error, SavePostVariables>({
     mutationFn: async ({ status, payload, source }) => {
-      const result = draftId ? await updatePost(draftId, payload) : await createPost(payload);
+      const result = editablePostId
+        ? await updatePost(editablePostId, payload)
+        : await createPost(payload);
       return {
         result,
         status,
@@ -128,6 +133,11 @@ export function usePublishFlow({
       if (status === "DRAFT") {
         setSuccess(tPublish("draftSaved"));
         clearLocalDraftSnapshot();
+
+        if (postId) {
+          return;
+        }
+
         await Promise.all([
           queryClient.invalidateQueries({
             queryKey: [...queryKeys.posts.all, "drafts"] as const,
@@ -203,7 +213,7 @@ export function usePublishFlow({
 
   const handleSubmit = async (status: PostStatus) => {
     if (!validateRequiredFields()) return;
-    if (draftId && draftDetailHasError) return;
+    if (editablePostId && draftDetailHasError) return;
     const payload = buildPostPayload(status);
     await savePostMutation.mutateAsync({
       status,
