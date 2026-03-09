@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "./ThemeProvider";
 
@@ -13,6 +13,11 @@ export default function ThemeModeDropdown() {
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const displayTheme: ThemeMode =
     theme === "light" || theme === "dark" || theme === "system"
@@ -42,7 +47,8 @@ export default function ThemeModeDropdown() {
     setIsOpen(false);
   };
 
-  const isDarkActive = displayTheme === "dark";
+  const activeTheme: ThemeMode = isHydrated ? displayTheme : "system";
+  const isDarkActive = activeTheme === "dark";
 
   return (
     <div className="relative" ref={wrapperRef}>
@@ -63,7 +69,7 @@ export default function ThemeModeDropdown() {
           }`}
         />
         <span className="text-xs text-muted-foreground" suppressHydrationWarning>
-          {t(`mode.${displayTheme}`)}
+          {t(`mode.${activeTheme}`)}
         </span>
         <svg
           className="w-4 h-4 text-muted-foreground"
@@ -85,7 +91,7 @@ export default function ThemeModeDropdown() {
           className="absolute right-0 mt-2 w-36 rounded-md border border-border bg-popover text-popover-foreground shadow-lg py-1 z-[400]"
         >
           {THEME_OPTIONS.map((option) => {
-            const isSelected = displayTheme === option;
+            const isSelected = activeTheme === option;
             return (
               <button
                 key={option}
