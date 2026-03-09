@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Bookmark,
@@ -62,6 +63,8 @@ export default function PostDetail({
   onLoadMoreComments,
   onCommentsSortChange,
 }: PostDetailProps) {
+  const t = useTranslations("PostDetail");
+  const locale = useLocale();
   const isOwner = Boolean(
     currentUserId && post.author?.id && currentUserId === post.author.id,
   );
@@ -78,9 +81,14 @@ export default function PostDetail({
     null;
 
   const formatCount = (count: number): string => {
-    if (count >= 10000) return `${(count / 10000).toFixed(1)}만`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}천`;
-    return count.toString();
+    if (locale === "ko") {
+      if (count >= 10000) return `${(count / 10000).toFixed(1)}만`;
+      if (count >= 1000) return `${(count / 1000).toFixed(1)}천`;
+      return count.toString();
+    }
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    return String(count);
   };
 
   return (
@@ -98,7 +106,7 @@ export default function PostDetail({
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 mb-6"
         >
             <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-medium">돌아가기</span>
+          <span className="text-sm font-medium">{t("back")}</span>
         </button>
 
         {/* 게시물 헤더 */}
@@ -132,7 +140,9 @@ export default function PostDetail({
                 <span>{post.publishedAt}</span>
                 <span>•</span>
                 <span>
-                  {Math.ceil((post.content?.length || 0) / 500)} min read
+                  {t("minRead", {
+                    minutes: Math.ceil((post.content?.length || 0) / 500),
+                  })}
                 </span>
               </div>
             </div>
@@ -154,7 +164,7 @@ export default function PostDetail({
               </button>
             ) : (
               <button className="ml-auto px-4 py-1.5 rounded-full border border-success text-success text-sm font-medium hover:bg-success hover:text-success-foreground transition-colors duration-200">
-                팔로우
+                {t("follow")}
               </button>
             )}
           </div>
@@ -191,7 +201,7 @@ export default function PostDetail({
                     ? "bg-red-500/15 text-red-600 hover:bg-red-500/20"
                     : "hover:text-foreground hover:bg-muted/80"
                 }`}
-                aria-label="좋아요"
+                aria-label={t("ariaLike")}
               >
                 <ThumbsUp className="w-5 h-5" />
               </button>
@@ -203,7 +213,7 @@ export default function PostDetail({
                     ? "bg-blue-500/15 text-blue-600 hover:bg-blue-500/20"
                     : "hover:text-foreground hover:bg-muted/80"
                 }`}
-                aria-label="싫어요"
+                aria-label={t("ariaDislike")}
               >
                 <ThumbsDown className="w-5 h-5" />
               </button>
@@ -264,7 +274,7 @@ export default function PostDetail({
             <div className="flex-1">
               <textarea
                 ref={commentTextareaRef}
-                placeholder={isCommentExpanded ? "" : "의견을 나눠주세요"}
+                placeholder={isCommentExpanded ? "" : t("commentPlaceholder")}
                 value={commentValue}
                 onChange={(e) => {
                   setCommentValue(e.target.value);
@@ -311,7 +321,7 @@ export default function PostDetail({
                   }}
                   className="px-5 py-2.5 rounded-full border border-border text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200"
                 >
-                  취소
+                  {t("cancel")}
                 </button>
                 <button
                   type="button"
@@ -333,7 +343,7 @@ export default function PostDetail({
                   disabled={isCommentSubmitting}
                   className="px-5 py-2.5 rounded-full bg-slate-700 text-white text-base font-medium hover:bg-slate-800 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  댓글
+                  {t("comment")}
                 </button>
               </div>
             </div>
@@ -344,9 +354,9 @@ export default function PostDetail({
             <div className="flex items-center gap-2">
               {(
                 [
-                  { label: "최신순", value: "LATEST" },
-                  { label: "좋아요순", value: "LIKE" },
-                  { label: "답글순", value: "REPLY" },
+                  { label: t("sortLatest"), value: "LATEST" },
+                  { label: t("sortLikes"), value: "LIKE" },
+                  { label: t("sortReplies"), value: "REPLY" },
                 ] as const
               ).map((option) => (
                 <button
@@ -365,7 +375,7 @@ export default function PostDetail({
             </div>
             {isCommentsLoading && comments.length === 0 ? (
               <div className="text-sm text-muted-foreground py-4">
-                댓글을 불러오는 중입니다.
+                {t("loadingComments")}
               </div>
             ) : comments.length > 0 ? (
               comments.map((comment) => (
@@ -414,7 +424,7 @@ export default function PostDetail({
                         <span>{comment.likeCount}</span>
                       </button>
                       <button className="text-xs text-muted-foreground hover:text-foreground">
-                        답글 {comment.replyCount}
+                        {t("replies", { count: comment.replyCount })}
                       </button>
                     </div>
                   </div>
@@ -422,7 +432,7 @@ export default function PostDetail({
               ))
             ) : (
               <p className="text-center text-muted-foreground py-8">
-                아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!
+                {t("noComments")}
               </p>
             )}
             {commentsHasNext && (
@@ -433,7 +443,7 @@ export default function PostDetail({
                   disabled={isCommentsLoadingMore}
                   className="px-5 py-2.5 rounded-full border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isCommentsLoadingMore ? "불러오는 중..." : "더보기"}
+                  {isCommentsLoadingMore ? t("loadingMore") : t("loadMore")}
                 </button>
               </div>
             )}

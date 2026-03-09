@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useUser } from "./useUser";
 import { FEED_MODES } from "../constants/feed";
 import { fetchPostDetailWithMeta, updatePostLike } from "../services/posts";
@@ -11,6 +12,7 @@ import { queryKeys } from "../lib/queryKeys";
 type ReactionState = "like" | "dislike" | "none";
 
 export function usePostDetail(postId: string) {
+  const t = useTranslations("PostDetailPage");
   const queryClient = useQueryClient();
   const { user } = useUser();
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -90,10 +92,10 @@ export function usePostDetail(postId: string) {
         return;
       }
       if (message === "NOT_FOUND") {
-        alert("게시물을 찾을 수 없습니다.");
+        alert(t("notFound"));
         return;
       }
-      alert("반응 처리에 실패했습니다.");
+      alert(t("reactionFailed"));
     }
   };
 
@@ -112,9 +114,9 @@ export function usePostDetail(postId: string) {
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      alert("링크가 복사되었습니다!");
+      alert(t("linkCopied"));
     } catch {
-      alert("링크 복사에 실패했습니다.");
+      alert(t("copyFailed"));
     }
   };
 
@@ -146,9 +148,9 @@ export function usePostDetail(postId: string) {
     const message =
       detailQuery.error instanceof Error ? detailQuery.error.message : "UNKNOWN";
     if (message === "NOT_FOUND") {
-      return "게시물을 찾을 수 없습니다.";
+      return t("notFound");
     }
-    return "게시물을 불러오지 못했습니다.";
+    return t("loadFailed");
   })();
 
   return {

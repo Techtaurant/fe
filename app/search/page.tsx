@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import Header from "../components/Header";
 import PostCard from "../components/PostCard";
 import { FEED_MODES } from "../constants/feed";
@@ -31,6 +32,8 @@ function filterPosts(posts: Post[], query: string) {
 }
 
 export default function SearchPage() {
+  const t = useTranslations("SearchPage");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get("q") || "";
@@ -58,10 +61,10 @@ export default function SearchPage() {
     e.preventDefault();
     const trimmed = inputValue.trim();
     if (!trimmed) {
-      router.push("/search");
+      router.push(`/${locale}/search`);
       return;
     }
-    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    router.push(`/${locale}/search?q=${encodeURIComponent(trimmed)}`);
   };
 
   return (
@@ -72,7 +75,7 @@ export default function SearchPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="검색어를 입력하세요"
+              placeholder={t("placeholder")}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="w-full bg-muted border-none rounded-full
@@ -99,7 +102,7 @@ export default function SearchPage() {
         {!committedQuery.trim() ? (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-sm text-muted-foreground">
-              검색어를 입력하면 결과가 표시됩니다.
+              {t("emptyPrompt")}
             </p>
           </div>
         ) : results.length > 0 ? (
@@ -111,7 +114,7 @@ export default function SearchPage() {
         ) : (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-sm text-muted-foreground">
-              검색 결과가 없습니다.
+              {t("noResults")}
             </p>
           </div>
         )}

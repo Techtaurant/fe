@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Header from "../../components/Header";
 import PostDetail from "../../components/PostDetail";
 import { useComments } from "../../hooks/useComments";
@@ -12,6 +13,7 @@ import { useUser } from "../../hooks/useUser";
  * 커뮤니티 게시물의 전체 내용과 댓글을 표시
  */
 export default function PostDetailPage() {
+  const t = useTranslations("PostDetailPage");
   const params = useParams();
   const router = useRouter();
   const postId = params.id as string;
@@ -61,7 +63,7 @@ export default function PostDetailPage() {
           onModeChange={() => {}}
         />
         <div className="flex items-center justify-center py-20">
-          <p className="text-lg text-muted-foreground">게시물을 불러오는 중입니다.</p>
+          <p className="text-lg text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
     );
@@ -77,7 +79,7 @@ export default function PostDetailPage() {
         />
         <div className="flex items-center justify-center py-20">
           <p className="text-lg text-muted-foreground">
-            {errorMessage || "게시물을 찾을 수 없습니다."}
+            {errorMessage || t("notFound")}
           </p>
         </div>
       </div>

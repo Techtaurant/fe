@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 
@@ -15,6 +16,9 @@ export default function MobileBottomNav({
   onHomeClick,
   onModeNavigate,
 }: MobileBottomNavProps) {
+  const t = useTranslations("BottomNav");
+  const locale = useLocale();
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[350] pb-[env(safe-area-inset-bottom)]">
       <div className="w-full">
@@ -24,7 +28,7 @@ export default function MobileBottomNav({
               type="button"
               onClick={onHomeClick}
               className="flex flex-col items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="홈"
+              aria-label={t("home")}
             >
               <svg
                 className="w-5 h-5"
@@ -39,13 +43,13 @@ export default function MobileBottomNav({
                   d="M3 10.5l9-7 9 7V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"
                 />
               </svg>
-              <span>Home</span>
+              <span>{t("home")}</span>
             </button>
 
             <Link
-              href="/search"
+              href={`/${locale}/search`}
               className="flex flex-col items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="검색"
+              aria-label={t("search")}
             >
               <svg
                 className="w-5 h-5"
@@ -60,13 +64,13 @@ export default function MobileBottomNav({
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <span>Search</span>
+              <span>{t("search")}</span>
             </Link>
 
             <Link
-              href="/post/write"
+              href={`/${locale}/post/write`}
               className="flex flex-col items-center px-2 py-1"
-              aria-label="UI"
+              aria-label={t("newPost")}
             >
               <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md">
                 <svg
@@ -93,7 +97,7 @@ export default function MobileBottomNav({
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              aria-label="기업 블로그"
+              aria-label={t("companyBlogs")}
             >
               <svg
                 className="w-5 h-5"
@@ -108,7 +112,7 @@ export default function MobileBottomNav({
                   d="M4 7a2 2 0 012-2h8a2 2 0 012 2v12H6a2 2 0 01-2-2V7zM16 9h2a2 2 0 012 2v8a2 2 0 01-2 2h-2V9z"
                 />
               </svg>
-              <span>기업블로그</span>
+              <span>{t("companyBlogs")}</span>
             </button>
 
             <button
@@ -119,7 +123,7 @@ export default function MobileBottomNav({
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              aria-label="커뮤니티"
+              aria-label={t("community")}
             >
               <svg
                 className="w-5 h-5"
@@ -134,7 +138,7 @@ export default function MobileBottomNav({
                   d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m14-8a4 4 0 10-8 0 4 4 0 008 0zm6 8v-2a4 4 0 00-3-3.87"
                 />
               </svg>
-              <span>커뮤니티</span>
+              <span>{t("community")}</span>
             </button>
           </div>
         </div>

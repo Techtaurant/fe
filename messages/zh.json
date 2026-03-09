@@ -1,0 +1,137 @@
+{
+  "Header": {
+    "openMenu": "打开菜单",
+    "companyBlogs": "企业博客",
+    "community": "社区",
+    "searchPlaceholder": "搜索...",
+    "writePost": "写文章",
+    "profile": "个人资料",
+    "logout": "退出登录",
+    "login": "登录"
+  },
+  "BottomNav": {
+    "home": "首页",
+    "search": "搜索",
+    "newPost": "新建",
+    "companyBlogs": "企业",
+    "community": "社区"
+  },
+  "Locale": {
+    "switchTo": "切换到 {locale}"
+  },
+  "Theme": {
+    "label": "主题",
+    "mode": {
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
+    }
+  },
+  "Sidebar": {
+    "closeFilter": "关闭筛选",
+    "collapse": "收起",
+    "showMoreCount": "查看更多 ({count})",
+    "hideReadPosts": "隐藏已读文章",
+    "sort": {
+      "title": "排序",
+      "latest": "最新",
+      "popular": "热门"
+    },
+    "techBlog": {
+      "title": "技术博客",
+      "searchPlaceholder": "搜索技术博客"
+    },
+    "userSearch": {
+      "title": "用户搜索",
+      "placeholder": "用户名"
+    },
+    "tag": {
+      "title": "标签",
+      "searchPlaceholder": "搜索标签"
+    }
+  },
+  "FilterBar": {
+    "date": {
+      "7d": "7天",
+      "30d": "30天",
+      "365d": "365天",
+      "all": "全部"
+    },
+    "sort": {
+      "latest": "最新",
+      "comments": "评论",
+      "views": "浏览",
+      "likes": "点赞"
+    }
+  },
+  "PostList": {
+    "noPosts": "没有符合条件的文章。"
+  },
+  "PostCard": {
+    "read": "已读",
+    "views": "浏览",
+    "likes": "点赞",
+    "comments": "评论"
+  },
+  "PostDetail": {
+    "back": "返回",
+    "minRead": "约 {minutes} 分钟阅读",
+    "follow": "关注",
+    "ariaLike": "点赞",
+    "ariaDislike": "点踩",
+    "commentPlaceholder": "分享你的想法",
+    "cancel": "取消",
+    "comment": "评论",
+    "sortLatest": "最新",
+    "sortLikes": "点赞",
+    "sortReplies": "回复",
+    "loadingComments": "正在加载评论...",
+    "replies": "回复 {count}",
+    "noComments": "还没有评论，来发表第一条吧！",
+    "loadingMore": "加载中...",
+    "loadMore": "加载更多"
+  },
+  "CommunityFeed": {
+    "loadFailed": "无法加载社区文章。",
+    "reachedEnd": "已加载到最后一篇 🎉"
+  },
+  "SearchPage": {
+    "placeholder": "请输入关键词",
+    "emptyPrompt": "输入关键词后将显示搜索结果。",
+    "noResults": "暂无搜索结果。"
+  },
+  "DraftsPage": {
+    "title": "我的草稿",
+    "description": "你可以编辑或发布已保存的草稿。",
+    "newPost": "新建文章",
+    "loadingUser": "正在加载用户信息...",
+    "signInRequired": "请登录后查看草稿。",
+    "empty": "暂无已保存草稿。",
+    "updatedAt": "最后更新",
+    "loadingMore": "正在加载更多草稿...",
+    "reachedEnd": "已加载到最后一篇草稿。",
+    "loadFailed": "无法加载草稿。"
+  },
+  "PostDetailPage": {
+    "loading": "正在加载文章...",
+    "notFound": "未找到文章。",
+    "loadFailed": "无法加载文章。",
+    "reactionFailed": "处理互动失败。",
+    "linkCopied": "链接已复制！",
+    "copyFailed": "复制链接失败。"
+  },
+  "OAuthCallback": {
+    "processing": "正在处理登录..."
+  },
+  "OAuthError": {
+    "title": "登录失败",
+    "backHome": "返回首页",
+    "error": {
+      "4001": "不支持的登录方式。",
+      "4002": "无法获取邮箱信息，请检查 Google 账号设置。",
+      "4003": "登录失败，请重试。",
+      "4004": "服务器错误，请稍后再试。",
+      "unknown": "发生未知错误。"
+    }
+  }
+}

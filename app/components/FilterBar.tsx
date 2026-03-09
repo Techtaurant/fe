@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { FilterState, DateRange, SortOption } from '../types';
 
 interface FilterBarProps {
@@ -8,6 +9,8 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({ filterState, onFilterChange }: FilterBarProps) {
+  const t = useTranslations('FilterBar');
+
   const handleDateChange = (dateRange: DateRange) => {
     onFilterChange({ ...filterState, dateRange });
   };
@@ -17,17 +20,17 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
   };
 
   const dateOptions: { label: string; value: DateRange }[] = [
-    { label: '7일', value: '7d' },
-    { label: '30일', value: '30d' },
-    { label: '365일', value: '365d' },
-    { label: '전체', value: 'all' },
+    { label: t('date.7d'), value: '7d' },
+    { label: t('date.30d'), value: '30d' },
+    { label: t('date.365d'), value: '365d' },
+    { label: t('date.all'), value: 'all' },
   ];
 
   const sortOptions: { label: string; value: SortOption }[] = [
-    { label: '최신순', value: 'latest' },
-    { label: '댓글순', value: 'comments' },
-    { label: '조회순', value: 'views' },
-    { label: '추천순', value: 'likes' },
+    { label: t('sort.latest'), value: 'latest' },
+    { label: t('sort.comments'), value: 'comments' },
+    { label: t('sort.views'), value: 'views' },
+    { label: t('sort.likes'), value: 'likes' },
   ];
 
   return (
