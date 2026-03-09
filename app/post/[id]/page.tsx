@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Header from "../../components/Header";
 import PostDetail from "../../components/PostDetail";
 import { useComments } from "../../hooks/useComments";
@@ -14,6 +14,7 @@ import { useUser } from "../../hooks/useUser";
  */
 export default function PostDetailPage() {
   const t = useTranslations("PostDetailPage");
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const postId = params.id as string;
@@ -31,6 +32,11 @@ export default function PostDetailPage() {
     handleDislike,
     handleBookmark,
     handleShare,
+    handleToggleVisibility,
+    handleDelete,
+    handleReport,
+    isVisibilityUpdating,
+    isDeleting,
   } = usePostDetail(postId);
 
   const {
@@ -100,6 +106,16 @@ export default function PostDetailPage() {
       createCommentFieldErrors={createCommentFieldErrors}
       currentUserId={user?.id ?? null}
       onBack={() => router.back()}
+      onEdit={() => alert(t("editNotReady"))}
+      onToggleVisibility={handleToggleVisibility}
+      onDelete={async () => {
+        const deleted = await handleDelete();
+        if (deleted) {
+          router.replace(`/${locale}`);
+        }
+        return deleted;
+      }}
+      onReport={handleReport}
       onLike={handleLike}
       onDislike={handleDislike}
       onBookmark={handleBookmark}
@@ -108,6 +124,8 @@ export default function PostDetailPage() {
       onClearCommentFieldError={clearCreateCommentFieldError}
       onLoadMoreComments={handleLoadMoreComments}
       onCommentsSortChange={setCommentsSort}
+      isVisibilityUpdating={isVisibilityUpdating}
+      isDeleting={isDeleting}
     />
   );
 }
