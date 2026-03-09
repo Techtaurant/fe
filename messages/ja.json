@@ -69,6 +69,7 @@
   },
   "PostCard": {
     "read": "既読",
+    "private": "非公開",
     "views": "閲覧数",
     "likes": "いいね",
     "comments": "コメント"

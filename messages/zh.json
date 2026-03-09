@@ -69,6 +69,7 @@
   },
   "PostCard": {
     "read": "已读",
+    "private": "私密",
     "views": "浏览",
     "likes": "点赞",
     "comments": "评论"

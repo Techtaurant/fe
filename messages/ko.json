@@ -69,6 +69,7 @@
   },
   "PostCard": {
     "read": "읽음",
+    "private": "비공개",
     "views": "조회수",
     "likes": "좋아요",
     "comments": "댓글"
