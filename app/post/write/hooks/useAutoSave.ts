@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { QueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { createPost, updatePost } from "@/app/services/posts";
@@ -46,6 +47,7 @@ export function useAutoSave({
   draftCountQueryKey,
   router,
 }: UseAutoSaveParams) {
+  const t = useTranslations("WritePage.notice");
   const autoSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const localSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoSaveRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -86,7 +88,7 @@ export function useAutoSave({
       autoSaveAppliedSequenceRef.current = requestSequence;
       autoSaveRetryDelayRef.current = AUTO_SAVE_RETRY_BASE_MS;
       clearLocalDraftSnapshot();
-      setAutoSaveNotice("자동 저장되었습니다.");
+      setAutoSaveNotice(t("autoSaved"));
 
       if (!draftId && !hasIncrementedDraftCountForCurrentCreateRef.current) {
         queryClient.setQueryData<number | null>(draftCountQueryKey, (current) => {
@@ -110,7 +112,7 @@ export function useAutoSave({
       if (saveError instanceof DOMException && saveError.name === "AbortError") {
         return;
       }
-      setAutoSaveNotice("네트워크 오류로 로컬에 임시 저장했습니다. 자동 재시도합니다.");
+      setAutoSaveNotice(t("autoSaveRetry"));
       if (autoSaveRetryTimerRef.current) {
         clearTimeout(autoSaveRetryTimerRef.current);
         autoSaveRetryTimerRef.current = null;
@@ -138,6 +140,7 @@ export function useAutoSave({
     router,
     setAutoSaveNotice,
     tags.length,
+    t,
     title,
     user,
   ]);
@@ -156,7 +159,7 @@ export function useAutoSave({
 
     localSaveDebounceTimerRef.current = setTimeout(() => {
       writeLocalDraftSnapshot();
-      setAutoSaveNotice("로컬 임시 저장됨");
+      setAutoSaveNotice(t("localSaved"));
     }, LOCAL_SAVE_DEBOUNCE_MS);
 
     if (autoSaveDebounceTimerRef.current) {
@@ -178,6 +181,7 @@ export function useAutoSave({
     contentFingerprint,
     setAutoSaveNotice,
     tags.length,
+    t,
     title,
     writeLocalDraftSnapshot,
     runAutoSave,

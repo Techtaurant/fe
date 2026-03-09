@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 interface PublishScopeModalProps {
   isOpen: boolean;
   isDisabled: boolean;
@@ -13,6 +15,8 @@ export default function PublishScopeModal({
   onPublishPrivate,
   onClose,
 }: PublishScopeModalProps) {
+  const t = useTranslations("WritePage.publishModal");
+
   if (!isOpen) return null;
 
   return (
@@ -21,10 +25,10 @@ export default function PublishScopeModal({
         <div className="mb-5">
           <div>
             <p className="mb-2 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              Publish options
+              {t("badge")}
             </p>
             <h2 className="text-xl font-semibold text-foreground md:text-2xl">
-              게시물 공개 설정
+              {t("title")}
             </h2>
           </div>
         </div>
@@ -36,9 +40,9 @@ export default function PublishScopeModal({
             onClick={onPublishPublic}
             className="group w-full rounded-xl border border-primary/30 bg-primary/5 p-4 text-left transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <p className="text-base font-semibold text-foreground">전체 공개로 발행</p>
+            <p className="text-base font-semibold text-foreground">{t("publicTitle")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              피드와 검색에 노출되어 누구나 조회할 수 있습니다.
+              {t("publicDescription")}
             </p>
           </button>
 
@@ -48,9 +52,9 @@ export default function PublishScopeModal({
             onClick={onPublishPrivate}
             className="group w-full rounded-xl border border-border bg-background p-4 text-left transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <p className="text-base font-semibold text-foreground">비공개로 발행</p>
+            <p className="text-base font-semibold text-foreground">{t("privateTitle")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              작성자 본인만 확인할 수 있으며 피드에는 노출되지 않습니다.
+              {t("privateDescription")}
             </p>
           </button>
         </div>
@@ -62,7 +66,7 @@ export default function PublishScopeModal({
             onClick={onClose}
             className="rounded-full border border-border px-6 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            닫기
+            {t("close")}
           </button>
         </div>
       </div>
