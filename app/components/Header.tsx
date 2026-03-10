@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useUser } from "../hooks/useUser";
+import { buildLogoutUrl, redirectToOAuthLogin } from "../lib/authRedirect";
 import { queryKeys } from "../lib/queryKeys";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
@@ -62,24 +63,23 @@ export default function Header({
 
   const handleAuthClick = () => {
     if (!isLoggedIn) {
-      // 백엔드로 직접 요청 (쿠키가 올바른 도메인에 설정됨)
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-      console.warn(
-        "Redirecting to OAuth URL:",
-        `${apiBaseUrl}/oauth2/authorization/google`,
-      );
-      window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}&redirect=/${locale}`;
+      redirectToOAuthLogin({ redirectPath: `/${locale}` });
     } else {
       setIsDropdownOpen(!isDropdownOpen);
     }
   };
 
+  const handleWritePostClick = () => {
+    if (isLoggedIn) {
+      router.push(`/${locale}/post/write`);
+      return;
+    }
+    redirectToOAuthLogin({ redirectPath: `/${locale}/post/write` });
+  };
+
   const handleLogout = async () => {
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-      await fetch(`${apiBaseUrl}/api/auth/logout`, {
+      await fetch(buildLogoutUrl(), {
         method: "POST",
         credentials: "include",
       });
@@ -195,7 +195,7 @@ export default function Header({
           {/* Write Post Button (로그인 사용자만) */}
           {isLoggedIn && !isLoading && (
             <button
-              onClick={() => router.push(`/${locale}/post/write`)}
+              onClick={handleWritePostClick}
               className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-full
                      bg-secondary text-secondary-foreground text-sm font-medium
                      transition-colors duration-200
@@ -302,6 +302,7 @@ export default function Header({
         currentMode={currentMode}
         onHomeClick={handleLogoClick}
         onModeNavigate={handleModeNavigate}
+        onWritePost={handleWritePostClick}
       />
     </header>
   );

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { InfiniteData, QueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { redirectToOAuthLogin } from "@/app/lib/authRedirect";
 import { createPost, updatePost } from "@/app/services/posts";
 import { queryKeys } from "@/app/lib/queryKeys";
 import { DraftPostListResult } from "@/app/services/posts/types";
@@ -241,11 +242,10 @@ export function usePublishFlow({
   }, [setAutoSaveNotice, setIsAuthExpiredModalOpen, tNotice, user]);
 
   const handleGoToLogin = () => {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
     if (typeof window === "undefined") return;
     const redirectPath = `${window.location.pathname}${window.location.search}`;
     window.sessionStorage.setItem(AUTH_RETURN_TO_STORAGE_KEY, redirectPath);
-    window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}&redirect=${encodeURIComponent(redirectPath)}`;
+    redirectToOAuthLogin({ redirectPath });
   };
 
   const openPublishModal = () => {
