@@ -158,6 +158,9 @@ export function usePostDetail(postId: string) {
             }
           : current,
       );
+      await queryClient.invalidateQueries({
+        queryKey: [...queryKeys.posts.all, "community"] as const,
+      });
       alert(
         nextStatus === "PRIVATE"
           ? t("visibilityChangedPrivate")
