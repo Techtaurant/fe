@@ -180,3 +180,25 @@ export async function setPostLike(
 
   return (await response.json()) as { status: number; message: string };
 }
+
+export async function deletePostRequest(
+  postId: string,
+): Promise<{ status: number; message: string }> {
+  const response = await httpClient(`/api/posts/${postId}`, {
+    method: "DELETE",
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as { status: number; message: string };
+}

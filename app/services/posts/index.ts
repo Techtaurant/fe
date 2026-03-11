@@ -6,6 +6,7 @@ import {
 } from "@/app/types";
 import {
   createPostRequest,
+  deletePostRequest,
   fetchDraftDetail,
   fetchDraftPosts,
   fetchCommunityPosts,
@@ -95,4 +96,8 @@ export async function updatePostLike(
   likeStatus: "NONE" | "LIKE" | "DISLIKE",
 ) {
   return setPostLike(postId, likeStatus);
+}
+
+export async function deletePost(postId: string) {
+  return deletePostRequest(postId);
 }

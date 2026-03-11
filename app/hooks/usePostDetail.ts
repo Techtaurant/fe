@@ -5,7 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useUser } from "./useUser";
 import { FEED_MODES } from "../constants/feed";
-import { fetchPostDetailWithMeta, updatePostLike } from "../services/posts";
+import {
+  deletePost,
+  fetchPostDetailWithMeta,
+  updatePost,
+  updatePostLike,
+} from "../services/posts";
 import { FeedMode, Post } from "../types";
 import { queryKeys } from "../lib/queryKeys";
 
@@ -38,6 +43,12 @@ export function usePostDetail(postId: string) {
   const likeMutation = useMutation({
     mutationFn: (likeStatus: "NONE" | "LIKE" | "DISLIKE") =>
       updatePostLike(postId, likeStatus),
+  });
+  const visibilityMutation = useMutation({
+    mutationFn: (status: "PUBLISHED" | "PRIVATE") => updatePost(postId, { status }),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: () => deletePost(postId),
   });
 
   const getStoredReaction = (id: string) => {
@@ -120,6 +131,94 @@ export function usePostDetail(postId: string) {
     }
   };
 
+  const redirectToSignIn = () => {
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+    window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
+  };
+
+  const handleToggleVisibility = async () => {
+    if (!user) {
+      redirectToSignIn();
+      return;
+    }
+
+    const currentPost = detailQuery.data?.post;
+    if (!currentPost) return;
+
+    const isOwner = Boolean(
+      user.id && currentPost.author?.id && user.id === currentPost.author.id,
+    );
+    if (!isOwner) return;
+
+    const nextStatus = currentPost.status === "PRIVATE" ? "PUBLISHED" : "PRIVATE";
+
+    try {
+      await visibilityMutation.mutateAsync(nextStatus);
+      setPost((current) =>
+        current
+          ? {
+              ...current,
+              status: nextStatus,
+            }
+          : current,
+      );
+      alert(
+        nextStatus === "PRIVATE"
+          ? t("visibilityChangedPrivate")
+          : t("visibilityChangedPublic"),
+      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "UNKNOWN";
+      if (message === "UNAUTHORIZED") {
+        redirectToSignIn();
+        return;
+      }
+      if (message === "NOT_FOUND") {
+        alert(t("notFound"));
+        return;
+      }
+      alert(t("visibilityChangeFailed"));
+    }
+  };
+
+  const handleDelete = async (): Promise<boolean> => {
+    if (!user) {
+      redirectToSignIn();
+      return false;
+    }
+
+    const currentPost = detailQuery.data?.post;
+    if (!currentPost) return false;
+
+    const isOwner = Boolean(
+      user.id && currentPost.author?.id && user.id === currentPost.author.id,
+    );
+    if (!isOwner) return false;
+
+    try {
+      await deleteMutation.mutateAsync();
+      alert(t("deleted"));
+      return true;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "UNKNOWN";
+      if (message === "UNAUTHORIZED") {
+        redirectToSignIn();
+        return false;
+      }
+      if (message === "NOT_FOUND") {
+        alert(t("notFound"));
+        return false;
+      }
+      alert(t("deleteFailed"));
+      return false;
+    }
+  };
+
+  const handleReport = () => {
+    alert(t("reportSubmitted"));
+  };
+
   const setPost = (updater: (current: Post | null) => Post | null) => {
     queryClient.setQueryData<{
       post: Post;
@@ -166,5 +265,10 @@ export function usePostDetail(postId: string) {
     handleDislike,
     handleBookmark,
     handleShare,
+    handleToggleVisibility,
+    handleDelete,
+    handleReport,
+    isVisibilityUpdating: visibilityMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 }
