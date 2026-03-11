@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import type { KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { redirectToOAuthLogin } from "@/app/lib/authRedirect";
 import { useUser } from "@/app/hooks/useUser";
 import { queryKeys } from "@/app/lib/queryKeys";
 import AuthExpiredModal from "./components/AuthExpiredModal";
@@ -26,10 +27,11 @@ import {
 
 export default function WritePostPage() {
   const t = useTranslations("WritePage");
+  const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const { user } = useUser();
+  const { user, isLoading: isUserLoading } = useUser();
   const draftId = searchParams.get("draftId");
   const postId = searchParams.get("postId");
   const isPostEditMode = Boolean(postId);
@@ -53,6 +55,13 @@ export default function WritePostPage() {
     setError(null);
     setSuccess(null);
   }, [draftId, setError, setSuccess]);
+
+  useEffect(() => {
+    if (isUserLoading || user) return;
+    redirectToOAuthLogin({
+      redirectPath: `/${locale}/post/write${window.location.search}`,
+    });
+  }, [isUserLoading, locale, user]);
 
   const writeLocalSnapshot = () => {
     writeLocalDraftSnapshot(localDraftStorageKey, {
@@ -136,6 +145,10 @@ export default function WritePostPage() {
       form.handleAddTag();
     }
   };
+
+  if (!user && !isUserLoading) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background px-3 py-4 pb-28 md:px-4 md:py-6 md:pb-32">

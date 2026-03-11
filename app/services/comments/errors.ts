@@ -1,11 +1,8 @@
 import { isCommentApiError, ValidationErrors } from "./apiError";
-
-function getApiBaseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-}
+import { redirectToOAuthLogin } from "@/app/lib/authRedirect";
 
 export function redirectToGoogleLogin() {
-  window.location.href = `${getApiBaseUrl()}/oauth2/authorization/google`;
+  redirectToOAuthLogin();
 }
 
 function getErrorMessage(error: unknown) {

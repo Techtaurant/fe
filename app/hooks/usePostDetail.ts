@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useUser } from "./useUser";
+import { redirectToOAuthLogin } from "../lib/authRedirect";
 import { FEED_MODES } from "../constants/feed";
 import {
   deletePost,
@@ -75,9 +76,7 @@ export function usePostDetail(postId: string) {
 
   const handleReaction = async (target: "like" | "dislike") => {
     if (!user) {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-      window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
+      redirectToOAuthLogin();
       return;
     }
 
@@ -97,9 +96,7 @@ export function usePostDetail(postId: string) {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "UNKNOWN";
       if (message === "UNAUTHORIZED") {
-        const apiBaseUrl =
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-        window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
+        redirectToOAuthLogin();
         return;
       }
       if (message === "NOT_FOUND") {
@@ -132,9 +129,7 @@ export function usePostDetail(postId: string) {
   };
 
   const redirectToSignIn = () => {
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-    window.location.href = `${apiBaseUrl}/oauth2/authorization/google?origin=${encodeURIComponent(window.location.origin)}`;
+    redirectToOAuthLogin();
   };
 
   const handleToggleVisibility = async () => {

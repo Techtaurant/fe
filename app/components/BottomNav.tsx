@@ -9,12 +9,14 @@ interface MobileBottomNavProps {
   currentMode?: FeedMode;
   onHomeClick: () => void;
   onModeNavigate: (mode: FeedMode) => void;
+  onWritePost: () => void;
 }
 
 export default function MobileBottomNav({
   currentMode = FEED_MODES.COMPANY,
   onHomeClick,
   onModeNavigate,
+  onWritePost,
 }: MobileBottomNavProps) {
   const t = useTranslations("BottomNav");
   const locale = useLocale();
@@ -67,8 +69,9 @@ export default function MobileBottomNav({
               <span>{t("search")}</span>
             </Link>
 
-            <Link
-              href={`/${locale}/post/write`}
+            <button
+              type="button"
+              onClick={onWritePost}
               className="flex flex-col items-center px-2 py-1"
               aria-label={t("newPost")}
             >
@@ -87,7 +90,7 @@ export default function MobileBottomNav({
                   />
                 </svg>
               </div>
-            </Link>
+            </button>
 
             <button
               type="button"
