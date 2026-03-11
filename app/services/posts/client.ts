@@ -183,13 +183,17 @@ export async function setPostLike(
 
 export async function deletePostRequest(
   postId: string,
-): Promise<{ status: number; message: string }> {
+): Promise<void> {
   const response = await httpClient(`/api/posts/${postId}`, {
     method: "DELETE",
   });
 
   if (response.status === 401) {
     throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 403) {
+    throw new Error("FORBIDDEN");
   }
 
   if (response.status === 404) {
@@ -200,5 +204,9 @@ export async function deletePostRequest(
     throw new Error(`HTTP_${response.status}`);
   }
 
-  return (await response.json()) as { status: number; message: string };
+  if (response.status === 204) {
+    return;
+  }
+
+  await response.text();
 }

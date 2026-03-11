@@ -193,12 +193,18 @@ export function usePostDetail(postId: string) {
 
     try {
       await deleteMutation.mutateAsync();
+      queryClient.removeQueries({ queryKey: queryKeys.posts.all });
+      queryClient.removeQueries({ queryKey: detailQueryKey });
       alert(t("deleted"));
       return true;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "UNKNOWN";
       if (message === "UNAUTHORIZED") {
         redirectToSignIn();
+        return false;
+      }
+      if (message === "FORBIDDEN") {
+        alert(t("deleteForbidden"));
         return false;
       }
       if (message === "NOT_FOUND") {
