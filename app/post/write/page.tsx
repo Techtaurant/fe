@@ -31,6 +31,8 @@ export default function WritePostPage() {
   const searchParams = useSearchParams();
   const { user } = useUser();
   const draftId = searchParams.get("draftId");
+  const postId = searchParams.get("postId");
+  const isPostEditMode = Boolean(postId);
   const localDraftStorageKey = getLocalDraftStorageKey(draftId);
   const draftCountQueryKey = [...queryKeys.posts.all, "drafts-count"] as const;
 
@@ -39,6 +41,7 @@ export default function WritePostPage() {
 
   const draftBootstrap = useDraftBootstrap({
     draftId,
+    postId,
     draftCountQueryKey,
     setTitle: form.setTitle,
     setContent: form.setContent,
@@ -72,9 +75,10 @@ export default function WritePostPage() {
   };
 
   useAutoSave({
+    enabled: !isPostEditMode,
     user,
     draftId,
-    draftDetailError: draftBootstrap.draftDetailQuery.isError,
+    draftDetailError: draftBootstrap.detailHasError,
     title: form.title,
     content: form.content,
     categoryPath: form.categoryPath,
@@ -100,7 +104,8 @@ export default function WritePostPage() {
   const publishFlow = usePublishFlow({
     user,
     draftId,
-    draftDetailHasError: draftBootstrap.draftDetailQuery.isError,
+    postId,
+    draftDetailHasError: draftBootstrap.detailHasError,
     queryClient,
     draftCountQueryKey,
     validateRequiredFields: form.validateRequiredFields,
@@ -137,7 +142,7 @@ export default function WritePostPage() {
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-3 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-            {draftId ? t("mode.edit") : t("mode.create")}
+            {draftId || postId ? t("mode.edit") : t("mode.create")}
           </p>
         </div>
 
@@ -208,6 +213,7 @@ export default function WritePostPage() {
               isSubmitting={publishFlow.isSubmitting}
               isPublishActionDisabled={isPublishActionDisabled}
               draftCountLabel={draftBootstrap.draftCountLabel}
+              showDraftActions={!isPostEditMode}
               onGoBack={() => router.push("/?mode=user")}
               onSaveDraft={() => void publishFlow.handleSubmit("DRAFT")}
               onOpenPublishModal={publishFlow.openPublishModal}

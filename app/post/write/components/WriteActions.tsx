@@ -4,6 +4,7 @@ interface WriteActionsProps {
   isSubmitting: boolean;
   isPublishActionDisabled: boolean;
   draftCountLabel: string;
+  showDraftActions?: boolean;
   onGoBack: () => void;
   onSaveDraft: () => void;
   onOpenPublishModal: () => void;
@@ -14,6 +15,7 @@ export default function WriteActions({
   isSubmitting,
   isPublishActionDisabled,
   draftCountLabel,
+  showDraftActions = true,
   onGoBack,
   onSaveDraft,
   onOpenPublishModal,
@@ -32,24 +34,26 @@ export default function WriteActions({
       </button>
 
       <div className="flex gap-3">
-        <div className="inline-flex overflow-hidden rounded-lg bg-muted/80">
-          <button
-            type="button"
-            disabled={isPublishActionDisabled}
-            onClick={onSaveDraft}
-            className="px-4 py-2.5 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSubmitting ? t("saving") : t("saveDraft")}
-          </button>
-          <button
-            type="button"
-            onClick={onGoDraftList}
-            className="min-w-11 border-l border-border px-2.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label={t("draftListAria")}
-          >
-            {draftCountLabel}
-          </button>
-        </div>
+        {showDraftActions && (
+          <div className="inline-flex overflow-hidden rounded-lg bg-muted/80">
+            <button
+              type="button"
+              disabled={isPublishActionDisabled}
+              onClick={onSaveDraft}
+              className="px-4 py-2.5 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSubmitting ? t("saving") : t("saveDraft")}
+            </button>
+            <button
+              type="button"
+              onClick={onGoDraftList}
+              className="min-w-11 border-l border-border px-2.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label={t("draftListAria")}
+            >
+              {draftCountLabel}
+            </button>
+          </div>
+        )}
 
         <button
           type="button"
