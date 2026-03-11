@@ -6,6 +6,7 @@ export type PostListPeriod = "WEEK" | "MONTH" | "YEAR" | "ALL";
 export interface PostListItem {
   id: string;
   title: string;
+  status?: "DRAFT" | "PUBLISHED" | "PRIVATE";
   authorName: string;
   authorProfileImageUrl?: string;
   thumbnailUrl?: string;
@@ -34,6 +35,7 @@ export interface PostDetailResponse {
     id: string;
     title?: string;
     content?: string;
+    status?: "DRAFT" | "PUBLISHED" | "PRIVATE";
     publishedAt?: string;
     author: {
       id: string;

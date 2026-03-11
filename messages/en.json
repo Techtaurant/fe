@@ -69,6 +69,7 @@
   },
   "PostCard": {
     "read": "Read",
+    "private": "Private",
     "views": "Views",
     "likes": "Likes",
     "comments": "Comments"

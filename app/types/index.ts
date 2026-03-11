@@ -30,6 +30,7 @@ export interface TechBlog {
 export interface Post {
   id: string;
   type: "company" | "community"; // 게시물 타입
+  status?: PostStatus;
   title: string;
   content?: string; // 게시물 본문 (커뮤니티 상세 페이지용)
   thumbnailUrl?: string;

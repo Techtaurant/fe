@@ -17,6 +17,7 @@ export function mapListItemToPost(item: PostListItem): Post {
   return {
     id: item.id,
     type: "community",
+    status: item.status ?? "PUBLISHED",
     title: item.title,
     viewCount: item.viewCount,
     likeCount: item.likeCount ?? 0,
@@ -43,6 +44,7 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
   return {
     id: detail.id,
     type: "community",
+    status: detail.status ?? "PUBLISHED",
     title: detail.title || "새 게시물",
     content: detail.content || "",
     viewCount: detail.viewCount ?? 0,
