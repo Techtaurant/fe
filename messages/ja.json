@@ -137,6 +137,7 @@
     "visibilityChangedPublic": "公開に切り替えました。",
     "visibilityChangeFailed": "公開設定の変更に失敗しました。",
     "deleted": "投稿を削除しました。",
+    "deleteForbidden": "他人の投稿は削除できません。",
     "deleteFailed": "投稿の削除に失敗しました。",
     "reportSubmitted": "通報を受け付けました。",
     "editNotReady": "編集機能はまもなく提供予定です。"

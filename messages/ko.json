@@ -137,6 +137,7 @@
     "visibilityChangedPublic": "공개로 전환되었습니다.",
     "visibilityChangeFailed": "공개 설정을 변경하지 못했습니다.",
     "deleted": "게시물이 삭제되었습니다.",
+    "deleteForbidden": "다른 사용자의 게시물을 삭제할 수 없습니다.",
     "deleteFailed": "게시물을 삭제하지 못했습니다.",
     "reportSubmitted": "신고가 접수되었습니다.",
     "editNotReady": "수정 기능은 곧 제공될 예정입니다."

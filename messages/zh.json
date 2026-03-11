@@ -137,6 +137,7 @@
     "visibilityChangedPublic": "已切换为公开。",
     "visibilityChangeFailed": "修改可见性失败。",
     "deleted": "文章已删除。",
+    "deleteForbidden": "您无权删除其他用户的文章。",
     "deleteFailed": "删除文章失败。",
     "reportSubmitted": "举报已提交。",
     "editNotReady": "编辑功能即将上线。"

@@ -137,6 +137,7 @@
     "visibilityChangedPublic": "This post is now public.",
     "visibilityChangeFailed": "Failed to change visibility.",
     "deleted": "Post deleted.",
+    "deleteForbidden": "You do not have permission to delete this post.",
     "deleteFailed": "Failed to delete post.",
     "reportSubmitted": "Report submitted.",
     "editNotReady": "Edit support is coming soon."
