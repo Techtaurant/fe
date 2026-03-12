@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useUser } from "./useUser";
@@ -9,6 +9,7 @@ import { FEED_MODES } from "../constants/feed";
 import {
   deletePost,
   fetchPostDetailWithMeta,
+  updatePostReadLog,
   updatePost,
   updatePostLike,
 } from "../services/posts";
@@ -21,7 +22,6 @@ export function usePostDetail(postId: string) {
   const t = useTranslations("PostDetailPage");
   const queryClient = useQueryClient();
   const { user } = useUser();
-  const readStateStorageKey = `post:${postId}:isRead`;
   const currentMode: FeedMode = FEED_MODES.USER;
   const [reactionOverride, setReactionOverride] = useState<{
     postId: string;
@@ -83,21 +83,6 @@ export function usePostDetail(postId: string) {
     }
   };
 
-  const getStoredReadState = useCallback(() => {
-    if (typeof window === "undefined") return null;
-
-    const value = window.localStorage.getItem(readStateStorageKey);
-    if (value === "1") return true;
-    if (value === "0") return false;
-    return null;
-  }, [readStateStorageKey]);
-
-  const setStoredReadState = useCallback((value: boolean) => {
-    if (typeof window === "undefined") return;
-
-    window.localStorage.setItem(readStateStorageKey, value ? "1" : "0");
-  }, [readStateStorageKey]);
-
   const setStoredReaction = (id: string, value: ReactionState) => {
     if (typeof window === "undefined") return;
     try {
@@ -148,11 +133,18 @@ export function usePostDetail(postId: string) {
     void handleReaction("dislike");
   };
 
-  const handleToggleRead = () => {
+  const handleToggleRead = async () => {
+    if (!user) {
+      redirectToOAuthLogin();
+      return;
+    }
+
     const currentPost = detailQuery.data?.post;
     if (!currentPost) return;
 
     const nextRead = !currentPost.isRead;
+    const previousRead = currentPost.isRead;
+
     setPost((postToUpdate) => {
       if (!postToUpdate) return postToUpdate;
       return {
@@ -160,22 +152,32 @@ export function usePostDetail(postId: string) {
         isRead: nextRead,
       };
     });
-    setStoredReadState(nextRead);
+
+    try {
+      await updatePostReadLog(postId, nextRead);
+      await queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+    } catch (error: unknown) {
+      setPost((postToUpdate) => {
+        if (!postToUpdate) return postToUpdate;
+        return {
+          ...postToUpdate,
+          isRead: previousRead,
+        };
+      });
+
+      const message = error instanceof Error ? error.message : "UNKNOWN";
+      if (message === "UNAUTHORIZED") {
+        redirectToOAuthLogin();
+        return;
+      }
+      if (message === "NOT_FOUND") {
+        alert(t("notFound"));
+        return;
+      }
+      alert(t("markReadFailed"));
+    }
   };
-
-  useEffect(() => {
-    const storedRead = getStoredReadState();
-    if (storedRead === null) return;
-
-    setPost((current) => {
-      if (!current) return current;
-      if (current.isRead === storedRead) return current;
-      return {
-        ...current,
-        isRead: storedRead,
-      };
-    });
-  }, [detailQuery.data?.post?.id, getStoredReadState, setPost]);
 
   const handleShare = async () => {
     try {
@@ -289,7 +291,7 @@ export function usePostDetail(postId: string) {
   const isLiked = reactionState === "like";
   const post = detailQuery.data?.post ?? null;
   const isLoading = detailQuery.isPending;
-  const isRead = Boolean(post?.isRead);
+  const isRead = Boolean(user) && Boolean(post?.isRead);
   const errorMessage = (() => {
     if (!detailQuery.error) return null;
     const message =
