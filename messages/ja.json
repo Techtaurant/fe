@@ -136,6 +136,7 @@
     "notFound": "投稿が見つかりません。",
     "loadFailed": "投稿の読み込みに失敗しました。",
     "reactionFailed": "リアクションの処理に失敗しました。",
+    "markReadFailed": "既読状態の更新に失敗しました。",
     "linkCopied": "リンクをコピーしました！",
     "copyFailed": "リンクのコピーに失敗しました。",
     "visibilityChangedPrivate": "非公開に切り替えました。",

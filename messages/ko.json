@@ -136,6 +136,7 @@
     "notFound": "게시물을 찾을 수 없습니다.",
     "loadFailed": "게시물을 불러오지 못했습니다.",
     "reactionFailed": "반응 처리에 실패했습니다.",
+    "markReadFailed": "읽음 상태 변경에 실패했습니다.",
     "linkCopied": "링크가 복사되었습니다!",
     "copyFailed": "링크 복사에 실패했습니다.",
     "visibilityChangedPrivate": "비공개로 전환되었습니다.",
