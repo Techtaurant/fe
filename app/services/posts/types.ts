@@ -54,8 +54,17 @@ export interface PostDetailResponse {
     likeCount?: number;
     commentCount?: number;
     isLiked?: boolean;
+    isRead?: boolean;
     createdAt: string;
     updatedAt: string;
+  };
+  message: string;
+}
+
+export interface TogglePostReadLogResponse {
+  status: number;
+  data: null | {
+    isRead: boolean;
   };
   message: string;
 }

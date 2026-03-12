@@ -6,6 +6,7 @@ import {
 } from "@/app/types";
 import {
   DraftPostListResponse,
+  TogglePostReadLogResponse,
   PostDetailResponse,
   PostListPeriod,
   PostListResponse,
@@ -155,6 +156,39 @@ export async function fetchDraftDetail(postId: string): Promise<PostDetailRespon
   }
 
   return (await response.json()) as PostDetailResponse;
+}
+
+export async function togglePostReadLog(
+  postId: string,
+  payload: { isRead: boolean },
+): Promise<TogglePostReadLogResponse> {
+  const response = await httpClient(`/api/posts/${postId}/read-logs`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (response.status === 400) {
+    const body = (await response.json().catch(() => null)) as TogglePostReadLogResponse | null;
+    throw new Error(body?.message || "BAD_REQUEST");
+  }
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 403) {
+    throw new Error("FORBIDDEN");
+  }
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as TogglePostReadLogResponse;
 }
 
 export async function setPostLike(

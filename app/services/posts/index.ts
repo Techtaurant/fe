@@ -11,6 +11,7 @@ import {
   fetchDraftPosts,
   fetchCommunityPosts,
   fetchPostDetail,
+  togglePostReadLog,
   setPostLike,
   updatePostRequest,
 } from "./client";
@@ -96,6 +97,10 @@ export async function updatePostLike(
   likeStatus: "NONE" | "LIKE" | "DISLIKE",
 ) {
   return setPostLike(postId, likeStatus);
+}
+
+export async function updatePostReadLog(postId: string, isRead: boolean) {
+  return togglePostReadLog(postId, { isRead });
 }
 
 export async function deletePost(postId: string): Promise<void> {

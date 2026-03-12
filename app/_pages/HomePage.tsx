@@ -13,17 +13,14 @@ import { DUMMY_TECH_BLOGS } from "../data/dummyData";
 import { useCompanyFeed } from "../hooks/useCompanyFeed";
 import { useFeedFilters } from "../hooks/useFeedFilters";
 import { useCommunityFeed } from "../hooks/useCommunityFeed";
+import { useUser } from "../hooks/useUser";
 
 function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
-
-  const hasCommunityReadState = (postId: string): boolean => {
-    if (typeof window === "undefined") return false;
-
-    const value = window.localStorage.getItem(`post:${postId}:isRead`);
-    return value === "1";
-  };
+  const { user } = useUser();
+  const [readPostIdsByUser, setReadPostIdsByUser] = useState<Record<string, Set<string>>>(
+    {},
+  );
 
   const {
     filterState,
@@ -47,14 +44,22 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   });
 
   const handleReadStatusChange = (postId: string, isRead: boolean) => {
-    setReadPostIds((prev) => {
-      const next = new Set(prev);
+    if (!user?.id) return;
+
+    setReadPostIdsByUser((prev) => {
+      const userReadPosts = prev[user.id] ?? new Set<string>();
+      const nextUserReadPosts = new Set(userReadPosts);
+
       if (isRead) {
-        next.add(postId);
+        nextUserReadPosts.add(postId);
       } else {
-        next.delete(postId);
+        nextUserReadPosts.delete(postId);
       }
-      return next;
+
+      return {
+        ...prev,
+        [user.id]: nextUserReadPosts,
+      };
     });
   };
 
@@ -62,18 +67,18 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
     filterState.mode === FEED_MODES.COMPANY
       ? companyFeed.posts
       : communityFeed.posts;
-  const postsWithReadState = useMemo(
-    () =>
-      currentPosts.map((post) => ({
-        ...post,
-        isRead:
-          post.type === "company"
-            ? post.isRead || readPostIds.has(post.id)
-            : post.isRead || readPostIds.has(post.id) || hasCommunityReadState(post.id),
-      })),
-    [currentPosts, readPostIds],
-  );
-  const visiblePosts = getVisiblePosts(postsWithReadState);
+  const visiblePosts = useMemo(() => {
+    const currentUserReadPosts = user?.id ? readPostIdsByUser[user.id] : undefined;
+
+    const mergedPosts = currentPosts.map((post) => ({
+      ...post,
+      isRead:
+        Boolean(user?.id) &&
+        (post.isRead || Boolean(currentUserReadPosts?.has(post.id))),
+    }));
+
+    return getVisiblePosts(mergedPosts);
+  }, [currentPosts, getVisiblePosts, readPostIdsByUser, user?.id]);
 
   return (
     <div className="min-h-screen bg-background">
