@@ -23,14 +23,14 @@ export default function PostDetailPage() {
   const {
     post,
     setPost,
-    isBookmarked,
     reactionState,
+    isRead,
     currentMode,
     isLoading,
     errorMessage,
     handleLike,
     handleDislike,
-    handleBookmark,
+    handleToggleRead,
     handleShare,
     handleToggleVisibility,
     handleDelete,
@@ -96,7 +96,7 @@ export default function PostDetailPage() {
     <PostDetail
       post={post}
       comments={comments}
-      isBookmarked={isBookmarked}
+      isRead={isRead}
       reactionState={reactionState}
       currentMode={currentMode}
       isCommentsLoading={isCommentsLoading}
@@ -119,7 +119,7 @@ export default function PostDetailPage() {
       onReport={handleReport}
       onLike={handleLike}
       onDislike={handleDislike}
-      onBookmark={handleBookmark}
+      onToggleRead={handleToggleRead}
       onShare={handleShare}
       onCreateComment={handleCreateComment}
       onClearCommentFieldError={clearCreateCommentFieldError}
