@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useUser } from "./useUser";
@@ -21,7 +21,7 @@ export function usePostDetail(postId: string) {
   const t = useTranslations("PostDetailPage");
   const queryClient = useQueryClient();
   const { user } = useUser();
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const readStateStorageKey = `post:${postId}:isRead`;
   const currentMode: FeedMode = FEED_MODES.USER;
   const [reactionOverride, setReactionOverride] = useState<{
     postId: string;
@@ -40,6 +40,24 @@ export function usePostDetail(postId: string) {
     staleTime: Infinity,
     gcTime: Infinity,
   });
+
+  const setPost = useCallback(
+    (updater: (current: Post | null) => Post | null) => {
+      queryClient.setQueryData<{
+        post: Post;
+        isLiked: boolean;
+      } | null>(queryKeys.posts.detail(postId), (current) => {
+        if (!current) return current;
+        const nextPost = updater(current.post);
+        if (!nextPost) return null;
+        return {
+          ...current,
+          post: nextPost,
+        };
+      });
+    },
+    [queryClient, postId],
+  );
 
   const likeMutation = useMutation({
     mutationFn: (likeStatus: "NONE" | "LIKE" | "DISLIKE") =>
@@ -64,6 +82,21 @@ export function usePostDetail(postId: string) {
       return null;
     }
   };
+
+  const getStoredReadState = useCallback(() => {
+    if (typeof window === "undefined") return null;
+
+    const value = window.localStorage.getItem(readStateStorageKey);
+    if (value === "1") return true;
+    if (value === "0") return false;
+    return null;
+  }, [readStateStorageKey]);
+
+  const setStoredReadState = useCallback((value: boolean) => {
+    if (typeof window === "undefined") return;
+
+    window.localStorage.setItem(readStateStorageKey, value ? "1" : "0");
+  }, [readStateStorageKey]);
 
   const setStoredReaction = (id: string, value: ReactionState) => {
     if (typeof window === "undefined") return;
@@ -115,9 +148,34 @@ export function usePostDetail(postId: string) {
     void handleReaction("dislike");
   };
 
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
+  const handleToggleRead = () => {
+    const currentPost = detailQuery.data?.post;
+    if (!currentPost) return;
+
+    const nextRead = !currentPost.isRead;
+    setPost((postToUpdate) => {
+      if (!postToUpdate) return postToUpdate;
+      return {
+        ...postToUpdate,
+        isRead: nextRead,
+      };
+    });
+    setStoredReadState(nextRead);
   };
+
+  useEffect(() => {
+    const storedRead = getStoredReadState();
+    if (storedRead === null) return;
+
+    setPost((current) => {
+      if (!current) return current;
+      if (current.isRead === storedRead) return current;
+      return {
+        ...current,
+        isRead: storedRead,
+      };
+    });
+  }, [detailQuery.data?.post?.id, getStoredReadState, setPost]);
 
   const handleShare = async () => {
     try {
@@ -223,21 +281,6 @@ export function usePostDetail(postId: string) {
     alert(t("reportSubmitted"));
   };
 
-  const setPost = (updater: (current: Post | null) => Post | null) => {
-    queryClient.setQueryData<{
-      post: Post;
-      isLiked: boolean;
-    } | null>(detailQueryKey, (current) => {
-      if (!current) return current;
-      const nextPost = updater(current.post);
-      if (!nextPost) return null;
-      return {
-        ...current,
-        post: nextPost,
-      };
-    });
-  };
-
   const serverReaction: ReactionState = detailQuery.data?.isLiked ? "like" : "none";
   const storedReaction = storedReactionQuery.data ?? null;
   const overriddenReaction =
@@ -246,6 +289,7 @@ export function usePostDetail(postId: string) {
   const isLiked = reactionState === "like";
   const post = detailQuery.data?.post ?? null;
   const isLoading = detailQuery.isPending;
+  const isRead = Boolean(post?.isRead);
   const errorMessage = (() => {
     if (!detailQuery.error) return null;
     const message =
@@ -260,14 +304,14 @@ export function usePostDetail(postId: string) {
     post,
     setPost,
     isLiked,
-    isBookmarked,
     reactionState,
+    isRead,
     currentMode,
     isLoading,
     errorMessage,
     handleLike,
     handleDislike,
-    handleBookmark,
+    handleToggleRead,
     handleShare,
     handleToggleVisibility,
     handleDelete,
