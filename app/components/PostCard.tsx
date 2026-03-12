@@ -16,8 +16,8 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
   const locale = useLocale();
 
   const handleCardClick = () => {
-    // 게시물을 읽음으로 표시
-    if (onReadStatusChange && !post.isRead) {
+    // 커뮤니티 게시물은 상세 페이지에서 수동으로 읽음 처리
+    if (onReadStatusChange && post.type === "company" && !post.isRead) {
       onReadStatusChange(post.id, true);
     }
 
