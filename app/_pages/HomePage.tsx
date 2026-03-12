@@ -18,6 +18,13 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
 
+  const hasCommunityReadState = (postId: string): boolean => {
+    if (typeof window === "undefined") return false;
+
+    const value = window.localStorage.getItem(`post:${postId}:isRead`);
+    return value === "1";
+  };
+
   const {
     filterState,
     setFilterState,
@@ -59,7 +66,10 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
     () =>
       currentPosts.map((post) => ({
         ...post,
-        isRead: post.isRead || readPostIds.has(post.id),
+        isRead:
+          post.type === "company"
+            ? post.isRead || readPostIds.has(post.id)
+            : post.isRead || readPostIds.has(post.id) || hasCommunityReadState(post.id),
       })),
     [currentPosts, readPostIds],
   );
