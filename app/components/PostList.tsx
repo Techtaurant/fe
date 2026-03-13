@@ -7,6 +7,7 @@ import PostCard from "./PostCard";
 interface PostListProps {
   posts: Post[];
   onReadStatusChange: (postId: string, isRead: boolean) => void;
+  currentUserId?: string;
   emptyMessage?: string;
   hideEmptyState?: boolean;
 }
@@ -14,6 +15,7 @@ interface PostListProps {
 export default function PostList({
   posts,
   onReadStatusChange,
+  currentUserId,
   emptyMessage = "조건에 맞는 게시물이 없습니다.",
   hideEmptyState = false,
 }: PostListProps) {
@@ -38,6 +40,7 @@ export default function PostList({
           key={post.id}
           post={post}
           onReadStatusChange={onReadStatusChange}
+          currentUserId={currentUserId}
         />
       ))}
     </div>

@@ -114,12 +114,14 @@ function HomeContent({ initialMode }: { initialMode: FeedMode }) {
               isLoadingMore={communityFeed.isLoadingMore}
               onLoadMore={communityFeed.loadMore}
               onReadStatusChange={handleReadStatusChange}
+              currentUserId={user?.id}
             />
           ) : (
             <CompanyFeedSection
               posts={visiblePosts}
               isLoading={companyFeed.isLoading}
               onReadStatusChange={handleReadStatusChange}
+              currentUserId={user?.id}
             />
           )}
         </main>

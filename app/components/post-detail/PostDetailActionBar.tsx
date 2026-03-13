@@ -26,6 +26,7 @@ interface PostDetailActionBarProps {
   onToggleRead: () => void;
   onShare: () => void;
   onFocusComment: () => void;
+  showReadToggle?: boolean;
 }
 
 const READ_TOGGLE_GUIDE_KEY = "post-detail-read-toggle-guide-seen";
@@ -42,6 +43,7 @@ export default function PostDetailActionBar({
   onToggleRead,
   onShare,
   onFocusComment,
+  showReadToggle = true,
 }: PostDetailActionBarProps) {
   const t = useTranslations("PostDetail");
   const isReadStatusLabel = isRead ? t("markRead") : t("markUnread");
@@ -252,66 +254,68 @@ export default function PostDetailActionBar({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="relative">
-          {isReadGuideVisible && (
-            <p
-              role="status"
-              aria-live="polite"
-              className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-border bg-popover px-3 py-1 text-[11px] text-popover-foreground shadow-sm"
-            >
-              {t("readToggleGuide")}
-            </p>
-          )}
+        <div className="flex items-center gap-3">
+          {showReadToggle && (
+            <div className="relative">
+              {isReadGuideVisible && (
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-border bg-popover px-3 py-1 text-[11px] text-popover-foreground shadow-sm"
+                >
+                  {t("readToggleGuide")}
+                </p>
+              )}
 
-          {readToggleToast && (
-            <p
-              role="status"
-              aria-live="polite"
-              className="absolute -top-16 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-2xl border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg shadow-black/15 before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-[6px] before:border-transparent before:border-t-popover"
-            >
-              {readToggleToast}
-            </p>
+              {readToggleToast && (
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="absolute -top-16 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-2xl border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg shadow-black/15 before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-[6px] before:border-transparent before:border-t-popover"
+                >
+                  {readToggleToast}
+                </p>
+              )}
+
+              <button
+                onClick={handleToggleRead}
+                onPointerDown={handlePointerDown}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+                className="relative inline-flex h-10 w-10 items-center justify-center cursor-pointer"
+                style={readButtonStyle}
+                title={isReadStatusLabel}
+                aria-label={isReadStatusLabel}
+              >
+                <span className="sr-only">{isReadStatusLabel}</span>
+
+                <span className="relative inline-flex h-10 w-10 items-center justify-center">
+                  <Lottie
+                    lottieRef={lottieRef}
+                    animationData={readCheckAnimation}
+                    onDOMLoaded={() => {
+                      syncLottieToReadState(isRead);
+                    }}
+                    onComplete={handleReadCheckAnimationComplete}
+                    loop={false}
+                    autoplay={false}
+                    className="h-10 w-10"
+                    aria-hidden="true"
+                    style={statusAnimationStyle}
+                  />
+                </span>
+              </button>
+            </div>
           )}
 
           <button
-            onClick={handleToggleRead}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-            className="relative inline-flex h-10 w-10 items-center justify-center cursor-pointer"
-            style={readButtonStyle}
-            title={isReadStatusLabel}
-            aria-label={isReadStatusLabel}
+            onClick={onShare}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
           >
-            <span className="sr-only">{isReadStatusLabel}</span>
-
-            <span className="relative inline-flex h-10 w-10 items-center justify-center">
-              <Lottie
-                lottieRef={lottieRef}
-                animationData={readCheckAnimation}
-                onDOMLoaded={() => {
-                  syncLottieToReadState(isRead);
-                }}
-                onComplete={handleReadCheckAnimationComplete}
-                loop={false}
-                autoplay={false}
-                className="h-10 w-10"
-                aria-hidden="true"
-                style={statusAnimationStyle}
-              />
-            </span>
+            <Share2 className="w-6 h-6" />
           </button>
         </div>
-
-        <button
-          onClick={onShare}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
-        >
-          <Share2 className="w-6 h-6" />
-        </button>
-      </div>
     </div>
   );
 }
