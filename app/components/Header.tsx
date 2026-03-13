@@ -77,6 +77,16 @@ export default function Header({
     redirectToOAuthLogin({ redirectPath: `/${locale}/post/write` });
   };
 
+  const handleMyPostsMenuClick = () => {
+    if (!user) {
+      redirectToOAuthLogin({ redirectPath: `/${locale}` });
+      return;
+    }
+
+    router.push(`/${locale}/user/${user.id}`);
+    setIsDropdownOpen(false);
+  };
+
   const handleLogout = async () => {
     try {
       await fetch(buildLogoutUrl(), {
@@ -95,6 +105,16 @@ export default function Header({
 
   const handleLogoClick = () => {
     window.location.href = `/${locale}`;
+  };
+
+  const handleMyPostsClick = () => {
+    if (!user) {
+      redirectToOAuthLogin({ redirectPath: `/${locale}` });
+      return;
+    }
+
+    onModeChange?.(FEED_MODES.USER);
+    router.push(`/${locale}/user/${user.id}`);
   };
 
   return (
@@ -250,7 +270,7 @@ export default function Header({
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-popover text-popover-foreground rounded-md shadow-lg border border-border py-1 z-[400]">
+              <div className="absolute right-0 mt-2 w-48 bg-popover text-popover-foreground rounded-md shadow-lg border border-border py-1 z-[400]">
                   <div className="px-4 py-2 border-b border-border">
                     <p className="text-sm font-medium text-foreground truncate">
                       {user.name}
@@ -259,6 +279,12 @@ export default function Header({
                       {user.email}
                     </p>
                   </div>
+                  <button
+                    onClick={handleMyPostsMenuClick}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors"
+                  >
+                    {t("myPosts")}
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors"
@@ -300,7 +326,7 @@ export default function Header({
 
       <MobileBottomNav
         currentMode={currentMode}
-        onHomeClick={handleLogoClick}
+        onMyPostsClick={handleMyPostsClick}
         onModeNavigate={handleModeNavigate}
         onWritePost={handleWritePostClick}
       />

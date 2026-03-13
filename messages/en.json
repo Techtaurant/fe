@@ -7,14 +7,16 @@
     "writePost": "Write post",
     "profile": "Profile",
     "logout": "Log out",
-    "login": "Log in"
+    "login": "Log in",
+    "myPosts": "My posts"
   },
   "BottomNav": {
     "home": "Home",
     "search": "Search",
     "newPost": "New post",
     "companyBlogs": "Company",
-    "community": "Community"
+    "community": "Community",
+    "myPosts": "My posts"
   },
   "Locale": {
     "switchTo": "Switch to {locale}"
@@ -237,8 +239,27 @@
     }
   },
   "UserPage": {
-    "title": "User page coming soon",
-    "description": "Dummy data has been removed. This page will be available after user-detail API integration.",
-    "userId": "Requested user ID: {userId}"
+    "title": "Posts by author",
+    "description": "Showing community posts created by the selected author.",
+    "userId": "Author ID: {userId}",
+    "categories": {
+      "title": "Categories",
+      "all": "All posts",
+      "uncategorized": "Uncategorized",
+      "empty": "No categories yet"
+    },
+    "empty": "No posts to display.",
+    "period": {
+      "all": "All",
+      "week": "7d",
+      "month": "30d",
+      "year": "365d"
+    },
+    "sort": {
+      "latest": "Latest",
+      "like": "Likes",
+      "comment": "Comments",
+      "view": "Views"
+    }
   }
 }
