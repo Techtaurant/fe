@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Comment } from "@/app/types";
 import { CommentSort } from "@/app/services/comments/types";
 import { ValidationErrors } from "@/app/services/comments/apiError";
+import { formatCommentTime } from "@/app/utils/formatCommentTime";
 
 interface PostDetailCommentsSectionProps {
   comments: Comment[];
@@ -186,7 +187,9 @@ export default function PostDetailCommentsSection({
                   <span className="font-medium text-sm text-foreground">
                     {comment.author.name}
                   </span>
-                  <span className="text-xs text-muted-foreground">{comment.createdAt}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatCommentTime(comment.createdAt)}
+                  </span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed mb-2">{comment.content}</p>
                 <div className="flex items-center gap-4">
