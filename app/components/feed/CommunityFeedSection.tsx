@@ -14,6 +14,7 @@ interface CommunityFeedSectionProps {
   isLoadingMore: boolean;
   onLoadMore: () => Promise<void>;
   onReadStatusChange: (postId: string, isRead: boolean) => void;
+  currentUserId?: string;
 }
 
 export default function CommunityFeedSection({
@@ -24,6 +25,7 @@ export default function CommunityFeedSection({
   isLoadingMore,
   onLoadMore,
   onReadStatusChange,
+  currentUserId,
 }: CommunityFeedSectionProps) {
   const t = useTranslations("CommunityFeed");
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
@@ -63,6 +65,7 @@ export default function CommunityFeedSection({
           <PostList
             posts={posts}
             onReadStatusChange={onReadStatusChange}
+            currentUserId={currentUserId}
             hideEmptyState={isLoading || isLoadingMore}
           />
           <div ref={loadMoreTriggerRef} className="h-2 w-full" />
