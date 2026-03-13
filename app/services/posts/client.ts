@@ -9,8 +9,10 @@ import {
   TogglePostReadLogResponse,
   PostDetailResponse,
   PostListPeriod,
+  UserPostListResponse,
   PostListResponse,
   PostListSort,
+  UserCategoryResponse,
 } from "./types";
 
 export async function createPostRequest(
@@ -75,12 +77,22 @@ export async function fetchCommunityPosts(params?: {
   size?: number;
   period?: PostListPeriod;
   sort?: PostListSort;
+  authorId?: string;
+  categoryPath?: string;
 }): Promise<PostListResponse> {
   const searchParams = new URLSearchParams();
   if (params?.cursor) searchParams.set("cursor", params.cursor);
   searchParams.set("size", String(params?.size ?? 20));
   searchParams.set("period", params?.period ?? "ALL");
   searchParams.set("sort", params?.sort ?? "LATEST");
+  if (params?.authorId) {
+    searchParams.set("authorId", params.authorId);
+    searchParams.set("author", params.authorId);
+    searchParams.set("userId", params.authorId);
+  }
+  if (params?.categoryPath) {
+    searchParams.set("categoryPath", params.categoryPath);
+  }
 
   const response = await httpClient(`/open-api/posts?${searchParams.toString()}`, {
     method: "GET",
@@ -96,6 +108,71 @@ export async function fetchCommunityPosts(params?: {
   }
 
   return (await response.json()) as PostListResponse;
+}
+
+export async function fetchUserPosts(params: {
+  userId: string;
+  cursor?: string;
+  size?: number;
+  period?: PostListPeriod;
+  sort?: PostListSort;
+  categoryId?: string;
+}): Promise<UserPostListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.cursor) searchParams.set("cursor", params.cursor);
+  searchParams.set("size", String(params.size ?? 20));
+  searchParams.set("period", params.period ?? "ALL");
+  searchParams.set("sort", params.sort ?? "LATEST");
+  if (params.categoryId) {
+    searchParams.set("categoryId", params.categoryId);
+  }
+
+  const response = await httpClient(
+    `/open-api/users/${params.userId}/posts?${searchParams.toString()}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (response.status === 400) {
+    const body = (await response.json().catch(() => null)) as UserPostListResponse | null;
+    throw new Error(body?.message || "BAD_REQUEST");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as UserPostListResponse;
+}
+
+export async function fetchUserCategories(
+  userId: string,
+  path?: string,
+): Promise<UserCategoryResponse> {
+  const searchParams = new URLSearchParams();
+  if (path) {
+    searchParams.set("path", path);
+  }
+
+  const query = searchParams.toString();
+  const response = await httpClient(
+    `/open-api/users/${userId}/categories${query ? `?${query}` : ""}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (response.status === 400) {
+    const body = (await response.json().catch(() => null)) as UserCategoryResponse | null;
+    throw new Error(body?.message || "BAD_REQUEST");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  return (await response.json()) as UserCategoryResponse;
 }
 
 export async function fetchPostDetail(postId: string): Promise<PostDetailResponse> {
