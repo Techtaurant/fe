@@ -7,14 +7,16 @@
     "writePost": "게시물 작성",
     "profile": "프로필",
     "logout": "로그아웃",
-    "login": "로그인"
+    "login": "로그인",
+    "myPosts": "내 글"
   },
   "BottomNav": {
     "home": "홈",
     "search": "검색",
     "newPost": "새 글",
     "companyBlogs": "기업블로그",
-    "community": "커뮤니티"
+    "community": "커뮤니티",
+    "myPosts": "내 글"
   },
   "Locale": {
     "switchTo": "{locale}(으)로 전환"
@@ -237,8 +239,28 @@
     }
   },
   "UserPage": {
-    "title": "사용자 페이지 준비 중",
-    "description": "더미 데이터를 제거했습니다. 사용자 상세 API 연동 후 이 화면을 제공합니다.",
-    "userId": "요청 사용자 ID: {userId}"
+    "title": "작성자 글 목록",
+    "description": "선택한 작성자의 커뮤니티 글만 모아 보여드립니다.",
+    "userId": "작성자 ID: {userId}",
+    "categories": {
+      "title": "카테고리",
+      "all": "전체 글",
+      "uncategorized": "카테고리 없는 글",
+      "empty": "아직 카테고리가 없습니다"
+    },
+    "empty": "표시할 게시물이 없습니다.",
+    "period": {
+      "all": "전체",
+      "week": "7일",
+      "month": "30일",
+      "year": "365일"
+    },
+    "sort": {
+      "latest": "최신순",
+      "like": "좋아요순",
+      "comment": "댓글순",
+      "view": "조회순"
+    }
   }
+  
 }

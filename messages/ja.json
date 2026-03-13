@@ -7,14 +7,16 @@
     "writePost": "投稿作成",
     "profile": "プロフィール",
     "logout": "ログアウト",
-    "login": "ログイン"
+    "login": "ログイン",
+    "myPosts": "自分の記事"
   },
   "BottomNav": {
     "home": "ホーム",
     "search": "検索",
     "newPost": "新規投稿",
     "companyBlogs": "企業",
-    "community": "コミュニティ"
+    "community": "コミュニティ",
+    "myPosts": "自分の記事"
   },
   "Locale": {
     "switchTo": "{locale}に切り替え"
@@ -237,8 +239,27 @@
     }
   },
   "UserPage": {
-    "title": "ユーザーページ準備中",
-    "description": "ダミーデータを削除しました。ユーザー詳細 API 連携後にこの画面を提供します。",
-    "userId": "リクエストユーザー ID: {userId}"
+    "title": "投稿者の投稿一覧",
+    "description": "選択した投稿者のコミュニティ投稿を表示します。",
+    "userId": "投稿者ID: {userId}",
+    "categories": {
+      "title": "カテゴリ",
+      "all": "すべての投稿",
+      "uncategorized": "カテゴリなし",
+      "empty": "カテゴリがありません"
+    },
+    "empty": "表示する投稿がありません。",
+    "period": {
+      "all": "全期間",
+      "week": "7日間",
+      "month": "30日間",
+      "year": "1年間"
+    },
+    "sort": {
+      "latest": "新着順",
+      "like": "いいね順",
+      "comment": "コメント順",
+      "view": "閲覧順"
+    }
   }
 }

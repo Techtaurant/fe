@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { Post } from "@/app/types";
+import { formatPostDate } from "@/app/utils/formatPostDate";
 
 interface PostDetailHeaderProps {
   post: Post;
@@ -15,6 +17,7 @@ interface PostDetailHeaderProps {
   onRequestDelete: () => void;
   onRequestReport: () => void;
   isVisibilityUpdating: boolean;
+  onAuthorClick?: () => void;
 }
 
 export default function PostDetailHeader({
@@ -26,8 +29,10 @@ export default function PostDetailHeader({
   onRequestDelete,
   onRequestReport,
   isVisibilityUpdating,
+  onAuthorClick,
 }: PostDetailHeaderProps) {
   const t = useTranslations("PostDetail");
+  const locale = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -49,6 +54,7 @@ export default function PostDetailHeader({
     "p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200";
   const menuItemClassName =
     "w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted/80 transition-colors duration-150";
+  const hasAuthorClick = Boolean(onAuthorClick && post.author?.id);
 
   return (
     <header className="mb-8">
@@ -65,43 +71,60 @@ export default function PostDetailHeader({
       </h1>
 
       <div className="flex items-center gap-3 mb-6">
-        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-          {post.author?.profileImageUrl ? (
-            <Image
-              src={post.author.profileImageUrl}
-              alt={post.author.name}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <span className="text-lg font-bold text-muted-foreground">
-              {post.author?.name.charAt(0) || "?"}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col">
-          <span className="font-medium text-foreground">{post.author?.name}</span>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{post.publishedAt}</span>
-            {post.status === "PRIVATE" && (
-              <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
-                {t("privateBadge")}
+        <button
+          type="button"
+          onClick={hasAuthorClick ? onAuthorClick : undefined}
+          aria-label={
+            hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
+          }
+          className={`flex items-center gap-3 rounded-md p-1 -ml-1 transition-colors ${
+            hasAuthorClick ? "cursor-pointer hover:bg-muted/70" : "cursor-default"
+          }`}
+        >
+          <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+            {post.author?.profileImageUrl ? (
+              <Image
+                src={post.author.profileImageUrl}
+                alt={post.author.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <span className="text-lg font-bold text-muted-foreground">
+                {post.author?.name.charAt(0) || "?"}
               </span>
             )}
-            <span>•</span>
-            <span>
-              {t("minRead", {
-                minutes: Math.ceil((post.content?.length || 0) / 500),
-              })}
-            </span>
           </div>
-        </div>
+
+          <div className="flex flex-col text-left">
+            <span className="font-medium text-foreground">{post.author?.name}</span>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{formatPostDate(post.publishedAt, locale)}</span>
+
+              {post.status === "PRIVATE" && (
+                <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
+                  {t("privateBadge")}
+                </span>
+              )}
+
+              <span>•</span>
+              <span>
+                {t("minRead", {
+                  minutes: Math.ceil((post.content?.length || 0) / 500),
+                })}
+              </span>
+            </div>
+          </div>
+        </button>
+
         <div className="ml-auto relative flex items-center gap-2" ref={menuRef}>
           {!isOwner && (
             <button className="px-4 py-1.5 rounded-full border border-success text-success text-sm font-medium hover:bg-success hover:text-success-foreground transition-colors duration-200">
               {t("follow")}
             </button>
           )}
+
           <button
             type="button"
             aria-label={t("menuOpen")}
@@ -122,6 +145,7 @@ export default function PostDetailHeader({
               />
             </svg>
           </button>
+
           {isMenuOpen && (
             <div className="absolute right-0 top-12 z-20 min-w-[180px] rounded-xl border border-border bg-background p-2 shadow-lg">
               {isOwner ? (
@@ -136,6 +160,7 @@ export default function PostDetailHeader({
                   >
                     {t("menuEdit")}
                   </button>
+
                   <button
                     type="button"
                     onClick={async () => {
@@ -149,7 +174,9 @@ export default function PostDetailHeader({
                       ? t("menuToggleToPublic")
                       : t("menuToggleToPrivate")}
                   </button>
+
                   <div className="my-1 h-px bg-border" />
+
                   <button
                     type="button"
                     onClick={() => {
@@ -178,9 +205,9 @@ export default function PostDetailHeader({
         </div>
       </div>
 
-      {post.tags && post.tags.length > 0 && (
+      {post.tags?.length ? (
         <div className="flex flex-wrap gap-2 mt-4">
-          {post.tags.map((tag) => (
+          {post.tags?.map((tag) => (
             <span
               key={tag.id}
               className="px-3 py-1.5 rounded-full bg-muted/60 text-sm text-muted-foreground hover:bg-muted cursor-pointer transition-colors duration-200"
@@ -189,7 +216,7 @@ export default function PostDetailHeader({
             </span>
           ))}
         </div>
-      )}
+      ) : null}
     </header>
   );
 }
