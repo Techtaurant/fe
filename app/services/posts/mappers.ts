@@ -10,36 +10,63 @@ function normalizeUrl(url?: string) {
   return `${API_BASE_URL}${url}`;
 }
 
+function resolvePublishedAt(
+  status: PostListItem["status"] | PostDetailResponse["data"]["status"],
+  publishedAt?: string,
+  updatedAt?: string,
+  createdAt?: string,
+): string {
+  if (status === "DRAFT") {
+    return updatedAt || createdAt || "";
+  }
+
+  return publishedAt || updatedAt || createdAt || "";
+}
+
 export function mapListItemToPost(item: PostListItem): Post {
-  const resolvedPublishedAt =
-    item.publishedAt || item.updatedAt || item.createdAt;
+  const resolvedPublishedAt = resolvePublishedAt(
+    item.status,
+    item.publishedAt,
+    item.updatedAt,
+    item.createdAt,
+  );
+  const categoryPath = item.categoryPath ?? item.category?.path;
+
+  const authorId = item.authorId ?? item.id;
 
   return {
     id: item.id,
     type: "community",
     status: item.status ?? "PUBLISHED",
     title: item.title,
+    categoryId: item.category?.id,
     viewCount: item.viewCount,
     likeCount: item.likeCount ?? 0,
     commentCount: item.commentCount,
     tags: item.tags,
     author: {
-      id: item.id,
+      id: authorId,
       name: item.authorName,
       email: "",
       profileImageUrl: normalizeUrl(item.authorProfileImageUrl) || "",
       role: "USER",
     },
+    categoryPath,
     isRead: item.isRead,
-    publishedAt: resolvedPublishedAt.slice(0, 10),
+    publishedAt: resolvedPublishedAt,
     url: `/post/${item.id}`,
     thumbnailUrl: normalizeUrl(item.thumbnailUrl),
   };
 }
 
 export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
-  const resolvedPublishedAt =
-    detail.publishedAt || detail.updatedAt || detail.createdAt;
+  const resolvedPublishedAt = resolvePublishedAt(
+    detail.status,
+    detail.publishedAt,
+    detail.updatedAt,
+    detail.createdAt,
+  );
+  const categoryPath = detail.category?.path;
 
   return {
     id: detail.id,
@@ -58,8 +85,9 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
       profileImageUrl: normalizeUrl(detail.author.profileImageUrl) || "",
       role: "USER",
     },
+    categoryPath,
     isRead: Boolean(detail.isRead),
-    publishedAt: resolvedPublishedAt.slice(0, 10),
+    publishedAt: resolvedPublishedAt,
     url: `/post/${detail.id}`,
   };
 }

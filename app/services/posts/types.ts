@@ -6,6 +6,12 @@ export type PostListPeriod = "WEEK" | "MONTH" | "YEAR" | "ALL";
 export interface PostListItem {
   id: string;
   title: string;
+  authorId?: string;
+  categoryPath?: string;
+  category?: {
+    id?: string;
+    path?: string;
+  };
   status?: "DRAFT" | "PUBLISHED" | "PRIVATE";
   authorName: string;
   authorProfileImageUrl?: string;
@@ -25,7 +31,34 @@ export interface PostListResponse {
   data: {
     content: PostListItem[];
     nextCursor?: string;
+    hasNext?: boolean;
+    size?: number;
   };
+  message: string;
+}
+
+export interface UserPostListResponse {
+  status: number;
+  data: {
+    content: PostListItem[];
+    nextCursor: string | null;
+    hasNext: boolean;
+    size: number;
+  };
+  message: string;
+}
+
+export interface UserCategory {
+  id: string;
+  name: string;
+  path: string;
+  depth: number;
+  parentId: string | null;
+}
+
+export interface UserCategoryResponse {
+  status: number;
+  data: UserCategory[];
   message: string;
 }
 
@@ -72,6 +105,7 @@ export interface TogglePostReadLogResponse {
 export interface CommunityPostListResult {
   posts: Post[];
   nextCursor?: string;
+  hasNext?: boolean;
 }
 
 export interface DraftPostListItem {
