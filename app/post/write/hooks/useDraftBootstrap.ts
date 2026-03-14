@@ -105,7 +105,7 @@ export function useDraftBootstrap({
     if (!draftId && postId && postDetailQuery.data) {
       setTitle(postDetailQuery.data.post.title || "");
       setContent(postDetailQuery.data.post.content || "");
-      setCategoryPath("");
+      setCategoryPath(postDetailQuery.data.post.categoryPath || "");
       setTags(postDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
       hydratedDraftIdRef.current = activeId;
     }
