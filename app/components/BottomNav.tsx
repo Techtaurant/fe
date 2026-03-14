@@ -84,7 +84,7 @@ export default function MobileBottomNav({
               className="flex flex-col items-center px-2 py-1"
               aria-label={t("newPost")}
             >
-              <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md">
+              <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-xl hover:scale-105 active:scale-95">
                 <svg
                   className="w-6 h-6"
                   fill="none"
