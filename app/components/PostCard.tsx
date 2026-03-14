@@ -13,6 +13,63 @@ interface PostCardProps {
   currentUserId?: string;
 }
 
+const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|apos|nbsp);/g;
+const PREVIEW_MAX_LENGTH = 150;
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(HTML_ENTITY_PATTERN, (match, entity) => {
+    if (entity === "amp") return "&";
+    if (entity === "lt") return "<";
+    if (entity === "gt") return ">";
+    if (entity === "quot") return '"';
+    if (entity === "apos") return "'";
+    return match;
+  });
+}
+
+function sanitizePostPreview(rawContent: string): string {
+  const removeFrontMatter = rawContent.replace(/^---[\s\S]*?---\n?/m, "");
+  const removeCodeBlocks = removeFrontMatter.replace(/```[\s\S]*?```/g, "");
+  const removeComments = removeCodeBlocks.replace(/<!--([\s\S]*?)-->/g, "");
+  const removeHtmlTags = removeComments.replace(/<[^>]*>/g, "");
+
+  const removeHeadings = removeHtmlTags.replace(/^\s*#{1,6}\s+/gm, "");
+  const removeTaskList = removeHeadings.replace(/^\s*[-*+]\s+\[[\sxX]\]\s+/gm, "");
+  const removeListPrefix = removeTaskList
+    .replace(/^\s*[-*+\u2212]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "");
+  const removeBlockquote = removeListPrefix.replace(/^\s*>\s?/gm, "");
+  const removeImages = removeBlockquote.replace(/!\[[^\]]*\]\([^)]*\)/g, "");
+  const removeAutoLinks = removeImages.replace(/<([^>\s]+)>/g, "$1");
+  const removeLinks = removeAutoLinks.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+  const removeReferenceLinks = removeLinks.replace(/^\[[^\]]+\]:\s*.+$/gm, "");
+
+  const removeCode = removeReferenceLinks.replace(/`{1,2}([^`\n]+)`{1,2}/g, "$1");
+  const removeEmphasis = removeCode
+    .replace(/~~([\s\S]*?)~~/g, "$1")
+    .replace(/\*\*([\s\S]*?)\*\*/g, "$1")
+    .replace(/__([\s\S]*?)__/g, "$1")
+    .replace(/\*([^*\n]+)\*/g, "$1")
+    .replace(/_([^_\n]+)_/g, "$1");
+
+  const removeEscapedChars = removeEmphasis.replace(/\\([`*_{}\[\]()#+.!-])/g, "$1");
+  const removeTableChars = removeEscapedChars.replace(/\|/g, " ");
+  const removeHr = removeTableChars
+    .replace(/^\s*-{3,}\s*$/gm, "")
+    .replace(/^\s*\*{3,}\s*$/gm, "")
+    .replace(/^\s*_{3,}\s*$/gm, "");
+
+  const collapsedWhitespace = decodeHtmlEntities(removeHr)
+    .replace(/\r\n?/g, "\n")
+    .replace(/\n/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return collapsedWhitespace.length > PREVIEW_MAX_LENGTH
+    ? collapsedWhitespace.slice(0, PREVIEW_MAX_LENGTH)
+    : collapsedWhitespace;
+}
+
 export default function PostCard({
   post,
   onReadStatusChange,
@@ -71,6 +128,7 @@ export default function PostCard({
     post.type === "company"
       ? post.techBlog?.iconUrl
       : post.author?.profileImageUrl;
+  const previewContent = post.content ? sanitizePostPreview(post.content) : "";
 
   const isOwnCommunityPost =
     post.type === "community" &&
@@ -177,6 +235,12 @@ export default function PostCard({
           >
             {post.title}
           </h2>
+
+          {previewContent ? (
+            <p className="text-sm md:text-base text-muted-foreground mb-3 leading-relaxed whitespace-normal">
+              {previewContent}
+            </p>
+          ) : null}
 
           {/* Metadata & Tags */}
           <div className="flex items-center gap-3 md:gap-4 flex-wrap">

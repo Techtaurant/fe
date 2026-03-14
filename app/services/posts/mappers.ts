@@ -39,6 +39,7 @@ export function mapListItemToPost(item: PostListItem): Post {
     type: "community",
     status: item.status ?? "PUBLISHED",
     title: item.title,
+    content: item.content,
     categoryId: item.category?.id,
     viewCount: item.viewCount,
     likeCount: item.likeCount ?? 0,
