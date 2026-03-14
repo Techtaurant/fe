@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Post } from "../types";
@@ -20,6 +21,15 @@ export default function PostCard({
   const router = useRouter();
   const t = useTranslations("PostCard");
   const locale = useLocale();
+
+  const hasAuthorPage = post.type === "community" && Boolean(post.author?.id);
+
+  const handleAuthorClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (!hasAuthorPage || !post.author?.id) return;
+
+    event.stopPropagation();
+    void router.push(`/${locale}/user/${post.author.id}`);
+  };
 
   const handleCardClick = () => {
     // 커뮤니티 게시물은 상세 페이지에서 수동으로 읽음 처리
@@ -71,30 +81,66 @@ export default function PostCard({
   return (
     <article
       onClick={handleCardClick}
-      className="group cursor-pointer py-4 md:py-6 border-b border-border transition-colors duration-200 hover:bg-muted/50"
+      className="group cursor-pointer py-4 md:py-6 border-b border-border"
     >
       <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-6">
         {/* Content */}
         <div className="flex-1">
           {/* Header Info: Author/Blog + Date */}
           <div className="flex items-center gap-2 mb-2 md:mb-3">
-            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-              {authorImage ? (
-                <Image
-                  src={authorImage}
-                  alt={authorName || "Profile"}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-[10px] font-bold text-muted-foreground">
-                  {(authorName || "?").charAt(0)}
-                </span>
-              )}
-            </div>
-            <span className="text-sm font-medium text-foreground">
-              {authorName}
-            </span>
+            {hasAuthorPage ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="rounded-full cursor-pointer transition-all duration-150 hover:bg-muted/25 hover:brightness-95"
+                aria-label={`Go to ${authorName || "author"} page`}
+              >
+                <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                  {authorImage ? (
+                    <Image
+                      src={authorImage}
+                      alt={authorName || "Profile"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-bold text-muted-foreground">
+                      {(authorName || "?").charAt(0)}
+                    </span>
+                  )}
+                </div>
+              </button>
+            ) : (
+              <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                {authorImage ? (
+                  <Image
+                    src={authorImage}
+                    alt={authorName || "Profile"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-[10px] font-bold text-muted-foreground">
+                    {(authorName || "?").charAt(0)}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {hasAuthorPage ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="text-sm font-medium text-foreground hover:underline underline-offset-4"
+                aria-label={`Go to ${authorName || "author"} page`}
+              >
+                {authorName}
+              </button>
+            ) : (
+              <span className="text-sm font-medium text-foreground">
+                {authorName}
+              </span>
+            )}
             <span className="text-xs text-muted-foreground">•</span>
             <span className="text-xs text-muted-foreground">
               {formatPostDate(post.publishedAt, locale)}

@@ -56,6 +56,12 @@ export default function PostDetailHeader({
     "w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted/80 transition-colors duration-150";
   const hasAuthorClick = Boolean(onAuthorClick && post.author?.id);
 
+  const handleAuthorClick = () => {
+    if (!hasAuthorClick || !onAuthorClick) return;
+
+    onAuthorClick();
+  };
+
   return (
     <header className="mb-8">
       <button
@@ -71,17 +77,19 @@ export default function PostDetailHeader({
       </h1>
 
       <div className="flex items-center gap-3 mb-6">
-        <button
-          type="button"
-          onClick={hasAuthorClick ? onAuthorClick : undefined}
-          aria-label={
-            hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
-          }
-          className={`flex items-center gap-3 rounded-md p-1 -ml-1 transition-colors ${
-            hasAuthorClick ? "cursor-pointer hover:bg-muted/70" : "cursor-default"
-          }`}
-        >
-          <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={hasAuthorClick ? handleAuthorClick : undefined}
+            aria-label={
+              hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
+            }
+            className={`relative h-12 w-12 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
+              hasAuthorClick
+                ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
+                : "cursor-default"
+            }`}
+          >
             {post.author?.profileImageUrl ? (
               <Image
                 src={post.author.profileImageUrl}
@@ -94,10 +102,21 @@ export default function PostDetailHeader({
                 {post.author?.name.charAt(0) || "?"}
               </span>
             )}
-          </div>
+          </button>
 
           <div className="flex flex-col text-left">
-            <span className="font-medium text-foreground">{post.author?.name}</span>
+            {hasAuthorClick ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="font-medium text-foreground text-left hover:underline underline-offset-4"
+                aria-label={`Go to ${post.author?.name ?? "user"} page`}
+              >
+                {post.author?.name}
+              </button>
+            ) : (
+              <span className="font-medium text-foreground">{post.author?.name}</span>
+            )}
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{formatPostDate(post.publishedAt, locale)}</span>
@@ -116,7 +135,7 @@ export default function PostDetailHeader({
               </span>
             </div>
           </div>
-        </button>
+        </div>
 
         <div className="ml-auto relative flex items-center gap-2" ref={menuRef}>
           {!isOwner && (
