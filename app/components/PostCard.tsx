@@ -95,7 +95,7 @@ export default function PostCard({
                 className="rounded-full cursor-pointer transition-all duration-150 hover:bg-muted/25 hover:brightness-95"
                 aria-label={`Go to ${authorName || "author"} page`}
               >
-                <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                <div className="relative w-5 h-5 rounded-full overflow-hidden bg-muted flex items-center justify-center">
                   {authorImage ? (
                     <Image
                       src={authorImage}
@@ -111,7 +111,7 @@ export default function PostCard({
                 </div>
               </button>
             ) : (
-              <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-muted flex items-center justify-center">
                 {authorImage ? (
                   <Image
                     src={authorImage}

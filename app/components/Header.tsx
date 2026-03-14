@@ -253,13 +253,13 @@ export default function Header({
                   <Image
                     src={user.profileImageUrl}
                     alt={user.name || t("profile")}
-                    width={36}
-                    height={36}
+                    width={32}
+                    height={32}
                     className="rounded-full"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-muted/80 flex items-center justify-center">
-                    <span className="text-sm font-medium text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-muted/80 flex items-center justify-center">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {user.name?.charAt(0) || "?"}
                     </span>
                   </div>
