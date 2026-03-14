@@ -2,6 +2,7 @@
 
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Header from "../../components/Header";
@@ -305,6 +306,16 @@ export default function UserDetailPage() {
     includePrivatePosts,
   });
 
+  const profileAuthor = useMemo(() => {
+    const firstPostWithAuthor = postsByAuthor.posts.find((post) => post.author?.name);
+    return {
+      profileName: firstPostWithAuthor?.author?.name || userId,
+      profileImageUrl: firstPostWithAuthor?.author?.profileImageUrl || "",
+    };
+  }, [postsByAuthor.posts, userId]);
+
+  const { profileName, profileImageUrl } = profileAuthor;
+
   const handleCategoryToggle = useCallback((categoryId: string) => {
     setExpandedCategoryIds((current) => ({
       ...current,
@@ -379,10 +390,22 @@ export default function UserDetailPage() {
             ) : null}
           </div>
 
-          <div className="mb-6 rounded-xl border border-border bg-card p-6">
-            <p className="text-xs text-muted-foreground">{t("userId", { userId })}</p>
-            <h1 className="mt-2 text-2xl font-bold text-foreground">{t("title")}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{t("description")}</p>
+          <div className="mb-6 flex items-center gap-4 px-1">
+            <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+              {profileImageUrl ? (
+                <Image
+                  src={profileImageUrl}
+                  alt={profileName}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <span className="text-xl font-bold text-muted-foreground">
+                  {(profileName || "?").charAt(0)}
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl font-bold text-foreground truncate">{profileName}</h1>
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 mb-4 border-b border-border">
