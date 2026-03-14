@@ -84,7 +84,7 @@ export default function PostDetailHeader({
             aria-label={
               hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
             }
-            className={`relative h-12 w-12 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
+            className={`relative h-8 w-8 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
               hasAuthorClick
                 ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
                 : "cursor-default"
@@ -98,7 +98,7 @@ export default function PostDetailHeader({
                 className="object-cover"
               />
             ) : (
-              <span className="text-lg font-bold text-muted-foreground">
+              <span className="text-sm font-bold text-muted-foreground">
                 {post.author?.name.charAt(0) || "?"}
               </span>
             )}
