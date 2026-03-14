@@ -6,6 +6,7 @@ export type PostListPeriod = "WEEK" | "MONTH" | "YEAR" | "ALL";
 export interface PostListItem {
   id: string;
   title: string;
+  content?: string;
   authorId?: string;
   categoryPath?: string;
   category?: {
