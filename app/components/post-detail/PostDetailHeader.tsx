@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Post } from "@/app/types";
-import { formatPostDate } from "@/app/utils/formatPostDate";
+import { formatDisplayTime } from "@/app/utils";
 
 interface PostDetailHeaderProps {
   post: Post;
@@ -119,7 +118,7 @@ export default function PostDetailHeader({
             )}
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{formatPostDate(post.publishedAt, locale)}</span>
+              <span>{formatDisplayTime(post.publishedAt, locale)}</span>
 
               {post.status === "PRIVATE" && (
                 <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">

@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Comment } from "@/app/types";
 import { CommentSort } from "@/app/services/comments/types";
 import { ValidationErrors } from "@/app/services/comments/apiError";
-import { formatCommentTime } from "@/app/utils/formatCommentTime";
+import { formatDisplayTime } from "@/app/utils";
 
 interface PostDetailCommentsSectionProps {
   comments: Comment[];
@@ -36,6 +36,7 @@ export default function PostDetailCommentsSection({
   focusRequestKey,
 }: PostDetailCommentsSectionProps) {
   const t = useTranslations("PostDetail");
+  const locale = useLocale();
   const commentInputRef = useRef<HTMLDivElement | null>(null);
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isCommentExpanded, setIsCommentExpanded] = useState(false);
@@ -188,7 +189,7 @@ export default function PostDetailCommentsSection({
                     {comment.author.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {formatCommentTime(comment.createdAt)}
+                    {formatDisplayTime(comment.createdAt, locale)}
                   </span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed mb-2">{comment.content}</p>

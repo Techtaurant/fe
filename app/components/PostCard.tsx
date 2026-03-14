@@ -5,7 +5,7 @@ import { type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Post } from "../types";
-import { formatPostDate } from "../utils/formatPostDate";
+import { formatDisplayTime } from "@/app/utils";
 
 interface PostCardProps {
   post: Post;
@@ -15,6 +15,7 @@ interface PostCardProps {
 
 const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|apos|nbsp);/g;
 const PREVIEW_MAX_LENGTH = 150;
+const PREVIEW_ELLIPSIS = "...";
 
 function decodeHtmlEntities(value: string): string {
   return value.replace(HTML_ENTITY_PATTERN, (match, entity) => {
@@ -65,9 +66,15 @@ function sanitizePostPreview(rawContent: string): string {
     .replace(/\s{2,}/g, " ")
     .trim();
 
-  return collapsedWhitespace.length > PREVIEW_MAX_LENGTH
-    ? collapsedWhitespace.slice(0, PREVIEW_MAX_LENGTH)
-    : collapsedWhitespace;
+  const isTruncated = collapsedWhitespace.length > PREVIEW_MAX_LENGTH;
+  if (!isTruncated) return collapsedWhitespace;
+
+  const truncatedLength = PREVIEW_MAX_LENGTH - PREVIEW_ELLIPSIS.length;
+  const truncatedContent = collapsedWhitespace
+    .slice(0, truncatedLength)
+    .trimEnd();
+
+  return `${truncatedContent}${PREVIEW_ELLIPSIS}`;
 }
 
 export default function PostCard({
@@ -201,7 +208,7 @@ export default function PostCard({
             )}
             <span className="text-xs text-muted-foreground">•</span>
             <span className="text-xs text-muted-foreground">
-              {formatPostDate(post.publishedAt, locale)}
+              {formatDisplayTime(post.publishedAt, locale)}
             </span>
             {post.type === "community" && post.status === "PRIVATE" && (
               <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
