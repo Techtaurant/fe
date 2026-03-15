@@ -16,14 +16,17 @@ interface PostCardProps {
 const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|apos|nbsp);/g;
 
 function decodeHtmlEntities(value: string): string {
-  return value.replace(HTML_ENTITY_PATTERN, (match, entity) => {
-    if (entity === "amp") return "&";
-    if (entity === "lt") return "<";
-    if (entity === "gt") return ">";
-    if (entity === "quot") return '"';
-    if (entity === "apos") return "'";
-    return match;
-  });
+  return value.replace(
+    HTML_ENTITY_PATTERN,
+    (match: string, entity: string): string => {
+      if (entity === "amp") return "&";
+      if (entity === "lt") return "<";
+      if (entity === "gt") return ">";
+      if (entity === "quot") return '"';
+      if (entity === "apos") return "'";
+      return match;
+    },
+  );
 }
 
 function sanitizePostPreview(rawContent: string): string {
@@ -245,7 +248,7 @@ export default function PostCard({
                 {post.tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm bg-muted/60 text-[11px] md:text-xs text-muted-foreground hover:bg-muted"
+                    className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/85 text-[10px] md:text-[11px] text-blue-500 hover:bg-muted/30 hover:text-blue-400 transition-colors duration-200"
                     onClick={(e) => {
                       e.stopPropagation();
                       // TODO: 태그 클릭 시 해당 태그로 필터링
@@ -350,4 +353,3 @@ export default function PostCard({
     </article>
   );
 }
-
