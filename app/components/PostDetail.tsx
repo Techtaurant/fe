@@ -15,7 +15,7 @@ import { ValidationErrors } from "../services/comments/apiError";
 interface PostDetailProps {
   post: Post;
   comments: Comment[];
-  isBookmarked: boolean;
+  isRead: boolean;
   reactionState: "like" | "dislike" | "none";
   currentMode: FeedMode;
   isCommentsLoading: boolean;
@@ -31,7 +31,7 @@ interface PostDetailProps {
   onReport: () => Promise<void> | void;
   onLike: () => void;
   onDislike?: () => void;
-  onBookmark: () => void;
+  onToggleRead: () => void;
   onShare: () => void;
   onCreateComment: (content: string) => Promise<void>;
   onClearCommentFieldError: (fieldName: string) => void;
@@ -44,7 +44,7 @@ interface PostDetailProps {
 export default function PostDetail({
   post,
   comments,
-  isBookmarked,
+  isRead,
   reactionState,
   currentMode,
   isCommentsLoading,
@@ -60,7 +60,7 @@ export default function PostDetail({
   onReport,
   onLike,
   onDislike,
-  onBookmark,
+  onToggleRead,
   onShare,
   onCreateComment,
   onClearCommentFieldError,
@@ -115,14 +115,14 @@ export default function PostDetail({
 
         <PostDetailActionBar
           reactionState={reactionState}
-          isBookmarked={isBookmarked}
+          isRead={isRead}
           likeCount={post.likeCount || 0}
           commentCount={post.commentCount || 0}
           viewCount={post.viewCount || 0}
           formatCount={formatCount}
           onLike={onLike}
           onDislike={onDislike}
-          onBookmark={onBookmark}
+          onToggleRead={onToggleRead}
           onShare={onShare}
           onFocusComment={() => setCommentFocusRequestKey((prev) => prev + 1)}
         />
