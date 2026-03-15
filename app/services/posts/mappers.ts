@@ -58,7 +58,7 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
       profileImageUrl: normalizeUrl(detail.author.profileImageUrl) || "",
       role: "USER",
     },
-    isRead: false,
+    isRead: Boolean(detail.isRead),
     publishedAt: resolvedPublishedAt.slice(0, 10),
     url: `/post/${detail.id}`,
   };

@@ -136,6 +136,7 @@
     "notFound": "未找到文章。",
     "loadFailed": "无法加载文章。",
     "reactionFailed": "处理互动失败。",
+    "markReadFailed": "更新阅读状态失败。",
     "linkCopied": "链接已复制！",
     "copyFailed": "复制链接失败。",
     "visibilityChangedPrivate": "已切换为私密。",

@@ -136,6 +136,7 @@
     "notFound": "Post not found.",
     "loadFailed": "Failed to load post.",
     "reactionFailed": "Failed to process reaction.",
+    "markReadFailed": "Failed to update read status.",
     "linkCopied": "Link copied!",
     "copyFailed": "Failed to copy link.",
     "visibilityChangedPrivate": "This post is now private.",
