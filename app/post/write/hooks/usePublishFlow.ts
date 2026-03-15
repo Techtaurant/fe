@@ -164,12 +164,12 @@ export function usePublishFlow({
       setIsAuthExpiredModalOpen(false);
       await Promise.all([
         queryClient.invalidateQueries({
+          queryKey: queryKeys.posts.all,
+        }),
+        queryClient.invalidateQueries({
           queryKey: [...queryKeys.posts.all, "drafts"] as const,
         }),
         queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
-        queryClient.invalidateQueries({
-          queryKey: [...queryKeys.posts.all, "community"] as const,
-        }),
       ]);
 
       if (status === "PRIVATE") {

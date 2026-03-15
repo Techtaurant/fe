@@ -12,11 +12,7 @@ export function formatCommentTime(createdAt: string): string {
   }
 
   const now = new Date();
-  const diffMs = now.getTime() - createdDate.getTime();
-
-  if (diffMs <= 0) {
-    return formatAbsoluteDate(createdDate);
-  }
+  const diffMs = Math.max(0, now.getTime() - createdDate.getTime());
 
   if (diffMs < 60 * 1000) {
     return "방금 전";
