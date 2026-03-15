@@ -83,11 +83,11 @@ export default function PostDetailHeader({
             aria-label={
               hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
             }
-            className={`relative h-8 w-8 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
-              hasAuthorClick
-                ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
-                : "cursor-default"
-            }`}
+              className={`relative h-6 w-6 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
+                hasAuthorClick
+                  ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
+                  : "cursor-default"
+              }`}
           >
             {post.author?.profileImageUrl ? (
               <Image
@@ -103,7 +103,7 @@ export default function PostDetailHeader({
             )}
           </button>
 
-          <div className="flex flex-col text-left">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {hasAuthorClick ? (
               <button
                 type="button"
@@ -117,15 +117,14 @@ export default function PostDetailHeader({
               <span className="font-medium text-foreground">{post.author?.name}</span>
             )}
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{formatDisplayTime(post.publishedAt, locale)}</span>
+            <span>•</span>
+            <span>{formatDisplayTime(post.publishedAt, locale)}</span>
 
-              {post.status === "PRIVATE" && (
-                <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
-                  {t("privateBadge")}
-                </span>
-              )}
-            </div>
+            {post.status === "PRIVATE" && (
+              <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
+                {t("privateBadge")}
+              </span>
+            )}
           </div>
         </div>
 

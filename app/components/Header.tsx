@@ -240,14 +240,14 @@ export default function Header({
 
           {/* Auth Button / Profile */}
           {isLoading ? (
-            <div className="w-10 h-10 rounded-full skeleton-bg animate-pulse" />
+            <div className="w-8 h-8 rounded-full skeleton-bg animate-pulse" />
           ) : isLoggedIn && user ? (
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={handleAuthClick}
                 className="flex items-center gap-2 p-1 rounded-full
-                       transition-opacity duration-200
-                       hover:opacity-80"
+                        transition-opacity duration-200
+                        hover:opacity-80"
               >
                 {user.profileImageUrl ? (
                   <Image
