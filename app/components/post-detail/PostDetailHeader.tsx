@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Post } from "@/app/types";
-import { formatPostDate } from "@/app/utils/formatPostDate";
+import { formatDisplayTime } from "@/app/utils";
 
 interface PostDetailHeaderProps {
   post: Post;
@@ -56,6 +55,12 @@ export default function PostDetailHeader({
     "w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted/80 transition-colors duration-150";
   const hasAuthorClick = Boolean(onAuthorClick && post.author?.id);
 
+  const handleAuthorClick = () => {
+    if (!hasAuthorClick || !onAuthorClick) return;
+
+    onAuthorClick();
+  };
+
   return (
     <header className="mb-8">
       <button
@@ -70,18 +75,20 @@ export default function PostDetailHeader({
         {post.title}
       </h1>
 
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          type="button"
-          onClick={hasAuthorClick ? onAuthorClick : undefined}
-          aria-label={
-            hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
-          }
-          className={`flex items-center gap-3 rounded-md p-1 -ml-1 transition-colors ${
-            hasAuthorClick ? "cursor-pointer hover:bg-muted/70" : "cursor-default"
-          }`}
-        >
-          <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+      <div className="flex items-center gap-3 mb-1">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={hasAuthorClick ? handleAuthorClick : undefined}
+            aria-label={
+              hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
+            }
+              className={`relative h-6 w-6 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
+                hasAuthorClick
+                  ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
+                  : "cursor-default"
+              }`}
+          >
             {post.author?.profileImageUrl ? (
               <Image
                 src={post.author.profileImageUrl}
@@ -90,37 +97,40 @@ export default function PostDetailHeader({
                 className="object-cover"
               />
             ) : (
-              <span className="text-lg font-bold text-muted-foreground">
+              <span className="text-sm font-bold text-muted-foreground">
                 {post.author?.name.charAt(0) || "?"}
               </span>
             )}
-          </div>
+          </button>
 
-          <div className="flex flex-col text-left">
-            <span className="font-medium text-foreground">{post.author?.name}</span>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {hasAuthorClick ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="font-medium text-foreground text-left hover:underline underline-offset-4"
+                aria-label={`Go to ${post.author?.name ?? "user"} page`}
+              >
+                {post.author?.name}
+              </button>
+            ) : (
+              <span className="font-medium text-foreground">{post.author?.name}</span>
+            )}
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{formatPostDate(post.publishedAt, locale)}</span>
+            <span>•</span>
+            <span>{formatDisplayTime(post.publishedAt, locale)}</span>
 
-              {post.status === "PRIVATE" && (
-                <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
-                  {t("privateBadge")}
-                </span>
-              )}
-
-              <span>•</span>
-              <span>
-                {t("minRead", {
-                  minutes: Math.ceil((post.content?.length || 0) / 500),
-                })}
+            {post.status === "PRIVATE" && (
+              <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
+                {t("privateBadge")}
               </span>
-            </div>
+            )}
           </div>
-        </button>
+        </div>
 
         <div className="ml-auto relative flex items-center gap-2" ref={menuRef}>
           {!isOwner && (
-            <button className="px-4 py-1.5 rounded-full border border-success text-success text-sm font-medium hover:bg-success hover:text-success-foreground transition-colors duration-200">
+            <button className="px-4 py-1.5 rounded-full border border-blue-500 text-blue-500 text-sm font-medium hover:bg-blue-500/10 hover:text-blue-500 transition-colors duration-200">
               {t("follow")}
             </button>
           )}
@@ -206,11 +216,11 @@ export default function PostDetailHeader({
       </div>
 
       {post.tags?.length ? (
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-1.5">
           {post.tags?.map((tag) => (
             <span
               key={tag.id}
-              className="px-3 py-1.5 rounded-full bg-muted/60 text-sm text-muted-foreground hover:bg-muted cursor-pointer transition-colors duration-200"
+              className="px-2.5 py-1 rounded-full bg-muted/85 text-sm text-blue-500 hover:bg-muted/30 hover:text-blue-400 cursor-pointer transition-colors duration-200"
             >
               {tag.name}
             </span>

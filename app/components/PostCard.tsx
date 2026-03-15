@@ -1,15 +1,71 @@
 "use client";
 
 import Image from "next/image";
+import { type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Post } from "../types";
-import { formatPostDate } from "../utils/formatPostDate";
+import { formatDisplayTime } from "@/app/utils";
 
 interface PostCardProps {
   post: Post;
   onReadStatusChange?: (postId: string, isRead: boolean) => void;
   currentUserId?: string;
+}
+
+const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|apos|nbsp);/g;
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(
+    HTML_ENTITY_PATTERN,
+    (match: string, entity: string): string => {
+      if (entity === "amp") return "&";
+      if (entity === "lt") return "<";
+      if (entity === "gt") return ">";
+      if (entity === "quot") return '"';
+      if (entity === "apos") return "'";
+      return match;
+    },
+  );
+}
+
+function sanitizePostPreview(rawContent: string): string {
+  const removeFrontMatter = rawContent.replace(/^---[\s\S]*?---\n?/m, "");
+  const removeCodeBlocks = removeFrontMatter.replace(/```[\s\S]*?```/g, "");
+  const removeComments = removeCodeBlocks.replace(/<!--([\s\S]*?)-->/g, "");
+  const removeHtmlTags = removeComments.replace(/<[^>]*>/g, "");
+
+  const removeHeadings = removeHtmlTags.replace(/^\s*#{1,6}\s+/gm, "");
+  const removeTaskList = removeHeadings.replace(/^\s*[-*+]\s+\[[\sxX]\]\s+/gm, "");
+  const removeListPrefix = removeTaskList
+    .replace(/^\s*[-*+\u2212]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "");
+  const removeBlockquote = removeListPrefix.replace(/^\s*>\s?/gm, "");
+  const removeImages = removeBlockquote.replace(/!\[[^\]]*\]\([^)]*\)/g, "");
+  const removeAutoLinks = removeImages.replace(/<([^>\s]+)>/g, "$1");
+  const removeLinks = removeAutoLinks.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+  const removeReferenceLinks = removeLinks.replace(/^\[[^\]]+\]:\s*.+$/gm, "");
+
+  const removeCode = removeReferenceLinks.replace(/`{1,2}([^`\n]+)`{1,2}/g, "$1");
+  const removeEmphasis = removeCode
+    .replace(/~~([\s\S]*?)~~/g, "$1")
+    .replace(/\*\*([\s\S]*?)\*\*/g, "$1")
+    .replace(/__([\s\S]*?)__/g, "$1")
+    .replace(/\*([^*\n]+)\*/g, "$1")
+    .replace(/_([^_\n]+)_/g, "$1");
+
+  const removeEscapedChars = removeEmphasis.replace(/\\([`*_{}\[\]()#+.!-])/g, "$1");
+  const removeTableChars = removeEscapedChars.replace(/\|/g, " ");
+  const removeHr = removeTableChars
+    .replace(/^\s*-{3,}\s*$/gm, "")
+    .replace(/^\s*\*{3,}\s*$/gm, "")
+    .replace(/^\s*_{3,}\s*$/gm, "");
+
+  return decodeHtmlEntities(removeHr)
+    .replace(/\r\n?/g, "\n")
+    .replace(/\n/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 export default function PostCard({
@@ -20,6 +76,15 @@ export default function PostCard({
   const router = useRouter();
   const t = useTranslations("PostCard");
   const locale = useLocale();
+
+  const hasAuthorPage = post.type === "community" && Boolean(post.author?.id);
+
+  const handleAuthorClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (!hasAuthorPage || !post.author?.id) return;
+
+    event.stopPropagation();
+    void router.push(`/${locale}/user/${post.author.id}`);
+  };
 
   const handleCardClick = () => {
     // 커뮤니티 게시물은 상세 페이지에서 수동으로 읽음 처리
@@ -61,6 +126,7 @@ export default function PostCard({
     post.type === "company"
       ? post.techBlog?.iconUrl
       : post.author?.profileImageUrl;
+  const previewContent = post.content ? sanitizePostPreview(post.content) : "";
 
   const isOwnCommunityPost =
     post.type === "community" &&
@@ -71,33 +137,69 @@ export default function PostCard({
   return (
     <article
       onClick={handleCardClick}
-      className="group cursor-pointer py-4 md:py-6 border-b border-border transition-colors duration-200 hover:bg-muted/50"
+      className="group cursor-pointer py-4 md:py-6 border-b border-border"
     >
       <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-6">
         {/* Content */}
         <div className="flex-1">
           {/* Header Info: Author/Blog + Date */}
           <div className="flex items-center gap-2 mb-2 md:mb-3">
-            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-              {authorImage ? (
-                <Image
-                  src={authorImage}
-                  alt={authorName || "Profile"}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-[10px] font-bold text-muted-foreground">
-                  {(authorName || "?").charAt(0)}
-                </span>
-              )}
-            </div>
-            <span className="text-sm font-medium text-foreground">
-              {authorName}
-            </span>
+            {hasAuthorPage ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="rounded-full cursor-pointer transition-all duration-150 hover:bg-muted/25 hover:brightness-95"
+                aria-label={`Go to ${authorName || "author"} page`}
+              >
+                <div className="relative w-5 h-5 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                  {authorImage ? (
+                    <Image
+                      src={authorImage}
+                      alt={authorName || "Profile"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-bold text-muted-foreground">
+                      {(authorName || "?").charAt(0)}
+                    </span>
+                  )}
+                </div>
+              </button>
+            ) : (
+              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                {authorImage ? (
+                  <Image
+                    src={authorImage}
+                    alt={authorName || "Profile"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-[10px] font-bold text-muted-foreground">
+                    {(authorName || "?").charAt(0)}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {hasAuthorPage ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="text-sm font-medium text-foreground hover:underline underline-offset-4"
+                aria-label={`Go to ${authorName || "author"} page`}
+              >
+                {authorName}
+              </button>
+            ) : (
+              <span className="text-sm font-medium text-foreground">
+                {authorName}
+              </span>
+            )}
             <span className="text-xs text-muted-foreground">•</span>
             <span className="text-xs text-muted-foreground">
-              {formatPostDate(post.publishedAt, locale)}
+              {formatDisplayTime(post.publishedAt, locale)}
             </span>
             {post.type === "community" && post.status === "PRIVATE" && (
               <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
@@ -132,6 +234,12 @@ export default function PostCard({
             {post.title}
           </h2>
 
+          {previewContent ? (
+            <p className="text-sm md:text-base text-muted-foreground mb-3 leading-relaxed whitespace-normal line-clamp-2 md:line-clamp-3">
+              {previewContent}
+            </p>
+          ) : null}
+
           {/* Metadata & Tags */}
           <div className="flex items-center gap-3 md:gap-4 flex-wrap">
             {/* Tags */}
@@ -140,7 +248,7 @@ export default function PostCard({
                 {post.tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="px-1.5 md:px-2 py-0.5 md:py-1 rounded-sm bg-muted/60 text-[11px] md:text-xs text-muted-foreground hover:bg-muted"
+                    className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/85 text-[10px] md:text-[11px] text-blue-500 hover:bg-muted/30 hover:text-blue-400 transition-colors duration-200"
                     onClick={(e) => {
                       e.stopPropagation();
                       // TODO: 태그 클릭 시 해당 태그로 필터링
