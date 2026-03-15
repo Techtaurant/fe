@@ -11,6 +11,8 @@ interface UseCommunityFeedOptions {
   enabled: boolean;
   period: PostListPeriod;
   sort: PostListSort;
+  authorId?: string;
+  categoryPath?: string;
   size?: number;
 }
 
@@ -18,6 +20,8 @@ export function useCommunityFeed({
   enabled,
   period,
   sort,
+  authorId,
+  categoryPath,
   size = 20,
 }: UseCommunityFeedOptions) {
   const t = useTranslations("CommunityFeed");
@@ -26,6 +30,8 @@ export function useCommunityFeed({
       period,
       sort,
       size,
+      authorId,
+      categoryPath,
     }),
     enabled,
     initialPageParam: undefined as string | undefined,
@@ -35,15 +41,30 @@ export function useCommunityFeed({
         size,
         period,
         sort,
+        authorId,
+        categoryPath,
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
   const posts = useMemo(() => {
+    const parsePublishedAt = (value: string): number => {
+      const timestamp = new Date(value).getTime();
+      return Number.isNaN(timestamp) ? 0 : timestamp;
+    };
+
     const merged = (query.data?.pages ?? []).flatMap((page) => page.posts);
     const deduped = new Map(merged.map((post) => [post.id, post]));
-    return Array.from(deduped.values());
-  }, [query.data?.pages]);
+    const dedupedPosts = Array.from(deduped.values());
+
+    if (sort === "LATEST") {
+      return dedupedPosts.sort(
+        (left, right) => parsePublishedAt(right.publishedAt) - parsePublishedAt(left.publishedAt),
+      );
+    }
+
+    return dedupedPosts;
+  }, [query.data?.pages, sort]);
 
   const error = query.error ? t("loadFailed") : null;
   const isLoading = query.isPending;

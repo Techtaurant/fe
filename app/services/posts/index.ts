@@ -10,6 +10,8 @@ import {
   fetchDraftDetail,
   fetchDraftPosts,
   fetchCommunityPosts,
+  fetchUserPosts,
+  fetchUserCategories as fetchUserCategoriesRequest,
   fetchPostDetail,
   togglePostReadLog,
   setPostLike,
@@ -21,6 +23,7 @@ import {
   CommunityPostListResult,
   PostListPeriod,
   PostListSort,
+  UserCategory,
 } from "./types";
 
 export async function createPost(
@@ -43,12 +46,38 @@ export async function fetchCommunityPostList(params?: {
   size?: number;
   period?: PostListPeriod;
   sort?: PostListSort;
+  authorId?: string;
+  categoryPath?: string;
 }): Promise<CommunityPostListResult> {
   const result = await fetchCommunityPosts(params);
   return {
     posts: result.data.content.map(mapListItemToPost),
     nextCursor: result.data.nextCursor,
   };
+}
+
+export async function fetchUserPostList(params: {
+  userId: string;
+  cursor?: string;
+  size?: number;
+  period?: PostListPeriod;
+  sort?: PostListSort;
+  categoryId?: string;
+}): Promise<CommunityPostListResult> {
+  const result = await fetchUserPosts(params);
+  return {
+    posts: result.data.content.map(mapListItemToPost),
+    nextCursor: result.data.nextCursor || undefined,
+    hasNext: result.data.hasNext,
+  };
+}
+
+export async function fetchUserCategories(
+  userId: string,
+  path?: string,
+): Promise<UserCategory[]> {
+  const response = await fetchUserCategoriesRequest(userId, path);
+  return response.data;
 }
 
 export async function fetchPostDetailWithMeta(postId: string): Promise<{

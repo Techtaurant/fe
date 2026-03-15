@@ -34,6 +34,8 @@ export interface Post {
   title: string;
   content?: string; // 게시물 본문 (커뮤니티 상세 페이지용)
   thumbnailUrl?: string;
+  categoryPath?: string;
+  categoryId?: string;
   viewCount: number;
   likeCount?: number;
   commentCount?: number;

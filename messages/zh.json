@@ -7,14 +7,16 @@
     "writePost": "写文章",
     "profile": "个人资料",
     "logout": "退出登录",
-    "login": "登录"
+    "login": "登录",
+    "myPosts": "我的文章"
   },
   "BottomNav": {
     "home": "首页",
     "search": "搜索",
     "newPost": "新建",
     "companyBlogs": "企业",
-    "community": "社区"
+    "community": "社区",
+    "myPosts": "我的文章"
   },
   "Locale": {
     "switchTo": "切换到 {locale}"
@@ -237,8 +239,27 @@
     }
   },
   "UserPage": {
-    "title": "用户页面准备中",
-    "description": "已移除 Dummy 数据。完成用户详情 API 对接后将提供该页面。",
-    "userId": "请求的用户 ID：{userId}"
+    "title": "作者文章列表",
+    "description": "展示所选作者发布的社区文章。",
+    "userId": "作者 ID：{userId}",
+    "categories": {
+      "title": "分类",
+      "all": "全部",
+      "uncategorized": "未分类",
+      "empty": "暂无分类"
+    },
+    "empty": "暂无可显示的文章。",
+    "period": {
+      "all": "全部",
+      "week": "最近7天",
+      "month": "最近30天",
+      "year": "最近365天"
+    },
+    "sort": {
+      "latest": "最新",
+      "like": "点赞",
+      "comment": "评论",
+      "view": "浏览"
+    }
   }
 }

@@ -105,10 +105,17 @@ export default function PostDetailPage() {
       commentsSort={commentsSort}
       createCommentFieldErrors={createCommentFieldErrors}
       currentUserId={user?.id ?? null}
-      onBack={() => router.back()}
-      onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
-      onToggleVisibility={handleToggleVisibility}
-      onDelete={async () => {
+        onBack={() => router.back()}
+        onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
+        onAuthorClick={
+          post.author?.id
+            ? () => {
+                router.push(`/${locale}/user/${post.author?.id}`);
+              }
+            : undefined
+        }
+        onToggleVisibility={handleToggleVisibility}
+        onDelete={async () => {
         const deleted = await handleDelete();
         if (deleted) {
           router.replace(`/${locale}?mode=user`);
