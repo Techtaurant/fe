@@ -14,8 +14,14 @@ interface PostCardProps {
 }
 
 const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|apos|nbsp);/g;
-const PREVIEW_MAX_LENGTH = 150;
-const PREVIEW_ELLIPSIS = "...";
+
+function stripReadTimeLabel(value: string): string {
+  return value
+    .replace(/^\s*(?:약\s*)?\d+\s*분\s*읽기\s*[-–—·•\/|:]?\s*/, "")
+    .replace(/^\s*about\s+\d+\s+minutes?\s+read\s*[-–—·•\/|:]?\s*/i, "")
+    .replace(/^\s*\d+\s*분\s*read\s*[-–—·•\/|:]?\s*/i, "")
+    .trimStart();
+}
 
 function decodeHtmlEntities(value: string): string {
   return value.replace(HTML_ENTITY_PATTERN, (match, entity) => {
@@ -60,21 +66,15 @@ function sanitizePostPreview(rawContent: string): string {
     .replace(/^\s*\*{3,}\s*$/gm, "")
     .replace(/^\s*_{3,}\s*$/gm, "");
 
-  const collapsedWhitespace = decodeHtmlEntities(removeHr)
-    .replace(/\r\n?/g, "\n")
-    .replace(/\n/g, " ")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  const collapsedWhitespace = stripReadTimeLabel(
+    decodeHtmlEntities(removeHr)
+      .replace(/\r\n?/g, "\n")
+      .replace(/\n/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim(),
+  );
 
-  const isTruncated = collapsedWhitespace.length > PREVIEW_MAX_LENGTH;
-  if (!isTruncated) return collapsedWhitespace;
-
-  const truncatedLength = PREVIEW_MAX_LENGTH - PREVIEW_ELLIPSIS.length;
-  const truncatedContent = collapsedWhitespace
-    .slice(0, truncatedLength)
-    .trimEnd();
-
-  return `${truncatedContent}${PREVIEW_ELLIPSIS}`;
+  return collapsedWhitespace;
 }
 
 export default function PostCard({
@@ -244,7 +244,7 @@ export default function PostCard({
           </h2>
 
           {previewContent ? (
-            <p className="text-sm md:text-base text-muted-foreground mb-3 leading-relaxed whitespace-normal">
+            <p className="text-sm md:text-base text-muted-foreground mb-3 leading-relaxed whitespace-normal line-clamp-2 md:line-clamp-3">
               {previewContent}
             </p>
           ) : null}
