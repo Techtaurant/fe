@@ -78,7 +78,6 @@
   },
   "PostDetail": {
     "back": "返回",
-    "minRead": "约 {minutes} 分钟阅读",
     "follow": "关注",
     "privateBadge": "私密",
     "menuOpen": "打开更多菜单",

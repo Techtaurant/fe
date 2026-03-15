@@ -78,7 +78,6 @@
   },
   "PostDetail": {
     "back": "Back",
-    "minRead": "{minutes} min read",
     "follow": "Follow",
     "privateBadge": "Private",
     "menuOpen": "Open more menu",

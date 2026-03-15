@@ -125,13 +125,6 @@ export default function PostDetailHeader({
                   {t("privateBadge")}
                 </span>
               )}
-
-              <span>•</span>
-              <span>
-                {t("minRead", {
-                  minutes: Math.ceil((post.content?.length || 0) / 500),
-                })}
-              </span>
             </div>
           </div>
         </div>

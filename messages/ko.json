@@ -78,7 +78,6 @@
   },
   "PostDetail": {
     "back": "돌아가기",
-    "minRead": "{minutes}분 읽기",
     "follow": "팔로우",
     "privateBadge": "비공개",
     "menuOpen": "더보기 메뉴 열기",

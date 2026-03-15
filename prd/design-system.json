@@ -582,7 +582,7 @@
         "avatar + author info (horizontal)",
         "article title (h2)",
         "article excerpt",
-        "metadata row (date, read time, engagement)",
+        "metadata row (date, engagement)",
         "thumbnail (optional, right-aligned)"
       ],
       "description": "아티클 피드 레이아웃 패턴"
@@ -600,7 +600,7 @@
       "display": "horizontal",
       "gap": "8px",
       "separator": "• (middle dot)",
-      "items": ["date", "readTime", "engagement metrics"],
+      "items": ["date", "engagement metrics"],
       "fontSize": "13px",
       "color": "gray.600",
       "description": "메타데이터 표시 패턴"
