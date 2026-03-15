@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useUser } from "./useUser";
@@ -15,6 +15,16 @@ import {
 } from "../services/posts";
 import { FeedMode, Post } from "../types";
 import { queryKeys } from "../lib/queryKeys";
+import {
+  calculateNextLikeCount,
+  inferReactionFromServer,
+  resolveReactionState,
+} from "../utils/reactionCounter";
+
+type PostDetailQueryData = {
+  post: Post;
+  isLiked: boolean;
+};
 
 type ReactionState = "like" | "dislike" | "none";
 
@@ -23,23 +33,110 @@ export function usePostDetail(postId: string) {
   const queryClient = useQueryClient();
   const { user } = useUser();
   const currentMode: FeedMode = FEED_MODES.USER;
+  const userId = user?.id ?? null;
   const [reactionOverride, setReactionOverride] = useState<{
     postId: string;
     value: ReactionState;
   } | null>(null);
 
+  const getStoredReaction = (id: string): ReactionState | null => {
+    if (typeof window === "undefined") return null;
+    if (!userId) {
+      return null;
+    }
+
+    const storageKey = `post:${id}:reaction:${userId}`;
+    try {
+      const value = window.localStorage.getItem(storageKey);
+      if (value === "like" || value === "dislike" || value === "none") {
+        return value;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const setStoredReaction = useCallback((id: string, value: ReactionState) => {
+    if (typeof window === "undefined") return;
+    if (!userId) {
+      return;
+    }
+
+    const storageKey = `post:${id}:reaction:${userId}`;
+    try {
+      window.localStorage.setItem(storageKey, value);
+    } catch {
+      // ignore storage errors
+    }
+  }, [userId]);
+
+  const setStoredReactionState = useCallback(
+    (id: string, value: ReactionState) => {
+      setStoredReaction(id, value);
+      queryClient.setQueryData<ReactionState>(
+        ["post-reaction", id, userId ?? "guest"],
+        value,
+      );
+    },
+    [queryClient, setStoredReaction, userId],
+  );
+
   const detailQueryKey = queryKeys.posts.detail(postId);
+
+  const setLikeStatusInCache = (nextReaction: ReactionState, nextLikeCount: number) => {
+    queryClient.setQueryData<PostDetailQueryData>(
+      detailQueryKey,
+      (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          isLiked: nextReaction === "like",
+          post: {
+            ...current.post,
+            likeCount: nextLikeCount,
+          },
+        };
+      },
+    );
+  };
 
   const detailQuery = useQuery({
     queryKey: detailQueryKey,
     queryFn: () => fetchPostDetailWithMeta(postId),
   });
   const storedReactionQuery = useQuery({
-    queryKey: ["post-reaction", postId],
+    queryKey: ["post-reaction", postId, userId ?? "guest"],
     queryFn: async (): Promise<ReactionState | null> => getStoredReaction(postId),
+    initialData: getStoredReaction(postId),
     staleTime: Infinity,
     gcTime: Infinity,
   });
+
+  useEffect(() => {
+    if (!detailQuery.data || !userId) {
+      return;
+    }
+
+    const nextReaction = inferReactionFromServer({
+      isLiked: detailQuery.data.isLiked,
+    });
+    if (nextReaction !== "none") {
+      setStoredReactionState(postId, nextReaction);
+      return;
+    }
+
+    const existingStoredReaction = storedReactionQuery.data;
+    if (existingStoredReaction == null) {
+      setStoredReactionState(postId, "none");
+    }
+  }, [
+    detailQuery.data,
+    postId,
+    setStoredReactionState,
+    storedReactionQuery.data,
+    userId,
+  ]);
 
   const setPost = useCallback(
     (updater: (current: Post | null) => Post | null) => {
@@ -70,28 +167,6 @@ export function usePostDetail(postId: string) {
     mutationFn: () => deletePost(postId),
   });
 
-  const getStoredReaction = (id: string) => {
-    if (typeof window === "undefined") return null;
-    try {
-      const value = window.localStorage.getItem(`post:${id}:reaction`);
-      if (value === "like" || value === "dislike" || value === "none") {
-        return value;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const setStoredReaction = (id: string, value: ReactionState) => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(`post:${id}:reaction`, value);
-    } catch {
-      // ignore storage errors
-    }
-  };
-
   const handleReaction = async (target: "like" | "dislike") => {
     if (!user) {
       redirectToOAuthLogin();
@@ -99,6 +174,14 @@ export function usePostDetail(postId: string) {
     }
 
     const nextReaction: ReactionState = reactionState === target ? "none" : target;
+    const previousReaction: ReactionState = reactionState;
+    const cachedDetail = queryClient.getQueryData<PostDetailQueryData>(detailQueryKey);
+    const previousLikeCount = cachedDetail?.post?.likeCount ?? 0;
+    const nextLikeCount = calculateNextLikeCount({
+      currentLikeCount: previousLikeCount,
+      currentReaction: previousReaction,
+      nextReaction,
+    });
     const likeStatus =
       nextReaction === "none"
         ? "NONE"
@@ -107,11 +190,21 @@ export function usePostDetail(postId: string) {
           : "DISLIKE";
 
     try {
-      await likeMutation.mutateAsync(likeStatus);
+      if (cachedDetail) {
+        setLikeStatusInCache(nextReaction, nextLikeCount);
+      }
+
       setReactionOverride({ postId, value: nextReaction });
-      setStoredReaction(postId, nextReaction);
-      await queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      setStoredReactionState(postId, nextReaction);
+
+      await likeMutation.mutateAsync(likeStatus);
     } catch (error: unknown) {
+      if (cachedDetail) {
+        setLikeStatusInCache(previousReaction, previousLikeCount);
+      }
+      setReactionOverride({ postId, value: previousReaction });
+      setStoredReactionState(postId, previousReaction);
+
       const message = error instanceof Error ? error.message : "UNKNOWN";
       if (message === "UNAUTHORIZED") {
         redirectToOAuthLogin();
@@ -160,8 +253,6 @@ export function usePostDetail(postId: string) {
 
     try {
       await updatePostReadLog(postId, nextRead);
-      await queryClient.invalidateQueries({ queryKey: detailQueryKey });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
     } catch (error: unknown) {
       setPost((postToUpdate) => {
         if (!postToUpdate) return postToUpdate;
@@ -288,11 +379,19 @@ export function usePostDetail(postId: string) {
     alert(t("reportSubmitted"));
   };
 
-  const serverReaction: ReactionState = detailQuery.data?.isLiked ? "like" : "none";
-  const storedReaction = storedReactionQuery.data ?? null;
+  const serverReaction: ReactionState | null = detailQuery.data
+    ? inferReactionFromServer({
+        isLiked: detailQuery.data.isLiked,
+      })
+    : null;
+  const storedReaction: ReactionState = storedReactionQuery.data ?? "none";
   const overriddenReaction =
     reactionOverride?.postId === postId ? reactionOverride.value : null;
-  const reactionState = overriddenReaction ?? storedReaction ?? serverReaction;
+  const reactionState: ReactionState = resolveReactionState({
+    override: overriddenReaction,
+    serverReaction,
+    storedReaction,
+  });
   const isLiked = reactionState === "like";
   const post = detailQuery.data?.post ?? null;
   const isLoading = detailQuery.isPending;
