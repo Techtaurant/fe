@@ -98,6 +98,6 @@ export async function updatePostLike(
   return setPostLike(postId, likeStatus);
 }
 
-export async function deletePost(postId: string) {
+export async function deletePost(postId: string): Promise<void> {
   return deletePostRequest(postId);
 }

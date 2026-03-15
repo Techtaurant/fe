@@ -111,7 +111,8 @@ export default function PostDetailPage() {
       onDelete={async () => {
         const deleted = await handleDelete();
         if (deleted) {
-          router.replace(`/${locale}`);
+          router.replace(`/${locale}?mode=user`);
+          router.refresh();
         }
         return deleted;
       }}
