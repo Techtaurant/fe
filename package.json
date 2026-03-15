@@ -7,6 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:reaction": "node --test scripts/reactionCounter.test.mjs",
     "lint": "eslint",
     "type-coverage": "type-coverage",
     "type-coverage:json": "mkdir -p .type-coverage && type-coverage --json-output > .type-coverage/current.json",
