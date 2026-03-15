@@ -78,7 +78,6 @@
   },
   "PostDetail": {
     "back": "戻る",
-    "minRead": "{minutes}分で読めます",
     "follow": "フォロー",
     "privateBadge": "非公開",
     "menuOpen": "その他メニューを開く",

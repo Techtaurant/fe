@@ -15,14 +15,6 @@ interface PostCardProps {
 
 const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|apos|nbsp);/g;
 
-function stripReadTimeLabel(value: string): string {
-  return value
-    .replace(/^\s*(?:약\s*)?\d+\s*분\s*읽기\s*[-–—·•\/|:]?\s*/, "")
-    .replace(/^\s*about\s+\d+\s+minutes?\s+read\s*[-–—·•\/|:]?\s*/i, "")
-    .replace(/^\s*\d+\s*분\s*read\s*[-–—·•\/|:]?\s*/i, "")
-    .trimStart();
-}
-
 function decodeHtmlEntities(value: string): string {
   return value.replace(HTML_ENTITY_PATTERN, (match, entity) => {
     if (entity === "amp") return "&";
@@ -66,15 +58,11 @@ function sanitizePostPreview(rawContent: string): string {
     .replace(/^\s*\*{3,}\s*$/gm, "")
     .replace(/^\s*_{3,}\s*$/gm, "");
 
-  const collapsedWhitespace = stripReadTimeLabel(
-    decodeHtmlEntities(removeHr)
-      .replace(/\r\n?/g, "\n")
-      .replace(/\n/g, " ")
-      .replace(/\s{2,}/g, " ")
-      .trim(),
-  );
-
-  return collapsedWhitespace;
+  return decodeHtmlEntities(removeHr)
+    .replace(/\r\n?/g, "\n")
+    .replace(/\n/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 export default function PostCard({
@@ -362,3 +350,4 @@ export default function PostCard({
     </article>
   );
 }
+
