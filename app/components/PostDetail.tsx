@@ -37,6 +37,7 @@ interface PostDetailProps {
   onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
+  onAuthorClick?: () => void;
   isVisibilityUpdating: boolean;
   isDeleting: boolean;
 }
@@ -66,6 +67,7 @@ export default function PostDetail({
   onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
+  onAuthorClick,
   isVisibilityUpdating,
   isDeleting,
 }: PostDetailProps) {
@@ -74,6 +76,7 @@ export default function PostDetail({
   const isOwner = Boolean(
     currentUserId && post.author?.id && currentUserId === post.author.id,
   );
+  const canToggleRead = !isOwner;
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const [commentFocusRequestKey, setCommentFocusRequestKey] = useState(0);
@@ -103,6 +106,7 @@ export default function PostDetail({
           isOwner={isOwner}
           onBack={onBack}
           onEdit={onEdit}
+          onAuthorClick={onAuthorClick}
           onToggleVisibility={onToggleVisibility}
           onRequestDelete={() => setIsDeleteConfirmOpen(true)}
           onRequestReport={() => setIsReportConfirmOpen(true)}
@@ -116,6 +120,7 @@ export default function PostDetail({
         <PostDetailActionBar
           reactionState={reactionState}
           isRead={isRead}
+          showReadToggle={canToggleRead}
           likeCount={post.likeCount || 0}
           commentCount={post.commentCount || 0}
           viewCount={post.viewCount || 0}

@@ -8,9 +8,14 @@ import { Post } from "../types";
 interface PostCardProps {
   post: Post;
   onReadStatusChange?: (postId: string, isRead: boolean) => void;
+  currentUserId?: string;
 }
 
-export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
+export default function PostCard({
+  post,
+  onReadStatusChange,
+  currentUserId,
+}: PostCardProps) {
   const router = useRouter();
   const t = useTranslations("PostCard");
   const locale = useLocale();
@@ -56,6 +61,12 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
       ? post.techBlog?.iconUrl
       : post.author?.profileImageUrl;
 
+  const isOwnCommunityPost =
+    post.type === "community" &&
+    Boolean(currentUserId) &&
+    Boolean(post.author?.id) &&
+    post.author?.id === currentUserId;
+
   return (
     <article
       onClick={handleCardClick}
@@ -93,7 +104,7 @@ export default function PostCard({ post, onReadStatusChange }: PostCardProps) {
               </span>
             )}
 
-            {post.isRead && (
+            {post.isRead && !isOwnCommunityPost && (
               <span
                 className="ml-auto md:ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-muted text-xs font-medium text-muted-foreground"
               >

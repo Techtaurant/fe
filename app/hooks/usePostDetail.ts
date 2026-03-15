@@ -142,6 +142,11 @@ export function usePostDetail(postId: string) {
     const currentPost = detailQuery.data?.post;
     if (!currentPost) return;
 
+    const isOwner = Boolean(
+      currentPost.author?.id && user.id && currentPost.author.id === user.id,
+    );
+    if (isOwner) return;
+
     const nextRead = !currentPost.isRead;
     const previousRead = currentPost.isRead;
 

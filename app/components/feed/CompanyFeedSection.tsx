@@ -8,12 +8,14 @@ interface CompanyFeedSectionProps {
   posts: Post[];
   isLoading: boolean;
   onReadStatusChange: (postId: string, isRead: boolean) => void;
+  currentUserId?: string;
 }
 
 export default function CompanyFeedSection({
   posts,
   isLoading,
   onReadStatusChange,
+  currentUserId,
 }: CompanyFeedSectionProps) {
   const showInitialSkeleton = isLoading && posts.length === 0;
 
@@ -25,6 +27,7 @@ export default function CompanyFeedSection({
     <PostList
       posts={posts}
       onReadStatusChange={onReadStatusChange}
+      currentUserId={currentUserId}
       hideEmptyState={isLoading}
     />
   );
