@@ -75,7 +75,7 @@ export default function PostDetailHeader({
         {post.title}
       </h1>
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-1">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -130,7 +130,7 @@ export default function PostDetailHeader({
 
         <div className="ml-auto relative flex items-center gap-2" ref={menuRef}>
           {!isOwner && (
-            <button className="px-4 py-1.5 rounded-full border border-success text-success text-sm font-medium hover:bg-success hover:text-success-foreground transition-colors duration-200">
+            <button className="px-4 py-1.5 rounded-full border border-blue-500 text-blue-500 text-sm font-medium hover:bg-blue-500/10 hover:text-blue-500 transition-colors duration-200">
               {t("follow")}
             </button>
           )}
@@ -216,11 +216,11 @@ export default function PostDetailHeader({
       </div>
 
       {post.tags?.length ? (
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-1.5">
           {post.tags?.map((tag) => (
             <span
               key={tag.id}
-              className="px-3 py-1.5 rounded-full bg-muted/60 text-sm text-muted-foreground hover:bg-muted cursor-pointer transition-colors duration-200"
+              className="px-2.5 py-1 rounded-full bg-muted/85 text-sm text-blue-500 hover:bg-muted/30 hover:text-blue-400 cursor-pointer transition-colors duration-200"
             >
               {tag.name}
             </span>
