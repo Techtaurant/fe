@@ -112,6 +112,7 @@
     "commentDeleteConfirm": "このコメントを削除しますか？",
     "commentDeleted": "このコメントは削除されました。",
     "commentDeletedByAuthor": "このコメントは作成者によって削除されました。",
+    "commentAuthorBadge": "投稿者",
     "loadingComments": "コメントを読み込み中です。",
     "replies": "返信 {count}",
     "noComments": "まだコメントがありません。最初のコメントを投稿しましょう！",

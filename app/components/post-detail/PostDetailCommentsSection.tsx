@@ -27,6 +27,7 @@ interface PostDetailCommentsSectionProps {
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
   currentUserId?: string | null;
+  postAuthorId?: string | null;
   updatingCommentId: string | null;
   deletingCommentId: string | null;
   focusRequestKey: number;
@@ -46,6 +47,7 @@ export default function PostDetailCommentsSection({
   onLoadMoreComments,
   onCommentsSortChange,
   currentUserId,
+  postAuthorId,
   updatingCommentId,
   deletingCommentId,
   focusRequestKey,
@@ -297,10 +299,13 @@ export default function PostDetailCommentsSection({
             const isSingleLineEditing =
               isEditingCurrentComment &&
               !/\r?\n/.test(editingCommentValue);
+            const isPostAuthor = Boolean(
+              postAuthorId && comment.author.id === postAuthorId,
+            );
 
             return (
             <div key={comment.id} className="flex gap-3">
-              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+                <div className="relative w-[30px] h-[30px] rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
                 {comment.author.profileImageUrl ? (
                   <Image
                     src={comment.author.profileImageUrl}
@@ -317,9 +322,14 @@ export default function PostDetailCommentsSection({
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm text-foreground">
+                    <span className="font-semibold text-sm text-foreground">
                       {comment.author.name}
                     </span>
+                    {isPostAuthor ? (
+                      <span className="comment-author-badge">
+                        {t("commentAuthorBadge")}
+                      </span>
+                    ) : null}
                     <span className="text-xs text-muted-foreground">
                       {formatDisplayTime(comment.createdAt, locale)}
                     </span>

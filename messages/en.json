@@ -112,6 +112,7 @@
     "commentDeleteConfirm": "Delete this comment?",
     "commentDeleted": "This comment has been deleted.",
     "commentDeletedByAuthor": "This comment was deleted by the author.",
+    "commentAuthorBadge": "Author",
     "loadingComments": "Loading comments...",
     "replies": "Replies {count}",
     "noComments": "No comments yet. Be the first to comment!",

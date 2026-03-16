@@ -112,6 +112,7 @@
     "commentDeleteConfirm": "要删除此评论吗？",
     "commentDeleted": "此评论已删除。",
     "commentDeletedByAuthor": "该评论已由作者删除。",
+    "commentAuthorBadge": "作者",
     "loadingComments": "正在加载评论...",
     "replies": "回复 {count}",
     "noComments": "还没有评论，来发表第一条吧！",
