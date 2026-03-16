@@ -55,6 +55,9 @@ export interface Comment {
   createdAt: string;
   likeCount: number;
   replyCount: number;
+  isDeleted: boolean;
+  depth?: number;
+  parentId?: string | null;
 }
 
 // 피드 모드 (기업 글 / 일반 사용자 글)

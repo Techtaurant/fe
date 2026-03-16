@@ -6,7 +6,10 @@ import Header from "./Header";
 import MarkdownRenderer from "./MarkdownRenderer";
 import PostDetailActionBar from "./post-detail/PostDetailActionBar";
 import PostDetailCommentsSection from "./post-detail/PostDetailCommentsSection";
-import PostDetailConfirmDialog from "./post-detail/PostDetailConfirmDialog";
+import PostDetailConfirmDialog, {
+  DELETE_CONFIRM_BUTTON_CLASS_NAME,
+  CANCEL_CONFIRM_BUTTON_CLASS_NAME,
+} from "./post-detail/PostDetailConfirmDialog";
 import PostDetailHeader from "./post-detail/PostDetailHeader";
 import { Comment, FeedMode, Post } from "../types";
 import { CommentSort } from "../services/comments/types";
@@ -34,9 +37,13 @@ interface PostDetailProps {
   onToggleRead: () => void;
   onShare: () => void;
   onCreateComment: (content: string) => Promise<void>;
+  onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
+  onDeleteComment: (commentId: string) => Promise<boolean>;
   onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
+  updatingCommentId: string | null;
+  deletingCommentId: string | null;
   onAuthorClick?: () => void;
   isVisibilityUpdating: boolean;
   isDeleting: boolean;
@@ -64,9 +71,13 @@ export default function PostDetail({
   onToggleRead,
   onShare,
   onCreateComment,
+  onUpdateComment,
+  onDeleteComment,
   onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
+  updatingCommentId,
+  deletingCommentId,
   onAuthorClick,
   isVisibilityUpdating,
   isDeleting,
@@ -100,7 +111,7 @@ export default function PostDetail({
         onModeChange={() => {}}
       />
 
-      <main className="max-w-[728px] mx-auto px-4 md:px-6 py-8 md:py-12">
+      <main className="max-w-[728px] mx-auto px-4 md:px-6 pt-8 pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:py-12">
         <PostDetailHeader
           post={post}
           isOwner={isOwner}
@@ -140,9 +151,14 @@ export default function PostDetail({
           isCommentsLoadingMore={isCommentsLoadingMore}
           createCommentFieldErrors={createCommentFieldErrors}
           onCreateComment={onCreateComment}
+          onUpdateComment={onUpdateComment}
+          onDeleteComment={onDeleteComment}
           onClearCommentFieldError={onClearCommentFieldError}
           onLoadMoreComments={onLoadMoreComments}
           onCommentsSortChange={onCommentsSortChange}
+          currentUserId={currentUserId}
+          updatingCommentId={updatingCommentId}
+          deletingCommentId={deletingCommentId}
           focusRequestKey={commentFocusRequestKey}
         />
 
@@ -150,7 +166,7 @@ export default function PostDetail({
           isOpen={isDeleteConfirmOpen}
           title={t("deleteConfirmTitle")}
           description={t("deleteConfirmDescription")}
-          cancelLabel={t("cancel")}
+          cancelLabel={t("close")}
           confirmLabel={t("deleteConfirmAction")}
           onCancel={() => setIsDeleteConfirmOpen(false)}
           onConfirm={async () => {
@@ -160,7 +176,8 @@ export default function PostDetail({
             }
           }}
           isConfirming={isDeleting}
-          confirmButtonClassName="px-4 py-2 rounded-full bg-red-600 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          cancelButtonClassName={CANCEL_CONFIRM_BUTTON_CLASS_NAME}
+          confirmButtonClassName={DELETE_CONFIRM_BUTTON_CLASS_NAME}
         />
 
         <PostDetailConfirmDialog
