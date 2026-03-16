@@ -2,6 +2,8 @@ export type CommentApiErrorCode =
   | "UNAUTHORIZED"
   | "NOT_FOUND"
   | "BAD_REQUEST"
+  | "FORBIDDEN"
+  | "GONE"
   | "HTTP_ERROR";
 
 export type ValidationErrors = Record<string, string>;

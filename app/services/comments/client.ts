@@ -3,6 +3,8 @@ import { CommentApiError, ValidationErrors } from "./apiError";
 import {
   CreateCommentRequest,
   CreateCommentResponse,
+  UpdateCommentRequest,
+  UpdateCommentResponse,
   FetchCommentsRequest,
   FetchCommentsResponse,
   ValidationErrorApiResponse,
@@ -73,6 +75,105 @@ export async function createCommentRequest(
 
   const result = await parseJson(response);
   return result as CreateCommentResponse;
+}
+
+export async function updateCommentRequest(
+  commentId: string,
+  payload: UpdateCommentRequest,
+): Promise<UpdateCommentResponse> {
+  const response = await httpClient(`/api/comments/${commentId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
+  if (response.status === 401) {
+    throw new CommentApiError("UNAUTHORIZED", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 403) {
+    throw new CommentApiError("FORBIDDEN", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 404) {
+    throw new CommentApiError("NOT_FOUND", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 410) {
+    throw new CommentApiError("GONE", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 400) {
+    const body = (await parseJson(response).catch(() => null)) as
+      | ValidationErrorApiResponse
+      | UpdateCommentResponse
+      | null;
+    throw new CommentApiError("BAD_REQUEST", {
+      status: response.status,
+      validationErrors: extractValidationErrors(body),
+      message: "BAD_REQUEST",
+    });
+  }
+
+  if (!response.ok) {
+    throw new CommentApiError("HTTP_ERROR", {
+      status: response.status,
+      message: `HTTP_${response.status}`,
+    });
+  }
+
+  const result = await parseJson(response);
+  return result as UpdateCommentResponse;
+}
+
+export async function deleteCommentRequest(commentId: string): Promise<void> {
+  const response = await httpClient(`/api/comments/${commentId}`, {
+    method: "DELETE",
+  });
+
+  if (response.status === 401) {
+    throw new CommentApiError("UNAUTHORIZED", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 403) {
+    throw new CommentApiError("FORBIDDEN", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 404) {
+    throw new CommentApiError("NOT_FOUND", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 410) {
+    throw new CommentApiError("GONE", {
+      status: response.status,
+    });
+  }
+
+  if (!response.ok) {
+    throw new CommentApiError("HTTP_ERROR", {
+      status: response.status,
+      message: `HTTP_${response.status}`,
+    });
+  }
+
+  if (response.status === 204) {
+    return;
+  }
+
+  await response.text();
 }
 
 export async function fetchCommentsRequest(
