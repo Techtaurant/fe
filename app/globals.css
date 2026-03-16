@@ -26,6 +26,12 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-close-button: var(--close-button);
+  --color-close-button-hover: var(--close-button-hover);
+  --color-delete: var(--delete);
+  --color-delete-hover: var(--delete-hover);
+  --color-save-button: var(--save-button);
+  --color-save-button-hover: var(--save-button-hover);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -81,6 +87,12 @@
   --warning-foreground: #202124;
   --success: #03A87C;
   --success-foreground: #F8F9FA;
+  --close-button: #EBEDEF;
+  --close-button-hover: #E6E8EA;
+  --delete: #F14452;
+  --delete-hover: #E42A3A;
+  --save-button: #2879F0;
+  --save-button-hover: #2273EB;
   --border: #DADCE0;
   --input: #DADCE0;
   --ring: #9AA0A6;
@@ -142,6 +154,12 @@
   --warning-foreground: #3C3C3C;
   --success: #2FBF8F;
   --success-foreground: #3C3C3C;
+  --close-button: #42424E;
+  --close-button-hover: #4E4E5B;
+  --delete: #F24857;
+  --delete-hover: #FA616D;
+  --save-button: #3585FA;
+  --save-button-hover: #3B8FFD;
   --border: #4A4A4A;
   --input: #3C3C3C;
   --ring: #5A5A5A;
@@ -290,6 +308,40 @@
 
   .font-brand {
     font-family: var(--font-brand);
+  }
+
+  .animate-post-detail-confirm-dialog-shake {
+    animation: post-detail-confirm-dialog-shake 320ms ease-in-out;
+  }
+
+  .save-action-button {
+    @apply bg-save-button text-white hover:bg-save-button-hover transition-colors duration-200;
+  }
+}
+
+@keyframes post-detail-confirm-dialog-shake {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  20% {
+    transform: translate3d(-6px, 0, 0);
+  }
+
+  40% {
+    transform: translate3d(6px, 0, 0);
+  }
+
+  60% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  80% {
+    transform: translate3d(4px, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
   }
 }
 
