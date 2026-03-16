@@ -62,10 +62,11 @@ export default function PostDetailCommentsSection({
   const [commentValue, setCommentValue] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentValue, setEditingCommentValue] = useState("");
+  const [isEditingActionsBelow, setIsEditingActionsBelow] = useState(false);
   const [activeMenuCommentId, setActiveMenuCommentId] = useState<string | null>(null);
   const [deletingCommentTargetId, setDeletingCommentTargetId] = useState<string | null>(null);
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
-  const collapsedTextareaHeight = "52px";
+  const collapsedTextareaHeight = "44px";
   const commentFieldErrorMessage =
     createCommentFieldErrors.content ||
     createCommentFieldErrors.postId ||
@@ -122,6 +123,12 @@ export default function PostDetailCommentsSection({
     setActiveMenuCommentId(null);
   };
 
+  const resizeEditingTextarea = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+    setIsEditingActionsBelow(textarea.scrollHeight > 40);
+  };
+
   useEffect(() => {
     if (!deletingCommentTargetId) return;
 
@@ -138,16 +145,21 @@ export default function PostDetailCommentsSection({
   const beginEditComment = (comment: Comment) => {
     if (comment.isDeleted) return;
     closeCommentMenu();
+    setIsEditingActionsBelow(false);
     setEditingCommentId(comment.id);
     setEditingCommentValue(comment.content);
     setTimeout(() => {
-      editingCommentTextareaRef.current?.focus();
+      const textarea = editingCommentTextareaRef.current;
+      if (!textarea) return;
+      resizeEditingTextarea(textarea);
+      textarea.focus();
     }, 0);
   };
 
   const cancelEditComment = () => {
     setEditingCommentId(null);
     setEditingCommentValue("");
+    setIsEditingActionsBelow(false);
   };
 
   const handleUpdateComment = async (commentId: string) => {
@@ -189,82 +201,86 @@ export default function PostDetailCommentsSection({
 
   return (
     <section>
-      <div ref={commentInputRef} className="flex gap-3 mb-8">
+      <div ref={commentInputRef} className="mb-8">
         <div className="flex-1">
-          <textarea
-            ref={commentTextareaRef}
-            placeholder={isCommentExpanded ? "" : t("commentPlaceholder")}
-            value={commentValue}
-            onChange={(e) => {
-              setCommentValue(e.target.value);
-              if (createCommentFieldErrors.content) {
-                onClearCommentFieldError("content");
-              }
-            }}
-            onInput={(e) => {
-              const target = e.currentTarget;
-              target.style.height = "auto";
-              target.style.height = `${target.scrollHeight}px`;
-            }}
-            className={`w-full px-5 rounded-3xl border-2 border-border bg-background text-base resize-none focus:outline-none transition-colors duration-200 placeholder:text-lg hover:bg-muted/85 ${
-              commentFieldErrorMessage
-                ? "border-red-500 focus:border-red-500"
-                : "border-border focus:border-ring"
-            } ${
-              isCommentExpanded
-                ? "min-h-[120px] max-h-60 overflow-y-auto text-left py-4"
-                : "h-[52px] overflow-hidden text-left py-4 leading-5"
-            }`}
-            rows={1}
-            onFocus={() => {
-              setIsCommentExpanded(true);
-              if (commentTextareaRef.current && !commentValue) {
-                commentTextareaRef.current.style.height = "120px";
-              }
-            }}
-          />
+          <div className="relative">
+            <textarea
+              ref={commentTextareaRef}
+              placeholder={isCommentExpanded ? "" : t("commentPlaceholder")}
+              value={commentValue}
+              onChange={(e) => {
+                setCommentValue(e.target.value);
+                if (createCommentFieldErrors.content) {
+                  onClearCommentFieldError("content");
+                }
+              }}
+              onInput={(e) => {
+                const target = e.currentTarget;
+                target.style.height = "auto";
+                target.style.height = `${target.scrollHeight}px`;
+              }}
+              className={`w-full px-4 rounded-xl border border-border bg-background text-base resize-none focus:outline-none transition-colors duration-200 placeholder:text-base hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover ${
+                commentFieldErrorMessage
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-border focus:border-border"
+              } ${
+                isCommentExpanded
+                  ? "min-h-[120px] max-h-60 overflow-y-auto text-left pt-3 pb-14"
+                  : "h-[44px] min-h-[44px] max-h-[44px] overflow-hidden text-left pt-[10px] pb-[10px] leading-[22px]"
+              }`}
+              rows={1}
+              onFocus={() => {
+                setIsCommentExpanded(true);
+                if (commentTextareaRef.current && !commentValue) {
+                  commentTextareaRef.current.style.height = "120px";
+                }
+              }}
+            />
+            {isCommentExpanded ? (
+              <div className="absolute right-3 bottom-4 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommentValue("");
+                    setIsCommentExpanded(false);
+                    if (commentTextareaRef.current) {
+                      commentTextareaRef.current.style.height = collapsedTextareaHeight;
+                    }
+                  }}
+                  className="h-8 px-4 rounded-md border border-border text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200"
+                >
+                  {t("cancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const trimmed = commentValue.trim();
+                    if (!trimmed || isCommentSubmitting) return;
+                    setIsCommentSubmitting(true);
+                    try {
+                      await onCreateComment(trimmed);
+                      setCommentValue("");
+                      setIsCommentExpanded(false);
+                      if (commentTextareaRef.current) {
+                        commentTextareaRef.current.style.height = collapsedTextareaHeight;
+                      }
+                    } finally {
+                      setIsCommentSubmitting(false);
+                    }
+                  }}
+                  disabled={isCommentSubmitting}
+                  className="h-8 px-4 rounded-md text-sm font-semibold comment-submit-button disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {t("comment")}
+                </button>
+              </div>
+            ) : null}
+          </div>
           {commentFieldErrorMessage && (
             <p className="mt-2 px-2 text-sm font-medium text-red-600">
               {commentFieldErrorMessage}
             </p>
           )}
-          <div className="flex justify-end mt-2 gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setCommentValue("");
-                setIsCommentExpanded(false);
-                if (commentTextareaRef.current) {
-                  commentTextareaRef.current.style.height = collapsedTextareaHeight;
-                }
-              }}
-              className="px-5 py-2.5 rounded-full border border-border text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200"
-            >
-              {t("cancel")}
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                const trimmed = commentValue.trim();
-                if (!trimmed || isCommentSubmitting) return;
-                setIsCommentSubmitting(true);
-                try {
-                  await onCreateComment(trimmed);
-                  setCommentValue("");
-                  setIsCommentExpanded(false);
-                  if (commentTextareaRef.current) {
-                    commentTextareaRef.current.style.height = collapsedTextareaHeight;
-                  }
-                } finally {
-                  setIsCommentSubmitting(false);
-                }
-              }}
-              disabled={isCommentSubmitting}
-              className="px-5 py-2.5 rounded-full bg-slate-700 text-white text-base font-medium hover:bg-slate-800 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {t("comment")}
-            </button>
-          </div>
         </div>
       </div>
 
@@ -281,10 +297,10 @@ export default function PostDetailCommentsSection({
               key={option.value}
               type="button"
               onClick={() => onCommentsSortChange(option.value)}
-              className={`px-3 py-1.5 rounded-full text-xs transition-colors duration-200 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors duration-200 ${
                 commentsSort === option.value
                   ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
+                  : "comment-sort-button"
               }`}
             >
               {option.label}
@@ -296,9 +312,6 @@ export default function PostDetailCommentsSection({
         ) : comments.length > 0 ? (
           comments.map((comment) => {
             const isEditingCurrentComment = editingCommentId === comment.id;
-            const isSingleLineEditing =
-              isEditingCurrentComment &&
-              !/\r?\n/.test(editingCommentValue);
             const isPostAuthor = Boolean(
               postAuthorId && comment.author.id === postAuthorId,
             );
@@ -321,7 +334,7 @@ export default function PostDetailCommentsSection({
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <span className="font-semibold text-sm text-foreground">
                       {comment.author.name}
                     </span>
@@ -391,25 +404,22 @@ export default function PostDetailCommentsSection({
                       ref={editingCommentId === comment.id ? editingCommentTextareaRef : null}
                       value={editingCommentValue}
                       onChange={(e) => setEditingCommentValue(e.target.value)}
-                      className={`w-full rounded-2xl border border-border bg-background text-sm resize-none focus:outline-none focus:border-ring ${
-                        isSingleLineEditing
-                          ? "px-3 py-2 pr-24 h-9 min-h-9"
-                          : "px-4 py-2 pr-24"
+                      className={`w-full min-h-9 rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover focus:border-border ${
+                        isEditingActionsBelow ? "pr-3" : "pr-24"
                       }`}
-                      rows={isSingleLineEditing ? 1 : 2}
+                      rows={1}
                       onInput={(e) => {
-                        if (isSingleLineEditing) {
-                          e.currentTarget.style.height = "36px";
-                          return;
-                        }
-
-                        const target = e.currentTarget;
-                        target.style.height = "auto";
-                        target.style.height = `${target.scrollHeight}px`;
+                        resizeEditingTextarea(e.currentTarget);
                       }}
                       disabled={updatingCommentId === comment.id}
                     />
-                    <div className="absolute right-2 top-[6px] flex items-center gap-2">
+                    <div
+                      className={
+                        isEditingActionsBelow
+                          ? "mt-2 flex items-center justify-end gap-2"
+                          : "absolute right-2 top-[6px] flex items-center gap-2"
+                      }
+                    >
                       <button
                         type="button"
                         onClick={cancelEditComment}
@@ -431,7 +441,7 @@ export default function PostDetailCommentsSection({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                  <p className="mb-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
                     {comment.isDeleted
                       ? currentUserId === comment.author.id
                         ? t("commentDeletedByAuthor")
