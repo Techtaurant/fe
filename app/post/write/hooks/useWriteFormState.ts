@@ -16,6 +16,7 @@ export function useWriteFormState() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
     title: false,
     content: false,
+    category: false,
   });
 
   const contentFingerprint = useMemo(
@@ -47,13 +48,15 @@ export function useWriteFormState() {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const validateRequiredFields = () => {
+  const validateRequiredFields = ({ requireCategory = false }: { requireCategory?: boolean } = {}) => {
+    const trimmedCategory = categoryPath.trim();
     const nextFieldErrors = {
       title: !title.trim(),
       content: !content.trim(),
+      category: requireCategory && !trimmedCategory,
     };
 
-    if (nextFieldErrors.title || nextFieldErrors.content) {
+    if (nextFieldErrors.title || nextFieldErrors.content || nextFieldErrors.category) {
       setError(null);
       setFieldErrors(nextFieldErrors);
       return false;
@@ -82,7 +85,7 @@ export function useWriteFormState() {
     setCategoryPath("");
     setTagInput("");
     setTags([]);
-    setFieldErrors({ title: false, content: false });
+    setFieldErrors({ title: false, content: false, category: false });
   };
 
   return {
