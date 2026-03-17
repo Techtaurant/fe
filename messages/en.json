@@ -3,7 +3,7 @@
     "openMenu": "Open menu",
     "companyBlogs": "Company blogs",
     "community": "Community",
-    "searchPlaceholder": "Search...",
+    "searchPlaceholder": "Search",
     "writePost": "Write post",
     "profile": "Profile",
     "logout": "Log out",
@@ -124,6 +124,15 @@
     "loadFailed": "Failed to load community posts.",
     "reachedEnd": "You reached the last post 🎉"
   },
+  "HomePage": {
+    "clearAll": "Clear all",
+    "andMore": "and {count} more",
+    "unknownTag": "Tag"
+  },
+  "TagFeedPage": {
+    "invalidTag": "Invalid tag request. Please use a valid tag link.",
+    "fallbackTag": "tag"
+  },
   "SearchPage": {
     "placeholder": "Enter a keyword",
     "emptyPrompt": "Results appear when you enter a search term.",
@@ -218,6 +227,7 @@
       "titleRequired": "Please enter a title.",
       "category": "Category",
       "categoryPlaceholder": "e.g. java/spring/deepdive",
+      "categoryRequired": "Please enter a category.",
       "tags": "Tags",
       "tagsPlaceholder": "Type a tag and press Enter",
       "removeTag": "Remove {tag}"

@@ -3,7 +3,7 @@
     "openMenu": "메뉴 열기",
     "companyBlogs": "기업 블로그",
     "community": "커뮤니티",
-    "searchPlaceholder": "검색...",
+    "searchPlaceholder": "검색",
     "writePost": "게시물 작성",
     "profile": "프로필",
     "logout": "로그아웃",
@@ -124,6 +124,15 @@
     "loadFailed": "커뮤니티 게시물을 불러오지 못했습니다.",
     "reachedEnd": "마지막 게시물까지 모두 불러왔습니다 🎉"
   },
+  "HomePage": {
+    "clearAll": "전체 해제",
+    "andMore": "외 {count}개",
+    "unknownTag": "태그"
+  },
+  "TagFeedPage": {
+    "invalidTag": "유효하지 않은 태그 요청입니다. 태그 링크를 다시 확인해주세요.",
+    "fallbackTag": "태그"
+  },
   "SearchPage": {
     "placeholder": "검색어를 입력하세요",
     "emptyPrompt": "검색어를 입력하면 결과가 표시됩니다.",
@@ -218,6 +227,7 @@
       "titleRequired": "제목을 입력해주세요.",
       "category": "카테고리",
       "categoryPlaceholder": "예: java/spring/deepdive",
+      "categoryRequired": "카테고리를 입력해주세요.",
       "tags": "태그",
       "tagsPlaceholder": "태그를 입력하고 Enter를 누르세요",
       "removeTag": "{tag} 제거"

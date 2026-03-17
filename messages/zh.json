@@ -3,7 +3,7 @@
     "openMenu": "打开菜单",
     "companyBlogs": "企业博客",
     "community": "社区",
-    "searchPlaceholder": "搜索...",
+    "searchPlaceholder": "搜索",
     "writePost": "写文章",
     "profile": "个人资料",
     "logout": "退出登录",
@@ -124,6 +124,15 @@
     "loadFailed": "无法加载社区文章。",
     "reachedEnd": "已加载到最后一篇 🎉"
   },
+  "HomePage": {
+    "clearAll": "清除全部",
+    "andMore": "等 {count} 个",
+    "unknownTag": "标签"
+  },
+  "TagFeedPage": {
+    "invalidTag": "无效的标签请求，请检查标签链接是否正确。",
+    "fallbackTag": "标签"
+  },
   "SearchPage": {
     "placeholder": "请输入关键词",
     "emptyPrompt": "输入关键词后将显示搜索结果。",
@@ -218,6 +227,7 @@
       "titleRequired": "请输入标题。",
       "category": "分类",
       "categoryPlaceholder": "例如：java/spring/deepdive",
+      "categoryRequired": "请输入分类。",
       "tags": "标签",
       "tagsPlaceholder": "输入标签后按 Enter",
       "removeTag": "移除 {tag}"
