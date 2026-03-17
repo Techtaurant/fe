@@ -1,35 +1,36 @@
 'use client';
 
-interface SidebarSearchInputProps {
+interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
-  onEnter?: () => void;
   placeholder: string;
+  onEnter?: () => void;
+  className?: string;
 }
 
-export default function SidebarSearchInput({
+export default function SearchInput({
   value,
   onChange,
-  onEnter,
   placeholder,
-}: SidebarSearchInputProps) {
+  onEnter,
+  className,
+}: SearchInputProps) {
+  const wrapperClassName = className ? `relative ${className}` : 'relative';
+
   return (
-    <div className="relative">
+    <div className={wrapperClassName}>
       <input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === 'Enter' && onEnter) {
             e.preventDefault();
-            onEnter?.();
+            onEnter();
           }
         }}
-        className="w-full bg-muted border-none rounded-full
-                py-2 pl-10 pr-4 text-sm text-foreground
-                transition-colors duration-200
-                focus:bg-muted/70 focus:outline-none"
+        className="w-full bg-search-input-background border-none rounded-lg py-2 pl-10 pr-4 text-sm text-foreground transition-colors duration-200 focus:bg-search-input-background focus:outline-none"
       />
       <svg
         className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"
