@@ -11,6 +11,7 @@ export const queryKeys = {
       size: number;
       authorId?: string;
       categoryPath?: string;
+      tagIds?: string[];
     }) => [...queryKeys.posts.all, "community", params] as const,
     userCommunityList: (params: {
       userId: string;
@@ -46,7 +47,8 @@ export const queryKeys = {
   },
   tags: {
     all: ["tags"] as const,
-    list: () => [...queryKeys.tags.all, "list"] as const,
+    list: (scope = "default") => [...queryKeys.tags.all, "list", scope] as const,
+    byIds: (ids: string[]) => [...queryKeys.tags.all, "by-ids", ids] as const,
   },
   techBlogs: {
     all: ["techBlogs"] as const,
