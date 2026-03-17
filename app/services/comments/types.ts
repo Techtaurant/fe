@@ -77,6 +77,7 @@ export interface CommentListResponse {
   parentId?: string | null;
   depth: number;
   isDeleted: boolean;
+  isBanned?: boolean;
   likeCount: number;
   replyCount: number;
   likeStatus?: "NONE" | "LIKE" | "DISLIKE";
