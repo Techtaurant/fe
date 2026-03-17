@@ -8,7 +8,8 @@
     "profile": "Profile",
     "logout": "Log out",
     "login": "Log in",
-    "myPosts": "My posts"
+    "myPosts": "My posts",
+    "settings": "Settings"
   },
   "BottomNav": {
     "home": "Home",
@@ -112,6 +113,10 @@
     "commentEdit": "Edit",
     "commentSave": "Save",
     "commentDelete": "Delete",
+    "commentBan": "Block",
+    "commentBanConfirmTitle": "Block this user?",
+    "commentBannedAuthor": "Blocked user",
+    "commentBannedContent": "This comment is from a blocked user.",
     "commentDeleteConfirm": "Delete this comment?",
     "commentDeleted": "This comment has been deleted.",
     "commentDeletedByAuthor": "This comment was deleted by the author.",
@@ -168,7 +173,38 @@
     "deleteForbidden": "You do not have permission to delete this post.",
     "deleteFailed": "Failed to delete post.",
     "reportSubmitted": "User has been blocked.",
+    "reportFailed": "Failed to block this user.",
     "editNotReady": "Edit support is coming soon."
+  },
+  "SettingsPage": {
+    "title": "Settings",
+    "description": "Manage appearance, language, and blocked accounts.",
+    "loginRequired": "Sign in to access settings.",
+    "loginAction": "Log in",
+    "theme": {
+      "title": "Theme",
+      "description": "Choose the appearance mode for the app."
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose the language used in the app."
+    },
+    "locale": {
+      "ko": "Korean",
+      "en": "English",
+      "ja": "Japanese",
+      "zh": "Chinese"
+    },
+    "bans": {
+      "title": "Management (Blocked accounts)",
+      "description": "Review and unblock users you have blocked.",
+      "loading": "Loading blocked accounts...",
+      "empty": "No blocked accounts.",
+      "bannedAt": "Blocked at: {date}",
+      "unbanAction": "Unblock",
+      "unbanning": "Unblocking...",
+      "unbanFailed": "Failed to unblock user."
+    }
   },
   "OAuthCallback": {
     "processing": "Processing sign in..."

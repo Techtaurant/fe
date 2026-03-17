@@ -8,7 +8,8 @@
     "profile": "프로필",
     "logout": "로그아웃",
     "login": "로그인",
-    "myPosts": "내 글"
+    "myPosts": "내 글",
+    "settings": "설정"
   },
   "BottomNav": {
     "home": "홈",
@@ -112,6 +113,10 @@
     "commentEdit": "수정",
     "commentSave": "저장",
     "commentDelete": "삭제",
+    "commentBan": "차단하기",
+    "commentBanConfirmTitle": "이 사용자를 차단할까요?",
+    "commentBannedAuthor": "차단한 사용자",
+    "commentBannedContent": "차단한 사용자의 댓글입니다.",
     "commentDeleteConfirm": "이 댓글을 삭제할까요?",
     "commentDeleted": "삭제된 댓글입니다.",
     "commentDeletedByAuthor": "이 댓글은 작성자가 삭제했습니다.",
@@ -168,7 +173,38 @@
     "deleteForbidden": "다른 사용자의 게시물을 삭제할 수 없습니다.",
     "deleteFailed": "게시물을 삭제하지 못했습니다.",
     "reportSubmitted": "차단 요청이 접수되었습니다.",
+    "reportFailed": "사용자를 차단하지 못했습니다.",
     "editNotReady": "수정 기능은 곧 제공될 예정입니다."
+  },
+  "SettingsPage": {
+    "title": "설정",
+    "description": "화면 테마, 언어, 차단 계정을 관리할 수 있습니다.",
+    "loginRequired": "설정은 로그인 후 이용할 수 있습니다.",
+    "loginAction": "로그인하기",
+    "theme": {
+      "title": "화면 테마",
+      "description": "앱에 적용할 밝기 모드를 선택하세요."
+    },
+    "language": {
+      "title": "언어",
+      "description": "앱에 표시할 언어를 선택하세요."
+    },
+    "locale": {
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語",
+      "zh": "中文"
+    },
+    "bans": {
+      "title": "관리 (차단한 계정)",
+      "description": "차단한 계정을 확인하고 해제할 수 있습니다.",
+      "loading": "차단한 계정을 불러오는 중입니다.",
+      "empty": "차단한 계정이 없습니다.",
+      "bannedAt": "차단일: {date}",
+      "unbanAction": "차단 해제",
+      "unbanning": "해제 중...",
+      "unbanFailed": "차단 해제에 실패했습니다."
+    }
   },
   "OAuthCallback": {
     "processing": "로그인 처리 중..."
