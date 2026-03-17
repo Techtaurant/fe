@@ -61,16 +61,28 @@ export default function WriteFormFields({
 
       <div className="mb-4 md:mb-6">
         <label htmlFor="category" className="mb-2 block text-sm font-semibold text-foreground">
-          {t("category")}
+          {t("category")} <span className="text-red-600">*</span>
         </label>
         <input
           id="category"
           type="text"
           value={categoryPath}
-          onChange={(e) => setCategoryPath(e.target.value)}
+          onChange={(e) => {
+            setCategoryPath(e.target.value);
+            if (fieldErrors.category) {
+              setFieldErrors((prev) => ({ ...prev, category: false }));
+            }
+          }}
           placeholder={t("categoryPlaceholder")}
-          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
+          className={`w-full rounded-lg border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
+            fieldErrors.category
+              ? "border-red-500 focus:border-red-500"
+              : "border-border focus:border-primary"
+          }`}
         />
+        {fieldErrors.category && (
+          <p className="mt-2 text-sm font-medium text-red-600">{t("categoryRequired")}</p>
+        )}
       </div>
 
       <div className="mb-4 md:mb-6">
