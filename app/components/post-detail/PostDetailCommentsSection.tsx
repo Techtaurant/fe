@@ -12,6 +12,7 @@ import PostDetailConfirmDialog, {
   DELETE_CONFIRM_BUTTON_CLASS_NAME,
   CANCEL_CONFIRM_BUTTON_CLASS_NAME,
 } from "./PostDetailConfirmDialog";
+import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
 
 interface PostDetailCommentsSectionProps {
   comments: Comment[];
@@ -369,30 +370,26 @@ export default function PostDetailCommentsSection({
 
                       {isCommentMenuOpen(comment.id) ? (
                         <div className="absolute right-0 top-7 z-20 min-w-[120px] rounded-xl border border-border bg-background p-1 shadow-lg">
-                          <button
-                            type="button"
+                          <PostDetailMenuItemButton
                             onClick={() => {
                               beginEditComment(comment);
                             }}
-                            className="w-full text-left px-3 py-2 text-sm font-medium text-foreground rounded-md flex items-center gap-2 hover:bg-muted/80 transition-colors duration-150"
+                            icon={<Pencil className="w-3.5 h-3.5 text-foreground" />}
                             disabled={Boolean(updatingCommentId || deletingCommentId)}
                           >
-                            <Pencil className="w-3.5 h-3.5 text-foreground" />
                             {t("commentEdit")}
-                          </button>
-                          <button
-                            type="button"
+                          </PostDetailMenuItemButton>
+                          <PostDetailMenuItemButton
                             onClick={() => {
                               requestDeleteComment(comment.id);
                             }}
-                            className="w-full text-left px-3 py-2 text-sm font-medium text-foreground rounded-md flex items-center gap-2 hover:bg-muted/80 transition-colors duration-150"
+                            icon={<Trash2 className="w-3.5 h-3.5 text-foreground" />}
                             disabled={
                               deletingCommentId === comment.id || updatingCommentId === comment.id
                             }
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-foreground" />
                             {t("commentDelete")}
-                          </button>
+                          </PostDetailMenuItemButton>
                         </div>
                       ) : null}
                     </div>

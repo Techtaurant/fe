@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Globe, Lock, Pencil, Trash2, UserX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Post } from "@/app/types";
 import { formatDisplayTime } from "@/app/utils";
+import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
 
 function buildTagRoute(locale: string, tagId: string): string {
   return `/${locale}?mode=user&tagIds=${encodeURIComponent(tagId)}`;
@@ -57,8 +58,6 @@ export default function PostDetailHeader({
 
   const menuButtonClassName =
     "p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200";
-  const menuItemClassName =
-    "w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted/80 transition-colors duration-150";
   const hasAuthorClick = Boolean(onAuthorClick && post.author?.id);
 
   const handleAuthorClick = () => {
@@ -127,7 +126,7 @@ export default function PostDetailHeader({
             <span>{formatDisplayTime(post.publishedAt, locale)}</span>
 
             {post.status === "PRIVATE" && (
-              <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
+              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
                 {t("privateBadge")}
               </span>
             )}
@@ -163,58 +162,58 @@ export default function PostDetailHeader({
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 top-12 z-20 min-w-[180px] rounded-xl border border-border bg-background p-2 shadow-lg">
+            <div className="absolute right-0 top-12 z-20 min-w-[120px] rounded-xl border border-border bg-background p-1 shadow-lg">
               {isOwner ? (
                 <>
-                  <button
-                    type="button"
+                  <PostDetailMenuItemButton
                     onClick={() => {
                       setIsMenuOpen(false);
                       onEdit();
                     }}
-                    className={menuItemClassName}
+                    icon={<Pencil className="h-3.5 w-3.5 text-foreground" />}
                   >
                     {t("menuEdit")}
-                  </button>
+                  </PostDetailMenuItemButton>
 
-                  <button
-                    type="button"
+                  <PostDetailMenuItemButton
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onRequestDelete();
+                    }}
+                    icon={<Trash2 className="h-3.5 w-3.5 text-foreground" />}
+                  >
+                    {t("menuDelete")}
+                  </PostDetailMenuItemButton>
+
+                  <PostDetailMenuItemButton
                     onClick={async () => {
                       setIsMenuOpen(false);
                       await onToggleVisibility();
                     }}
-                    className={menuItemClassName}
+                    icon={
+                      post.status === "PRIVATE" ? (
+                        <Globe className="h-3.5 w-3.5 text-foreground" />
+                      ) : (
+                        <Lock className="h-3.5 w-3.5 text-foreground" />
+                      )
+                    }
                     disabled={isVisibilityUpdating}
                   >
                     {post.status === "PRIVATE"
                       ? t("menuToggleToPublic")
                       : t("menuToggleToPrivate")}
-                  </button>
-
-                  <div className="my-1 h-px bg-border" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onRequestDelete();
-                    }}
-                    className={`${menuItemClassName} text-red-600 hover:bg-red-50`}
-                  >
-                    {t("menuDelete")}
-                  </button>
+                  </PostDetailMenuItemButton>
                 </>
               ) : (
-                <button
-                  type="button"
+                <PostDetailMenuItemButton
                   onClick={() => {
                     setIsMenuOpen(false);
                     onRequestReport();
                   }}
-                  className={menuItemClassName}
+                  icon={<UserX className="h-3.5 w-3.5 text-foreground" />}
                 >
                   {t("menuReport")}
-                </button>
+                </PostDetailMenuItemButton>
               )}
             </div>
           )}
@@ -222,7 +221,7 @@ export default function PostDetailHeader({
       </div>
 
       {post.tags?.length ? (
-        <div className="flex flex-wrap gap-2 mt-1.5">
+        <div className="flex flex-wrap gap-2 mt-2.5">
           {post.tags?.map((tag) => (
             <button
               type="button"
