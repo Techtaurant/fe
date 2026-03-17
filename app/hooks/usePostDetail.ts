@@ -13,6 +13,7 @@ import {
   updatePost,
   updatePostLike,
 } from "../services/posts";
+import { banUser, isBanApiError } from "../services/users/ban";
 import { FeedMode, Post } from "../types";
 import { queryKeys } from "../lib/queryKeys";
 import {
@@ -165,6 +166,9 @@ export function usePostDetail(postId: string) {
   });
   const deleteMutation = useMutation({
     mutationFn: () => deletePost(postId),
+  });
+  const banMutation = useMutation({
+    mutationFn: (targetUserId: string) => banUser(targetUserId),
   });
 
   const handleReaction = async (target: "like" | "dislike") => {
@@ -370,8 +374,43 @@ export function usePostDetail(postId: string) {
     }
   };
 
-  const handleReport = () => {
-    alert(t("reportSubmitted"));
+  const handleReport = async () => {
+    if (!user) {
+      redirectToSignIn();
+      return;
+    }
+
+    const currentPost = detailQuery.data?.post;
+    const targetUserId = currentPost?.author?.id;
+    if (!currentPost || !targetUserId) return;
+
+    if (user.id === targetUserId) return;
+
+    try {
+      await banMutation.mutateAsync(targetUserId);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.bans() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.posts.all }),
+      ]);
+      alert(t("reportSubmitted"));
+    } catch (error: unknown) {
+      if (isBanApiError(error)) {
+        if (error.code === "UNAUTHORIZED") {
+          redirectToSignIn();
+          return;
+        }
+
+        if (error.code === "CONFLICT") {
+          alert(t("reportSubmitted"));
+          return;
+        }
+
+        alert(error.message || t("reportFailed"));
+        return;
+      }
+
+      alert(t("reportFailed"));
+    }
   };
 
   const serverReaction: ReactionState | null = detailQuery.data
@@ -417,6 +456,7 @@ export function usePostDetail(postId: string) {
     handleToggleVisibility,
     handleDelete,
     handleReport,
+    isReporting: banMutation.isPending,
     isVisibilityUpdating: visibilityMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };

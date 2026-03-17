@@ -41,14 +41,17 @@ interface PostDetailProps {
   onCreateComment: (content: string) => Promise<void>;
   onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
   onDeleteComment: (commentId: string) => Promise<boolean>;
+  onBanCommentAuthor: (targetUserId: string) => Promise<boolean>;
   onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
   updatingCommentId: string | null;
   deletingCommentId: string | null;
+  banningCommentAuthorId: string | null;
   onAuthorClick?: () => void;
   isVisibilityUpdating: boolean;
   isDeleting: boolean;
+  isReporting: boolean;
 }
 
 export default function PostDetail({
@@ -75,14 +78,17 @@ export default function PostDetail({
   onCreateComment,
   onUpdateComment,
   onDeleteComment,
+  onBanCommentAuthor,
   onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
   updatingCommentId,
   deletingCommentId,
+  banningCommentAuthorId,
   onAuthorClick,
   isVisibilityUpdating,
   isDeleting,
+  isReporting,
 }: PostDetailProps) {
   const t = useTranslations("PostDetail");
   const locale = useLocale();
@@ -158,6 +164,7 @@ export default function PostDetail({
           onCreateComment={onCreateComment}
           onUpdateComment={onUpdateComment}
           onDeleteComment={onDeleteComment}
+          onBanCommentAuthor={onBanCommentAuthor}
           onClearCommentFieldError={onClearCommentFieldError}
           onLoadMoreComments={onLoadMoreComments}
           onCommentsSortChange={onCommentsSortChange}
@@ -165,6 +172,7 @@ export default function PostDetail({
           postAuthorId={post.author?.id ?? null}
           updatingCommentId={updatingCommentId}
           deletingCommentId={deletingCommentId}
+          banningCommentAuthorId={banningCommentAuthorId}
           focusRequestKey={commentFocusRequestKey}
         />
 
@@ -221,6 +229,7 @@ export default function PostDetail({
             await onReport();
             setIsReportConfirmOpen(false);
           }}
+          isConfirming={isReporting}
         />
       </main>
     </div>
