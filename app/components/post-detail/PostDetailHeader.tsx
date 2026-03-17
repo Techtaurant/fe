@@ -3,9 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Post } from "@/app/types";
 import { formatDisplayTime } from "@/app/utils";
+
+function buildTagRoute(locale: string, tagId: string): string {
+  return `/${locale}?mode=user&tagIds=${encodeURIComponent(tagId)}`;
+}
 
 interface PostDetailHeaderProps {
   post: Post;
@@ -32,6 +37,7 @@ export default function PostDetailHeader({
 }: PostDetailHeaderProps) {
   const t = useTranslations("PostDetail");
   const locale = useLocale();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -218,12 +224,16 @@ export default function PostDetailHeader({
       {post.tags?.length ? (
         <div className="flex flex-wrap gap-2 mt-1.5">
           {post.tags?.map((tag) => (
-            <span
+            <button
+              type="button"
               key={tag.id}
-              className="px-2.5 py-1 rounded-full bg-muted/85 text-sm text-blue-500 hover:bg-muted/30 hover:text-blue-400 cursor-pointer transition-colors duration-200"
+              className="px-2.5 py-1 rounded-full bg-muted/85 text-sm font-semibold text-blue-500 hover:bg-muted/30 hover:text-blue-400 cursor-pointer transition-colors duration-200"
+              onClick={() => {
+                router.push(buildTagRoute(locale, tag.id));
+              }}
             >
               {tag.name}
-            </span>
+            </button>
           ))}
         </div>
       ) : null}
