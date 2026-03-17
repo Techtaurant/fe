@@ -13,6 +13,7 @@ interface UseCommunityFeedOptions {
   sort: PostListSort;
   authorId?: string;
   categoryPath?: string;
+  tagIds?: string[];
   size?: number;
 }
 
@@ -22,9 +23,15 @@ export function useCommunityFeed({
   sort,
   authorId,
   categoryPath,
+  tagIds,
   size = 20,
 }: UseCommunityFeedOptions) {
   const t = useTranslations("CommunityFeed");
+  const normalizedTagIds = useMemo(
+    () => (tagIds ?? []).map((id) => id.toLowerCase()).sort(),
+    [tagIds],
+  );
+
   const query = useInfiniteQuery({
     queryKey: queryKeys.posts.communityList({
       period,
@@ -32,6 +39,7 @@ export function useCommunityFeed({
       size,
       authorId,
       categoryPath,
+      tagIds: normalizedTagIds,
     }),
     enabled,
     initialPageParam: undefined as string | undefined,
@@ -43,6 +51,7 @@ export function useCommunityFeed({
         sort,
         authorId,
         categoryPath,
+        tagIds: normalizedTagIds,
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
