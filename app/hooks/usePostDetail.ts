@@ -317,11 +317,6 @@ export function usePostDetail(postId: string) {
       await queryClient.invalidateQueries({
         queryKey: [...queryKeys.posts.all, "community"] as const,
       });
-      alert(
-        nextStatus === "PRIVATE"
-          ? t("visibilityChangedPrivate")
-          : t("visibilityChangedPublic"),
-      );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "UNKNOWN";
       if (message === "UNAUTHORIZED") {

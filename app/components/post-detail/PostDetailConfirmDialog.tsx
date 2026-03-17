@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 interface PostDetailConfirmDialogProps {
   isOpen: boolean;
   title: string;
-  description: string;
+  description?: string;
   cancelLabel: string;
   confirmLabel: string;
   onCancel: () => void;
@@ -59,6 +59,12 @@ function PostDetailConfirmDialogActionButtons({
 
 export const DELETE_CONFIRM_BUTTON_CLASS_NAME =
   "h-[40px] w-[136px] px-4 py-2 rounded-lg bg-delete text-sm font-semibold text-white text-center hover:bg-delete-hover transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap";
+
+export const PUBLIC_CONFIRM_BUTTON_CLASS_NAME =
+  "h-[40px] w-[136px] px-4 py-2 rounded-lg bg-[#3182F6] text-sm font-semibold text-white text-center hover:bg-[#2563EB] transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap";
+
+export const PRIVATE_CONFIRM_BUTTON_CLASS_NAME =
+  "h-[40px] w-[136px] px-4 py-2 rounded-lg bg-[#4B5563] text-sm font-semibold text-white text-center hover:bg-[#374151] transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap";
 
 export const CANCEL_CONFIRM_BUTTON_CLASS_NAME =
   "h-[40px] w-[136px] px-4 py-2 rounded-lg bg-close-button text-sm text-foreground text-center font-semibold hover:bg-close-button-hover transition-colors whitespace-nowrap";
@@ -117,7 +123,7 @@ export default function PostDetailConfirmDialog({
         }`}
       >
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        {description ? <p className="mt-2 text-sm text-muted-foreground">{description}</p> : null}
         <PostDetailConfirmDialogActionButtons
           cancelLabel={cancelLabel}
           confirmLabel={confirmLabel}
