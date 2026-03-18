@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
+import { FileText, LogOut, PenLine, Settings } from "lucide-react";
 import { useUser } from "../hooks/useUser";
 import { buildLogoutUrl, redirectToOAuthLogin } from "../lib/authRedirect";
 import { queryKeys } from "../lib/queryKeys";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
-import ThemeModeDropdown from "./ThemeDropdown";
 import MobileBottomNav from "./BottomNav";
-import LocaleSwitcher from "./LocaleSwitcher";
 import SearchInput from "./SearchInput";
+import SettingsModal from "./settings/SettingsModal";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -28,8 +28,11 @@ export default function Header({
 }: HeaderProps) {
   const t = useTranslations("Header");
   const locale = useLocale();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const isSettingsModalOpen = searchParams.get("settings") === "open";
   const dropdownRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { user, isLoading } = useUser();
@@ -49,6 +52,18 @@ export default function Header({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const replaceSettingsQueryState = (open: boolean) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (open) {
+      nextParams.set("settings", "open");
+    } else {
+      nextParams.delete("settings");
+    }
+    const nextQuery = nextParams.toString();
+    const nextPath = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    router.replace(nextPath, { scroll: false });
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +100,11 @@ export default function Header({
     }
 
     router.push(`/${locale}/user/${user.id}`);
+    setIsDropdownOpen(false);
+  };
+
+  const handleSettingsMenuClick = () => {
+    replaceSettingsQueryState(true);
     setIsDropdownOpen(false);
   };
 
@@ -198,24 +218,12 @@ export default function Header({
           {isLoggedIn && !isLoading && (
             <button
               onClick={handleWritePostClick}
-              className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-full
-                     bg-secondary text-secondary-foreground text-sm font-medium
+              className="hidden md:inline-flex md:mr-2 h-9 w-[100px] items-center justify-center gap-2.5 rounded-lg
+                     bg-comment-submit-button text-white text-sm font-semibold
                      transition-colors duration-200
-                     hover:bg-secondary/90"
+                     hover:bg-comment-submit-button-hover"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
+              <PenLine className="h-3.5 w-3.5" />
               <span>{t("writePost")}</span>
             </button>
           )}
@@ -252,9 +260,9 @@ export default function Header({
               </button>
 
               {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-popover text-popover-foreground rounded-md shadow-lg border border-border py-1 z-[400]">
-                  <div className="px-4 py-2 border-b border-border">
-                    <p className="text-sm font-medium text-foreground truncate">
+              <div className="absolute right-0 mt-2 w-52 bg-popover text-popover-foreground rounded-md shadow-lg border border-border py-1 z-[400]">
+                  <div className="px-3 py-2 border-b border-border">
+                    <p className="text-sm font-semibold text-foreground truncate">
                       {user.name}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
@@ -263,15 +271,30 @@ export default function Header({
                   </div>
                   <button
                     onClick={handleMyPostsMenuClick}
-                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors"
+                    className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
                   >
-                    {t("myPosts")}
+                    <span className="inline-flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      {t("myPosts")}
+                    </span>
+                  </button>
+                  <button
+                    onClick={handleSettingsMenuClick}
+                    className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-muted-foreground" />
+                      {t("settings")}
+                    </span>
                   </button>
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors"
+                    className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
                   >
-                    {t("logout")}
+                    <span className="inline-flex items-center gap-2">
+                      <LogOut className="h-4 w-4 text-muted-foreground" />
+                      {t("logout")}
+                    </span>
                   </button>
                 </div>
               )}
@@ -301,8 +324,6 @@ export default function Header({
             </button>
           )}
 
-          <LocaleSwitcher />
-          <ThemeModeDropdown />
         </div>
       </div>
 
@@ -311,6 +332,13 @@ export default function Header({
         onMyPostsClick={handleMyPostsClick}
         onModeNavigate={handleModeNavigate}
         onWritePost={handleWritePostClick}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => {
+          replaceSettingsQueryState(false);
+        }}
       />
     </header>
   );
