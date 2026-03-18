@@ -388,11 +388,11 @@ export function usePostDetail(postId: string) {
 
     try {
       await banMutation.mutateAsync(targetUserId);
+      setPost(() => null);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.user.bans() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.posts.all }),
       ]);
-      alert(t("reportSubmitted"));
     } catch (error: unknown) {
       if (isBanApiError(error)) {
         if (error.code === "UNAUTHORIZED") {
@@ -401,7 +401,7 @@ export function usePostDetail(postId: string) {
         }
 
         if (error.code === "CONFLICT") {
-          alert(t("reportSubmitted"));
+          setPost(() => null);
           return;
         }
 
