@@ -3,14 +3,42 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useQuery } from "@tanstack/react-query";
 import Header from "../components/Header";
 import PostCard from "../components/PostCard";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode, Post } from "../types";
-import {
-  DUMMY_COMPANY_POSTS,
-  DUMMY_COMMUNITY_POSTS,
-} from "../data/dummyData";
+import { DUMMY_COMPANY_POSTS } from "../data/dummyData";
+import { fetchCommunityPostList } from "../services/posts";
+
+const SEARCH_COMMUNITY_FETCH_SIZE = 50;
+const SEARCH_COMMUNITY_MAX_PAGES = 10;
+
+async function fetchCommunityPostsForSearch(): Promise<Post[]> {
+  const postsById = new Map<string, Post>();
+  let cursor: string | undefined;
+
+  for (let page = 0; page < SEARCH_COMMUNITY_MAX_PAGES; page += 1) {
+    const result = await fetchCommunityPostList({
+      cursor,
+      size: SEARCH_COMMUNITY_FETCH_SIZE,
+      period: "ALL",
+      sort: "LATEST",
+    });
+
+    result.posts.forEach((post) => {
+      postsById.set(post.id, post);
+    });
+
+    if (!result.nextCursor) {
+      break;
+    }
+
+    cursor = result.nextCursor;
+  }
+
+  return Array.from(postsById.values());
+}
 
 function filterPosts(posts: Post[], query: string) {
   const q = query.trim().toLowerCase();
@@ -18,6 +46,8 @@ function filterPosts(posts: Post[], query: string) {
 
   return posts.filter((post) => {
     if (post.title.toLowerCase().includes(q)) return true;
+
+    if (post.content?.toLowerCase().includes(q)) return true;
 
     if (post.tags?.some((tag) => tag.name.toLowerCase().includes(q))) {
       return true;
@@ -47,9 +77,15 @@ export default function SearchPage() {
     setCommittedQuery(initialQuery);
   }, [initialQuery]);
 
+  const communityPostsQuery = useQuery({
+    queryKey: ["search", "community-posts"],
+    queryFn: fetchCommunityPostsForSearch,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const posts = useMemo(
-    () => [...DUMMY_COMPANY_POSTS, ...DUMMY_COMMUNITY_POSTS],
-    []
+    () => [...DUMMY_COMPANY_POSTS, ...(communityPostsQuery.data ?? [])],
+    [communityPostsQuery.data],
   );
 
   const results = useMemo(
@@ -104,6 +140,10 @@ export default function SearchPage() {
             <p className="text-sm text-muted-foreground">
               {t("emptyPrompt")}
             </p>
+          </div>
+        ) : communityPostsQuery.isPending ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-sm text-muted-foreground">{t("loading")}</p>
           </div>
         ) : results.length > 0 ? (
           <div className="flex flex-col gap-6">
