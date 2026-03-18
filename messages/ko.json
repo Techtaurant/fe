@@ -4,7 +4,7 @@
     "companyBlogs": "기업 블로그",
     "community": "커뮤니티",
     "searchPlaceholder": "검색",
-    "writePost": "게시물 작성",
+    "writePost": "글쓰기",
     "profile": "프로필",
     "logout": "로그아웃",
     "login": "로그인",
@@ -144,6 +144,7 @@
   "SearchPage": {
     "placeholder": "검색어를 입력하세요",
     "emptyPrompt": "검색어를 입력하면 결과가 표시됩니다.",
+    "loading": "검색 결과를 불러오는 중입니다.",
     "noResults": "검색 결과가 없습니다."
   },
   "DraftsPage": {
@@ -179,8 +180,27 @@
   "SettingsPage": {
     "title": "설정",
     "description": "화면 테마, 언어, 차단 계정을 관리할 수 있습니다.",
+    "closeAria": "설정 닫기",
     "loginRequired": "설정은 로그인 후 이용할 수 있습니다.",
     "loginAction": "로그인하기",
+    "tabs": {
+      "general": "일반",
+      "management": "관리"
+    },
+    "management": {
+      "profile": "프로필",
+      "edit": "편집",
+      "blockedAccounts": "차단한 계정"
+    },
+    "blockedModal": {
+      "title": "차단한 계정",
+      "closeAria": "차단한 계정 창 닫기",
+      "loading": "차단한 계정을 불러오는 중입니다.",
+      "empty": "차단한 계정이 없어요",
+      "unblockAction": "차단 해제",
+      "unblocking": "처리 중...",
+      "unblockFailed": "차단 해제에 실패했습니다."
+    },
     "theme": {
       "title": "화면 테마",
       "description": "앱에 적용할 밝기 모드를 선택하세요."

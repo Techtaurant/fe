@@ -55,3 +55,4 @@ conf/ssl
 
 # qa artifacts
 .qa-artifacts/
+scripts

@@ -4,7 +4,7 @@
     "companyBlogs": "企業ブログ",
     "community": "コミュニティ",
     "searchPlaceholder": "検索",
-    "writePost": "投稿作成",
+    "writePost": "投稿",
     "profile": "プロフィール",
     "logout": "ログアウト",
     "login": "ログイン",
@@ -144,6 +144,7 @@
   "SearchPage": {
     "placeholder": "キーワードを入力してください",
     "emptyPrompt": "キーワードを入力すると検索結果が表示されます。",
+    "loading": "検索結果を読み込み中です。",
     "noResults": "検索結果がありません。"
   },
   "DraftsPage": {
@@ -179,8 +180,27 @@
   "SettingsPage": {
     "title": "設定",
     "description": "画面テーマ、言語、ブロックしたアカウントを管理できます。",
+    "closeAria": "設定を閉じる",
     "loginRequired": "設定を利用するにはログインが必要です。",
     "loginAction": "ログイン",
+    "tabs": {
+      "general": "一般",
+      "management": "管理"
+    },
+    "management": {
+      "profile": "プロフィール",
+      "edit": "編集",
+      "blockedAccounts": "ブロックしたアカウント"
+    },
+    "blockedModal": {
+      "title": "ブロックしたアカウント",
+      "closeAria": "ブロックしたアカウントを閉じる",
+      "loading": "ブロックしたアカウントを読み込み中です。",
+      "empty": "ブロックしたアカウントはありません",
+      "unblockAction": "ブロック解除",
+      "unblocking": "処理中...",
+      "unblockFailed": "ブロック解除に失敗しました。"
+    },
     "theme": {
       "title": "画面テーマ",
       "description": "アプリに適用する表示モードを選択してください。"

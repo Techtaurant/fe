@@ -4,7 +4,7 @@
     "companyBlogs": "企业博客",
     "community": "社区",
     "searchPlaceholder": "搜索",
-    "writePost": "写文章",
+    "writePost": "撰写",
     "profile": "个人资料",
     "logout": "退出登录",
     "login": "登录",
@@ -144,6 +144,7 @@
   "SearchPage": {
     "placeholder": "请输入关键词",
     "emptyPrompt": "输入关键词后将显示搜索结果。",
+    "loading": "正在加载搜索结果...",
     "noResults": "暂无搜索结果。"
   },
   "DraftsPage": {
@@ -179,8 +180,27 @@
   "SettingsPage": {
     "title": "设置",
     "description": "可管理主题、语言和已拉黑账号。",
+    "closeAria": "关闭设置",
     "loginRequired": "登录后可使用设置功能。",
     "loginAction": "登录",
+    "tabs": {
+      "general": "通用",
+      "management": "管理"
+    },
+    "management": {
+      "profile": "个人资料",
+      "edit": "编辑",
+      "blockedAccounts": "已拉黑账号"
+    },
+    "blockedModal": {
+      "title": "已拉黑账号",
+      "closeAria": "关闭已拉黑账号",
+      "loading": "正在加载已拉黑账号...",
+      "empty": "没有已拉黑账号",
+      "unblockAction": "解除拉黑",
+      "unblocking": "处理中...",
+      "unblockFailed": "解除拉黑失败。"
+    },
     "theme": {
       "title": "显示主题",
       "description": "选择应用的显示模式。"
