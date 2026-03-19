@@ -48,6 +48,10 @@ export default function PostDetailPage() {
     setCommentsSort,
     createCommentFieldErrors,
     clearCreateCommentFieldError,
+    handleUpdateComment,
+    handleDeleteComment,
+    updatingCommentId,
+    deletingCommentId,
     handleLoadMoreComments,
     handleCreateComment,
   } = useComments(postId, () => {
@@ -105,17 +109,17 @@ export default function PostDetailPage() {
       commentsSort={commentsSort}
       createCommentFieldErrors={createCommentFieldErrors}
       currentUserId={user?.id ?? null}
-        onBack={() => router.back()}
-        onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
-        onAuthorClick={
-          post.author?.id
-            ? () => {
-                router.push(`/${locale}/user/${post.author?.id}`);
-              }
-            : undefined
-        }
-        onToggleVisibility={handleToggleVisibility}
-        onDelete={async () => {
+      onBack={() => router.back()}
+      onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
+      onAuthorClick={
+        post.author?.id
+          ? () => {
+              router.push(`/${locale}/user/${post.author?.id}`);
+            }
+          : undefined
+      }
+      onToggleVisibility={handleToggleVisibility}
+      onDelete={async () => {
         const deleted = await handleDelete();
         if (deleted) {
           router.replace(`/${locale}?mode=user`);
@@ -129,9 +133,13 @@ export default function PostDetailPage() {
       onToggleRead={handleToggleRead}
       onShare={handleShare}
       onCreateComment={handleCreateComment}
+      onUpdateComment={handleUpdateComment}
+      onDeleteComment={handleDeleteComment}
       onClearCommentFieldError={clearCreateCommentFieldError}
       onLoadMoreComments={handleLoadMoreComments}
       onCommentsSortChange={setCommentsSort}
+      updatingCommentId={updatingCommentId}
+      deletingCommentId={deletingCommentId}
       isVisibilityUpdating={isVisibilityUpdating}
       isDeleting={isDeleting}
     />

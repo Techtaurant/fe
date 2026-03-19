@@ -40,7 +40,7 @@ export default function WriteActions({
               type="button"
               disabled={isPublishActionDisabled}
               onClick={onSaveDraft}
-              className="px-4 py-2.5 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+              className="px-4 py-2.5 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 save-action-button"
             >
               {isSubmitting ? t("saving") : t("saveDraft")}
             </button>

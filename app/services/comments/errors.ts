@@ -36,6 +36,17 @@ export interface CreateCommentErrorResolution {
   alertMessage: string | null;
 }
 
+export interface UpdateCommentErrorResolution {
+  shouldRedirectToLogin: boolean;
+  fieldErrors: ValidationErrors | null;
+  alertMessage: string | null;
+}
+
+export interface DeleteCommentErrorResolution {
+  shouldRedirectToLogin: boolean;
+  alertMessage: string | null;
+}
+
 export function resolveFetchCommentsError(
   error: unknown,
 ): FetchCommentsErrorResolution {
@@ -111,5 +122,105 @@ export function resolveCreateCommentError(
     shouldRedirectToLogin: false,
     fieldErrors: null,
     alertMessage: "댓글 작성에 실패했습니다.",
+  };
+}
+
+export function resolveUpdateCommentError(
+  error: unknown,
+): UpdateCommentErrorResolution {
+  const message = getErrorMessage(error);
+
+  if (message === "UNAUTHORIZED") {
+    return {
+      shouldRedirectToLogin: true,
+      fieldErrors: null,
+      alertMessage: null,
+    };
+  }
+
+  if (message === "FORBIDDEN") {
+    return {
+      shouldRedirectToLogin: false,
+      fieldErrors: null,
+      alertMessage: "댓글 작성자만 수정할 수 있습니다.",
+    };
+  }
+
+  if (message === "NOT_FOUND") {
+    return {
+      shouldRedirectToLogin: false,
+      fieldErrors: null,
+      alertMessage: "댓글을 찾을 수 없습니다.",
+    };
+  }
+
+  if (message === "GONE") {
+    return {
+      shouldRedirectToLogin: false,
+      fieldErrors: null,
+      alertMessage: "이미 삭제된 댓글입니다.",
+    };
+  }
+
+  if (message === "BAD_REQUEST") {
+    const errors = getValidationErrors(error);
+    if (errors) {
+      return {
+        shouldRedirectToLogin: false,
+        fieldErrors: errors,
+        alertMessage: null,
+      };
+    }
+
+    return {
+      shouldRedirectToLogin: false,
+      fieldErrors: null,
+      alertMessage: "댓글 내용이 유효하지 않습니다.",
+    };
+  }
+
+  return {
+    shouldRedirectToLogin: false,
+    fieldErrors: null,
+    alertMessage: "댓글 수정에 실패했습니다.",
+  };
+}
+
+export function resolveDeleteCommentError(
+  error: unknown,
+): DeleteCommentErrorResolution {
+  const message = getErrorMessage(error);
+
+  if (message === "UNAUTHORIZED") {
+    return {
+      shouldRedirectToLogin: true,
+      alertMessage: null,
+    };
+  }
+
+  if (message === "FORBIDDEN") {
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: "댓글 작성자만 삭제할 수 있습니다.",
+    };
+  }
+
+  if (message === "NOT_FOUND") {
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: "댓글을 찾을 수 없습니다.",
+    };
+  }
+
+  if (message === "GONE") {
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: "이미 삭제된 댓글입니다.",
+    };
+  }
+
+  return {
+    shouldRedirectToLogin: false,
+    alertMessage: "댓글 삭제에 실패했습니다.",
   };
 }

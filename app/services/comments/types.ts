@@ -14,6 +14,28 @@ export interface CreateCommentResponse {
     authorName: string;
     parentId?: string | null;
     depth: number;
+    isDeleted: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  message: string;
+}
+
+export interface UpdateCommentRequest {
+  content: string;
+}
+
+export interface UpdateCommentResponse {
+  status: number | Record<string, unknown>;
+  data: {
+    id: string;
+    content: string;
+    postId: string;
+    authorId: string;
+    authorName: string;
+    parentId?: string | null;
+    depth: number;
+    isDeleted: boolean;
     createdAt: string;
     updatedAt: string;
   };
@@ -54,6 +76,7 @@ export interface CommentListResponse {
   authorProfileImageUrl: string | null;
   parentId?: string | null;
   depth: number;
+  isDeleted: boolean;
   likeCount: number;
   replyCount: number;
   likeStatus?: "NONE" | "LIKE" | "DISLIKE";
