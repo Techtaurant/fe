@@ -200,7 +200,7 @@ export default function WritePostPage() {
             handleRemoveTag={form.handleRemoveTag}
           />
 
-          {form.error && !(form.fieldErrors.title || form.fieldErrors.content) && (
+          {form.error && !(form.fieldErrors.title || form.fieldErrors.content || form.fieldErrors.category) && (
             <div className="mb-6 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
               {form.error}
             </div>

@@ -3,6 +3,7 @@ import { CreatePostRequest, CreatePostResponse, PostStatus } from "@/app/types";
 export interface FieldErrors {
   title: boolean;
   content: boolean;
+  category: boolean;
 }
 
 export interface SavePostVariables {

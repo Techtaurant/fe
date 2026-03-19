@@ -3,7 +3,7 @@
     "openMenu": "メニューを開く",
     "companyBlogs": "企業ブログ",
     "community": "コミュニティ",
-    "searchPlaceholder": "検索...",
+    "searchPlaceholder": "検索",
     "writePost": "投稿作成",
     "profile": "プロフィール",
     "logout": "ログアウト",
@@ -124,6 +124,15 @@
     "loadFailed": "コミュニティ投稿の読み込みに失敗しました。",
     "reachedEnd": "最後の投稿まで読み込みました 🎉"
   },
+  "HomePage": {
+    "clearAll": "すべて解除",
+    "andMore": "他 {count}件",
+    "unknownTag": "タグ"
+  },
+  "TagFeedPage": {
+    "invalidTag": "無効なタグリクエストです。正しいタグリンクを確認してください。",
+    "fallbackTag": "タグ"
+  },
   "SearchPage": {
     "placeholder": "キーワードを入力してください",
     "emptyPrompt": "キーワードを入力すると検索結果が表示されます。",
@@ -218,6 +227,7 @@
       "titleRequired": "タイトルを入力してください。",
       "category": "カテゴリ",
       "categoryPlaceholder": "例: java/spring/deepdive",
+      "categoryRequired": "カテゴリを入力してください。",
       "tags": "タグ",
       "tagsPlaceholder": "タグを入力して Enter を押してください",
       "removeTag": "{tag} を削除"

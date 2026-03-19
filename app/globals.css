@@ -35,6 +35,7 @@
   --color-comment-submit-button: var(--comment-submit-button);
   --color-comment-submit-button-hover: var(--comment-submit-button-hover);
   --color-comment-input-hover: var(--comment-input-hover);
+  --color-search-input-background: var(--search-input-background);
   --color-comment-sort-button: var(--comment-sort-button);
   --color-comment-sort-button-hover: var(--comment-sort-button-hover);
   --color-comment-author-badge-background: var(--comment-author-badge-background);
@@ -83,11 +84,11 @@
   --popover-foreground: #202124;
   --primary: #202124;
   --primary-foreground: #F8F9FA;
-  --secondary: #F1F3F4;
+  --secondary: #F3F4F5;
   --secondary-foreground: #3C4043;
-  --muted: #F1F3F4;
+  --muted: #F3F4F5;
   --muted-foreground: #5F6368;
-  --accent: #F1F3F4;
+  --accent: #F3F4F5;
   --accent-foreground: #3C4043;
   --destructive: #C94A3C;
   --warning: #FFC017;
@@ -103,6 +104,7 @@
   --comment-submit-button: #3182F6;
   --comment-submit-button-hover: #2676EE;
   --comment-input-hover: #F3F4F6;
+  --search-input-background: #F3F4F5;
   --comment-sort-button: #EDEFF1;
   --comment-sort-button-hover: #E6E8EA;
   --comment-author-badge-background: #E8F2FF;
@@ -119,7 +121,7 @@
   --sidebar-foreground: #202124;
   --sidebar-primary: #202124;
   --sidebar-primary-foreground: #F8F9FA;
-  --sidebar-accent: #F1F3F4;
+  --sidebar-accent: #F3F4F5;
   --sidebar-accent-foreground: #3C4043;
   --sidebar-border: #DADCE0;
   --sidebar-ring: #9AA0A6;
@@ -177,6 +179,7 @@
   --comment-submit-button: #3585FA;
   --comment-submit-button-hover: #3E92FE;
   --comment-input-hover: #3C3C3C;
+  --search-input-background: #262626;
   --comment-sort-button: #2C2C36;
   --comment-sort-button-hover: #3D3C47;
   --comment-author-badge-background: #1E2D49;

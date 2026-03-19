@@ -21,7 +21,7 @@
     },
     "gray": {
       "50": "#F8F9FA",
-      "100": "#F1F3F4",
+      "100": "#F3F4F5",
       "200": "#E8EAED",
       "300": "#DADCE0",
       "400": "#BDC1C6",
@@ -40,7 +40,7 @@
     },
     "background": {
       "default": "#F8F9FA",
-      "subtle": "#F1F3F4",
+      "subtle": "#F3F4F5",
       "hover": "#E8EAED",
       "banner": "#FFF4CC",
       "cardHover": "#F6F7F8",

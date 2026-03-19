@@ -13,7 +13,7 @@ import {
   readPendingPublishSnapshot,
   writePendingPublishSnapshot,
 } from "../lib/storage";
-import { SavePostResult, SavePostVariables } from "../lib/types";
+import { FieldErrors, SavePostResult, SavePostVariables } from "../lib/types";
 
 interface UsePublishFlowParams {
   user: unknown;
@@ -22,7 +22,7 @@ interface UsePublishFlowParams {
   draftDetailHasError: boolean;
   queryClient: QueryClient;
   draftCountQueryKey: readonly unknown[];
-  validateRequiredFields: () => boolean;
+  validateRequiredFields: (options?: { requireCategory?: boolean }) => boolean;
   buildPostPayload: (status: PostStatus) => CreatePostRequest;
   clearEditorState: () => void;
   clearLocalDraftSnapshot: () => void;
@@ -33,7 +33,7 @@ interface UsePublishFlowParams {
   setError: (value: string | null) => void;
   setSuccess: (value: string | null) => void;
   setAutoSaveNotice: (value: string | null) => void;
-  setFieldErrors: (value: { title: boolean; content: boolean }) => void;
+  setFieldErrors: (value: FieldErrors) => void;
   setIsAuthExpiredModalOpen: (value: boolean) => void;
   setIsPublishModalOpen: (value: boolean) => void;
 }
@@ -120,7 +120,7 @@ export function usePublishFlow({
       setError(null);
       setSuccess(null);
       setAutoSaveNotice(null);
-      setFieldErrors({ title: false, content: false });
+      setFieldErrors({ title: false, content: false, category: false });
     },
     onSuccess: async ({ result, status, requestedDraftId, source }) => {
       if (source === "resume") {
@@ -213,7 +213,7 @@ export function usePublishFlow({
   });
 
   const handleSubmit = async (status: PostStatus) => {
-    if (!validateRequiredFields()) return;
+    if (!validateRequiredFields({ requireCategory: status !== "DRAFT" })) return;
     if (editablePostId && draftDetailHasError) return;
     const payload = buildPostPayload(status);
     await savePostMutation.mutateAsync({
@@ -249,7 +249,7 @@ export function usePublishFlow({
   };
 
   const openPublishModal = () => {
-    if (validateRequiredFields()) {
+    if (validateRequiredFields({ requireCategory: true })) {
       setIsPublishModalOpen(true);
     }
   };
