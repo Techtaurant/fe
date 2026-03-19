@@ -79,6 +79,7 @@ export async function fetchCommunityPosts(params?: {
   sort?: PostListSort;
   authorId?: string;
   categoryPath?: string;
+  tagIds?: string[];
 }): Promise<PostListResponse> {
   const searchParams = new URLSearchParams();
   if (params?.cursor) searchParams.set("cursor", params.cursor);
@@ -92,6 +93,11 @@ export async function fetchCommunityPosts(params?: {
   }
   if (params?.categoryPath) {
     searchParams.set("categoryPath", params.categoryPath);
+  }
+  if (params?.tagIds && params.tagIds.length > 0) {
+    params.tagIds.forEach((tagId) => {
+      searchParams.append("tagIds", tagId);
+    });
   }
 
   const response = await httpClient(`/open-api/posts?${searchParams.toString()}`, {

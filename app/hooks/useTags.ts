@@ -6,7 +6,12 @@ import { queryKeys } from '../lib/queryKeys';
 import { Tag } from '../types';
 import { httpClient } from '../utils/httpClient';
 import { parseTagCache, TagCachePayload } from '../schemas/tagCache';
-import { TAGS_CACHE_KEY, TAGS_TTL_MS, TAGS_ENDPOINT } from '../constants/tags';
+import {
+  TAGS_CACHE_KEY,
+  TAGS_TTL_MS,
+  TAGS_ENDPOINT,
+  TAGS_PAGE_SIZE,
+} from '../constants/tags';
 
 interface TagListResponse {
   status: number;
@@ -15,6 +20,8 @@ interface TagListResponse {
       id: string;
       name: string;
     }>;
+    nextCursor?: string | null;
+    hasNext?: boolean;
   };
   message?: string;
 }
@@ -24,6 +31,10 @@ interface UseTagsResult {
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
+}
+
+interface UseTagsOptions {
+  fetchAll?: boolean;
 }
 
 const readCache = (): TagCachePayload | null => {
@@ -54,19 +65,78 @@ const mapTags = (result: TagListResponse): Tag[] => {
   }));
 };
 
-export function useTags(initialTags: Tag[] = []): UseTagsResult {
+export function useTags(
+  initialTags: Tag[] = [],
+  options?: UseTagsOptions,
+): UseTagsResult {
+  const fetchAll = options?.fetchAll ?? false;
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.tags.list();
+  const queryScope = fetchAll ? 'all' : 'page';
+  const queryKey = queryKeys.tags.list(queryScope);
 
   const query = useQuery({
     queryKey,
     queryFn: async () => {
-      const response = await httpClient(TAGS_ENDPOINT, { method: 'GET' });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tags: ${response.status}`);
+      if (!fetchAll) {
+        const searchParams = new URLSearchParams();
+        searchParams.set('size', String(TAGS_PAGE_SIZE));
+        const response = await httpClient(
+          `${TAGS_ENDPOINT}?${searchParams.toString()}`,
+          { method: 'GET' },
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tags: ${response.status}`);
+        }
+
+        const result: TagListResponse = await response.json();
+        const nextTags = mapTags(result);
+        writeCache(nextTags);
+        return nextTags;
       }
-      const result: TagListResponse = await response.json();
-      const nextTags = mapTags(result);
+
+      const aggregatedTags: Tag[] = [];
+      const seenTagIds = new Set<string>();
+      const visitedCursors = new Set<string>();
+      let cursor: string | undefined;
+
+      while (true) {
+        const searchParams = new URLSearchParams();
+        searchParams.set('size', String(TAGS_PAGE_SIZE));
+        if (cursor) {
+          searchParams.set('cursor', cursor);
+        }
+
+        const response = await httpClient(
+          `${TAGS_ENDPOINT}?${searchParams.toString()}`,
+          { method: 'GET' },
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tags: ${response.status}`);
+        }
+
+        const result: TagListResponse = await response.json();
+        const pageTags = mapTags(result);
+
+        pageTags.forEach((tag) => {
+          if (seenTagIds.has(tag.id)) {
+            return;
+          }
+
+          seenTagIds.add(tag.id);
+          aggregatedTags.push(tag);
+        });
+
+        const hasNext = Boolean(result?.data?.hasNext);
+        const nextCursor = result?.data?.nextCursor ?? undefined;
+        if (!hasNext || !nextCursor || visitedCursors.has(nextCursor)) {
+          break;
+        }
+
+        visitedCursors.add(nextCursor);
+        cursor = nextCursor;
+      }
+
+      const nextTags = aggregatedTags;
       writeCache(nextTags);
       return nextTags;
     },

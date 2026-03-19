@@ -7,16 +7,20 @@ import { PostListPeriod, PostListSort } from "../services/posts/types";
 
 interface UseFeedFiltersArgs {
   initialMode: FeedMode;
+  initialSelectedTags?: string[];
 }
 
-export function useFeedFilters({ initialMode }: UseFeedFiltersArgs) {
+export function useFeedFilters({
+  initialMode,
+  initialSelectedTags = [],
+}: UseFeedFiltersArgs) {
   const [filterState, setFilterState] = useState<FilterState>({
     mode: initialMode,
     dateRange: "all",
     sortBy: "latest",
     searchUser: "",
     hideReadPosts: false,
-    selectedTags: [],
+    selectedTags: Array.from(new Set(initialSelectedTags.map((id) => id.toLowerCase()))),
     selectedTechBlogs: [],
   });
 
@@ -45,12 +49,16 @@ export function useFeedFilters({ initialMode }: UseFeedFiltersArgs) {
   }, [filterState.sortBy]);
 
   const getVisiblePosts = (posts: Post[]) => {
+    const selectedTagIdSet = new Set(
+      filterState.selectedTags.map((id) => id.toLowerCase()),
+    );
+
     const filteredPosts = posts.filter((post) => {
       if (filterState.hideReadPosts && post.isRead) return false;
 
       if (
-        filterState.selectedTags.length > 0 &&
-        !post.tags?.some((tag) => filterState.selectedTags.includes(tag.id))
+        selectedTagIdSet.size > 0 &&
+        !post.tags?.some((tag) => selectedTagIdSet.has(tag.id.toLowerCase()))
       ) {
         return false;
       }

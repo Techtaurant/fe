@@ -48,6 +48,7 @@ export async function fetchCommunityPostList(params?: {
   sort?: PostListSort;
   authorId?: string;
   categoryPath?: string;
+  tagIds?: string[];
 }): Promise<CommunityPostListResult> {
   const result = await fetchCommunityPosts(params);
   return {

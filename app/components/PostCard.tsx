@@ -68,6 +68,10 @@ function sanitizePostPreview(rawContent: string): string {
     .trim();
 }
 
+function buildTagRoute(locale: string, tagId: string): string {
+  return `/${locale}?mode=user&tagIds=${encodeURIComponent(tagId)}`;
+}
+
 export default function PostCard({
   post,
   onReadStatusChange,
@@ -127,6 +131,8 @@ export default function PostCard({
       ? post.techBlog?.iconUrl
       : post.author?.profileImageUrl;
   const previewContent = post.content ? sanitizePostPreview(post.content) : "";
+  const previewTags = (post.tags ?? []).slice(0, 3);
+  const hiddenTagCount = Math.max((post.tags?.length ?? 0) - previewTags.length, 0);
 
   const isOwnCommunityPost =
     post.type === "community" &&
@@ -243,20 +249,26 @@ export default function PostCard({
           {/* Metadata & Tags */}
           <div className="flex items-center gap-3 md:gap-4 flex-wrap">
             {/* Tags */}
-            {post.tags && post.tags.length > 0 && (
+            {previewTags.length > 0 && (
               <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-                {post.tags.map((tag) => (
-                  <span
+                {previewTags.map((tag) => (
+                  <button
+                    type="button"
                     key={tag.id}
-                    className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/85 text-[10px] md:text-[11px] text-blue-500 hover:bg-muted/30 hover:text-blue-400 transition-colors duration-200"
+                    className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/85 text-[10px] md:text-[11px] font-semibold text-blue-500 hover:bg-muted/30 hover:text-blue-400 transition-colors duration-200"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: 태그 클릭 시 해당 태그로 필터링
+                      router.push(buildTagRoute(locale, tag.id));
                     }}
                   >
                     #{tag.name}
-                  </span>
+                  </button>
                 ))}
+                {hiddenTagCount > 0 && (
+                  <span className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/70 text-[10px] md:text-[11px] text-muted-foreground">
+                    +{hiddenTagCount}
+                  </span>
+                )}
               </div>
             )}
 
