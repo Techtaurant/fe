@@ -32,6 +32,13 @@
   --color-delete-hover: var(--delete-hover);
   --color-save-button: var(--save-button);
   --color-save-button-hover: var(--save-button-hover);
+  --color-comment-submit-button: var(--comment-submit-button);
+  --color-comment-submit-button-hover: var(--comment-submit-button-hover);
+  --color-comment-input-hover: var(--comment-input-hover);
+  --color-comment-sort-button: var(--comment-sort-button);
+  --color-comment-sort-button-hover: var(--comment-sort-button-hover);
+  --color-comment-author-badge-background: var(--comment-author-badge-background);
+  --color-comment-author-badge-foreground: var(--comment-author-badge-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -93,6 +100,13 @@
   --delete-hover: #E42A3A;
   --save-button: #2879F0;
   --save-button-hover: #2273EB;
+  --comment-submit-button: #3182F6;
+  --comment-submit-button-hover: #2676EE;
+  --comment-input-hover: #F3F4F6;
+  --comment-sort-button: #EDEFF1;
+  --comment-sort-button-hover: #E6E8EA;
+  --comment-author-badge-background: #E8F2FF;
+  --comment-author-badge-foreground: #1B64DB;
   --border: #DADCE0;
   --input: #DADCE0;
   --ring: #9AA0A6;
@@ -160,6 +174,13 @@
   --delete-hover: #FA616D;
   --save-button: #3585FA;
   --save-button-hover: #3B8FFD;
+  --comment-submit-button: #3585FA;
+  --comment-submit-button-hover: #3E92FE;
+  --comment-input-hover: #3C3C3C;
+  --comment-sort-button: #2C2C36;
+  --comment-sort-button-hover: #3D3C47;
+  --comment-author-badge-background: #1E2D49;
+  --comment-author-badge-foreground: #61B0FF;
   --border: #4A4A4A;
   --input: #3C3C3C;
   --ring: #5A5A5A;
@@ -316,6 +337,28 @@
 
   .save-action-button {
     @apply bg-save-button text-white hover:bg-save-button-hover transition-colors duration-200;
+  }
+
+  .comment-submit-button {
+    @apply bg-comment-submit-button text-white hover:bg-comment-submit-button-hover transition-colors duration-200;
+  }
+
+  .comment-sort-button {
+    color: var(--muted-foreground);
+    background-color: var(--comment-sort-button);
+    transition-property: color, background-color;
+    transition-duration: 200ms;
+  }
+
+  .comment-sort-button:hover {
+    color: var(--foreground);
+    background-color: var(--comment-sort-button-hover);
+  }
+
+  .comment-author-badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold;
+    color: var(--comment-author-badge-foreground);
+    background-color: var(--comment-author-badge-background);
   }
 }
 

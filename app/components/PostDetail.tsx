@@ -157,6 +157,7 @@ export default function PostDetail({
           onLoadMoreComments={onLoadMoreComments}
           onCommentsSortChange={onCommentsSortChange}
           currentUserId={currentUserId}
+          postAuthorId={post.author?.id ?? null}
           updatingCommentId={updatingCommentId}
           deletingCommentId={deletingCommentId}
           focusRequestKey={commentFocusRequestKey}
