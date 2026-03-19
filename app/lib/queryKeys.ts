@@ -45,6 +45,8 @@ export const queryKeys = {
     all: ["comments"] as const,
     list: (params: { postId: string; sort: string; size: number }) =>
       [...queryKeys.comments.all, params] as const,
+    replies: (params: { commentId: string; sort: string; size: number }) =>
+      [...queryKeys.comments.all, "replies", params] as const,
   },
   tags: {
     all: ["tags"] as const,

@@ -5,8 +5,12 @@ import {
   CreateCommentResponse,
   UpdateCommentRequest,
   UpdateCommentResponse,
+  UpdateCommentLikeRequest,
+  UpdateCommentLikeResponse,
   FetchCommentsRequest,
   FetchCommentsResponse,
+  FetchCommentRepliesRequest,
+  FetchCommentRepliesResponse,
   ValidationErrorApiResponse,
 } from "./types";
 
@@ -226,4 +230,100 @@ export async function fetchCommentsRequest(
 
   const result = await parseJson(response);
   return result as FetchCommentsResponse;
+}
+
+export async function fetchCommentRepliesRequest(
+  payload: FetchCommentRepliesRequest,
+): Promise<FetchCommentRepliesResponse> {
+  const params = new URLSearchParams();
+  if (payload.cursor) params.set("cursor", payload.cursor);
+  if (payload.size) params.set("size", String(payload.size));
+  if (payload.sort) params.set("sort", payload.sort);
+
+  const query = params.toString();
+  const response = await httpClient(
+    `/open-api/comments/${payload.commentId}/replies${query ? `?${query}` : ""}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (response.status === 404) {
+    throw new CommentApiError("NOT_FOUND", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 400) {
+    const body =
+      (await parseJson(response).catch(() => null)) as
+        | ValidationErrorApiResponse
+        | FetchCommentRepliesResponse
+        | null;
+    throw new CommentApiError("BAD_REQUEST", {
+      status: response.status,
+      validationErrors: extractValidationErrors(body),
+      message: "BAD_REQUEST",
+    });
+  }
+
+  if (!response.ok) {
+    throw new CommentApiError("HTTP_ERROR", {
+      status: response.status,
+      message: `HTTP_${response.status}`,
+    });
+  }
+
+  const result = await parseJson(response);
+  return result as FetchCommentRepliesResponse;
+}
+
+export async function updateCommentLikeRequest(
+  commentId: string,
+  payload: UpdateCommentLikeRequest,
+): Promise<UpdateCommentLikeResponse> {
+  const response = await httpClient(`/api/comments/${commentId}/like`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (response.status === 401) {
+    throw new CommentApiError("UNAUTHORIZED", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 403) {
+    throw new CommentApiError("FORBIDDEN", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 404) {
+    throw new CommentApiError("NOT_FOUND", {
+      status: response.status,
+    });
+  }
+
+  if (response.status === 400) {
+    const body = (await parseJson(response).catch(() => null)) as
+      | ValidationErrorApiResponse
+      | UpdateCommentLikeResponse
+      | null;
+    throw new CommentApiError("BAD_REQUEST", {
+      status: response.status,
+      validationErrors: extractValidationErrors(body),
+      message: "BAD_REQUEST",
+    });
+  }
+
+  if (!response.ok) {
+    throw new CommentApiError("HTTP_ERROR", {
+      status: response.status,
+      message: `HTTP_${response.status}`,
+    });
+  }
+
+  const result = await parseJson(response);
+  return result as UpdateCommentLikeResponse;
 }

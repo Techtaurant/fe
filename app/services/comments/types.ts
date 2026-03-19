@@ -25,6 +25,17 @@ export interface UpdateCommentRequest {
   content: string;
 }
 
+export type LikeStatus = "NONE" | "LIKE" | "DISLIKE";
+
+export interface UpdateCommentLikeRequest {
+  likeStatus: LikeStatus;
+}
+
+export interface UpdateCommentLikeResponse {
+  status: number | Record<string, unknown>;
+  message: string;
+}
+
 export interface UpdateCommentResponse {
   status: number | Record<string, unknown>;
   data: {
@@ -67,6 +78,13 @@ export interface FetchCommentsRequest {
   sort?: CommentSort;
 }
 
+export interface FetchCommentRepliesRequest {
+  commentId: string;
+  cursor?: string;
+  size?: number;
+  sort?: CommentSort;
+}
+
 export interface CommentListResponse {
   id: string;
   content: string;
@@ -80,7 +98,7 @@ export interface CommentListResponse {
   isBanned?: boolean;
   likeCount: number;
   replyCount: number;
-  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
+  likeStatus?: LikeStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -93,6 +111,12 @@ export interface CursorPageResponse<T> {
 }
 
 export interface FetchCommentsResponse {
+  status: number | Record<string, unknown>;
+  data: CursorPageResponse<CommentListResponse>;
+  message: string;
+}
+
+export interface FetchCommentRepliesResponse {
   status: number | Record<string, unknown>;
   data: CursorPageResponse<CommentListResponse>;
   message: string;

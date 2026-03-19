@@ -47,6 +47,11 @@ export interface DeleteCommentErrorResolution {
   alertMessage: string | null;
 }
 
+export interface CommentLikeErrorResolution {
+  shouldRedirectToLogin: boolean;
+  alertMessage: string | null;
+}
+
 export function resolveFetchCommentsError(
   error: unknown,
 ): FetchCommentsErrorResolution {
@@ -222,5 +227,46 @@ export function resolveDeleteCommentError(
   return {
     shouldRedirectToLogin: false,
     alertMessage: "댓글 삭제에 실패했습니다.",
+  };
+}
+
+export function resolveCommentLikeError(
+  error: unknown,
+): CommentLikeErrorResolution {
+  const message = getErrorMessage(error);
+
+  if (message === "UNAUTHORIZED") {
+    return {
+      shouldRedirectToLogin: true,
+      alertMessage: null,
+    };
+  }
+
+  if (message === "FORBIDDEN") {
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: "댓글 반응 권한이 없습니다.",
+    };
+  }
+
+  if (message === "NOT_FOUND") {
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: "댓글을 찾을 수 없습니다.",
+    };
+  }
+
+  if (message === "BAD_REQUEST") {
+    const errors = getValidationErrors(error);
+    const validationMessage = errors ? getFirstValidationErrorMessage(errors) : null;
+    return {
+      shouldRedirectToLogin: false,
+      alertMessage: validationMessage || "댓글 반응 요청이 올바르지 않습니다.",
+    };
+  }
+
+  return {
+    shouldRedirectToLogin: false,
+    alertMessage: "댓글 반응 처리에 실패했습니다.",
   };
 }

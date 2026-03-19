@@ -38,6 +38,7 @@ export interface Post {
   categoryId?: string;
   viewCount: number;
   likeCount?: number;
+  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
   commentCount?: number;
   tags?: Tag[];
   techBlog?: TechBlog; // 기업 블로그 글일 경우
@@ -54,6 +55,7 @@ export interface Comment {
   author: User;
   createdAt: string;
   likeCount: number;
+  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
   replyCount: number;
   isDeleted: boolean;
   isBanned?: boolean;
