@@ -208,7 +208,7 @@ export default function PostCard({
               {formatDisplayTime(post.publishedAt, locale)}
             </span>
             {post.type === "community" && post.status === "PRIVATE" && (
-              <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/60 px-2 py-0.5 text-[11px] font-semibold leading-none text-amber-900">
+              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
                 {t("private")}
               </span>
             )}

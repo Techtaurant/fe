@@ -56,6 +56,7 @@ export interface Comment {
   likeCount: number;
   replyCount: number;
   isDeleted: boolean;
+  isBanned?: boolean;
   depth?: number;
   parentId?: string | null;
 }

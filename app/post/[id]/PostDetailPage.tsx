@@ -31,6 +31,7 @@ export default function PostDetailPage() {
     handleToggleVisibility,
     handleDelete,
     handleReport,
+    isReporting,
     isVisibilityUpdating,
     isDeleting,
   } = usePostDetail(postId);
@@ -48,8 +49,10 @@ export default function PostDetailPage() {
     handleDeleteComment,
     updatingCommentId,
     deletingCommentId,
+    banningCommentAuthorId,
     handleLoadMoreComments,
     handleCreateComment,
+    handleBanCommentAuthor,
   } = useComments(postId, () => {
     setPost((current) => {
       if (!current) return current;
@@ -131,13 +134,16 @@ export default function PostDetailPage() {
       onCreateComment={handleCreateComment}
       onUpdateComment={handleUpdateComment}
       onDeleteComment={handleDeleteComment}
+      onBanCommentAuthor={handleBanCommentAuthor}
       onClearCommentFieldError={clearCreateCommentFieldError}
       onLoadMoreComments={handleLoadMoreComments}
       onCommentsSortChange={setCommentsSort}
       updatingCommentId={updatingCommentId}
       deletingCommentId={deletingCommentId}
+      banningCommentAuthorId={banningCommentAuthorId}
       isVisibilityUpdating={isVisibilityUpdating}
       isDeleting={isDeleting}
+      isReporting={isReporting}
     />
   );
 }

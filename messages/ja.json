@@ -8,7 +8,8 @@
     "profile": "プロフィール",
     "logout": "ログアウト",
     "login": "ログイン",
-    "myPosts": "自分の記事"
+    "myPosts": "自分の記事",
+    "settings": "設定"
   },
   "BottomNav": {
     "home": "ホーム",
@@ -82,13 +83,16 @@
     "privateBadge": "非公開",
     "menuOpen": "その他メニューを開く",
     "menuEdit": "編集",
-    "menuToggleToPrivate": "非公開にする",
-    "menuToggleToPublic": "公開にする",
+    "menuToggleToPrivate": "非公開",
+    "menuToggleToPublic": "公開",
     "menuDelete": "削除",
     "menuReport": "ブロック",
     "deleteConfirmTitle": "この投稿を削除しますか？",
     "deleteConfirmDescription": "削除した投稿は復元できません。",
     "deleteConfirmAction": "削除する",
+    "visibilityConfirmToPrivateTitle": "この投稿を非公開にしますか？",
+    "visibilityConfirmToPublicTitle": "この投稿を公開にしますか？",
+    "visibilityConfirmDescription": "設定はいつでも変更できます。",
     "reportConfirmTitle": "このユーザーをブロックしますか？",
     "reportConfirmDescription": "ブロックすると、このユーザーの投稿やコメントが表示されなくなります。",
     "reportConfirmAction": "ブロック",
@@ -109,6 +113,10 @@
     "commentEdit": "編集",
     "commentSave": "保存",
     "commentDelete": "削除",
+    "commentBan": "ブロック",
+    "commentBanConfirmTitle": "このユーザーをブロックしますか？",
+    "commentBannedAuthor": "ブロックしたユーザー",
+    "commentBannedContent": "このコメントはブロックしたユーザーによるものです。",
     "commentDeleteConfirm": "このコメントを削除しますか？",
     "commentDeleted": "このコメントは削除されました。",
     "commentDeletedByAuthor": "このコメントは作成者によって削除されました。",
@@ -165,7 +173,38 @@
     "deleteForbidden": "他人の投稿は削除できません。",
     "deleteFailed": "投稿の削除に失敗しました。",
     "reportSubmitted": "ブロックしました。",
+    "reportFailed": "ユーザーをブロックできませんでした。",
     "editNotReady": "編集機能はまもなく提供予定です。"
+  },
+  "SettingsPage": {
+    "title": "設定",
+    "description": "画面テーマ、言語、ブロックしたアカウントを管理できます。",
+    "loginRequired": "設定を利用するにはログインが必要です。",
+    "loginAction": "ログイン",
+    "theme": {
+      "title": "画面テーマ",
+      "description": "アプリに適用する表示モードを選択してください。"
+    },
+    "language": {
+      "title": "言語",
+      "description": "アプリで表示する言語を選択してください。"
+    },
+    "locale": {
+      "ko": "韓国語",
+      "en": "英語",
+      "ja": "日本語",
+      "zh": "中国語"
+    },
+    "bans": {
+      "title": "管理（ブロックしたアカウント）",
+      "description": "ブロックしたアカウントを確認し、解除できます。",
+      "loading": "ブロックしたアカウントを読み込み中です。",
+      "empty": "ブロックしたアカウントはありません。",
+      "bannedAt": "ブロック日時: {date}",
+      "unbanAction": "ブロック解除",
+      "unbanning": "解除中...",
+      "unbanFailed": "ブロック解除に失敗しました。"
+    }
   },
   "OAuthCallback": {
     "processing": "ログイン処理中..."

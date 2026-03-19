@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, UserX } from "lucide-react";
 import { Comment } from "@/app/types";
 import { CommentSort } from "@/app/services/comments/types";
 import { ValidationErrors } from "@/app/services/comments/apiError";
@@ -12,6 +12,7 @@ import PostDetailConfirmDialog, {
   DELETE_CONFIRM_BUTTON_CLASS_NAME,
   CANCEL_CONFIRM_BUTTON_CLASS_NAME,
 } from "./PostDetailConfirmDialog";
+import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
 
 interface PostDetailCommentsSectionProps {
   comments: Comment[];
@@ -23,6 +24,7 @@ interface PostDetailCommentsSectionProps {
   onCreateComment: (content: string) => Promise<void>;
   onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
   onDeleteComment: (commentId: string) => Promise<boolean>;
+  onBanCommentAuthor: (targetUserId: string) => Promise<boolean>;
   onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
@@ -30,6 +32,7 @@ interface PostDetailCommentsSectionProps {
   postAuthorId?: string | null;
   updatingCommentId: string | null;
   deletingCommentId: string | null;
+  banningCommentAuthorId: string | null;
   focusRequestKey: number;
 }
 
@@ -43,6 +46,7 @@ export default function PostDetailCommentsSection({
   onCreateComment,
   onUpdateComment,
   onDeleteComment,
+  onBanCommentAuthor,
   onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
@@ -50,6 +54,7 @@ export default function PostDetailCommentsSection({
   postAuthorId,
   updatingCommentId,
   deletingCommentId,
+  banningCommentAuthorId,
   focusRequestKey,
 }: PostDetailCommentsSectionProps) {
   const t = useTranslations("PostDetail");
@@ -65,6 +70,9 @@ export default function PostDetailCommentsSection({
   const [isEditingActionsBelow, setIsEditingActionsBelow] = useState(false);
   const [activeMenuCommentId, setActiveMenuCommentId] = useState<string | null>(null);
   const [deletingCommentTargetId, setDeletingCommentTargetId] = useState<string | null>(null);
+  const [banningCommentAuthorTargetId, setBanningCommentAuthorTargetId] = useState<string | null>(
+    null,
+  );
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
   const collapsedTextareaHeight = "44px";
   const commentFieldErrorMessage =
@@ -199,6 +207,24 @@ export default function PostDetailCommentsSection({
     setDeletingCommentTargetId(null);
   };
 
+  const requestBanCommentAuthor = (targetUserId: string) => {
+    closeCommentMenu();
+    setBanningCommentAuthorTargetId(targetUserId);
+  };
+
+  const closeBanCommentAuthorDialog = () => {
+    setBanningCommentAuthorTargetId(null);
+  };
+
+  const handleConfirmBanCommentAuthor = async () => {
+    if (!banningCommentAuthorTargetId) return;
+
+    const banned = await onBanCommentAuthor(banningCommentAuthorTargetId);
+    if (banned) {
+      setBanningCommentAuthorTargetId(null);
+    }
+  };
+
   return (
     <section>
       <div ref={commentInputRef} className="mb-8">
@@ -315,11 +341,17 @@ export default function PostDetailCommentsSection({
             const isPostAuthor = Boolean(
               postAuthorId && comment.author.id === postAuthorId,
             );
+            const isBannedComment = Boolean(comment.isBanned);
+            const canOpenCommentMenu =
+              !comment.isDeleted && !isBannedComment && Boolean(currentUserId);
+            const isOwnComment = currentUserId === comment.author.id;
 
             return (
             <div key={comment.id} className="flex gap-3">
                 <div className="relative w-[30px] h-[30px] rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
-                {comment.author.profileImageUrl ? (
+                {isBannedComment ? (
+                  <UserX className="h-4 w-4 text-muted-foreground" />
+                ) : comment.author.profileImageUrl ? (
                   <Image
                     src={comment.author.profileImageUrl}
                     alt={comment.author.name}
@@ -336,7 +368,7 @@ export default function PostDetailCommentsSection({
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-1.5">
                     <span className="font-semibold text-sm text-foreground">
-                      {comment.author.name}
+                      {isBannedComment ? t("commentBannedAuthor") : comment.author.name}
                     </span>
                     {isPostAuthor ? (
                       <span className="comment-author-badge">
@@ -347,8 +379,7 @@ export default function PostDetailCommentsSection({
                       {formatDisplayTime(comment.createdAt, locale)}
                     </span>
                   </div>
-                  {currentUserId === comment.author.id && !comment.isDeleted &&
-                  editingCommentId !== comment.id ? (
+                  {canOpenCommentMenu && editingCommentId !== comment.id ? (
                     <div
                       className="relative"
                       ref={(node) => {
@@ -369,30 +400,43 @@ export default function PostDetailCommentsSection({
 
                       {isCommentMenuOpen(comment.id) ? (
                         <div className="absolute right-0 top-7 z-20 min-w-[120px] rounded-xl border border-border bg-background p-1 shadow-lg">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              beginEditComment(comment);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm font-medium text-foreground rounded-md flex items-center gap-2 hover:bg-muted/80 transition-colors duration-150"
-                            disabled={Boolean(updatingCommentId || deletingCommentId)}
-                          >
-                            <Pencil className="w-3.5 h-3.5 text-foreground" />
-                            {t("commentEdit")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              requestDeleteComment(comment.id);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm font-medium text-foreground rounded-md flex items-center gap-2 hover:bg-muted/80 transition-colors duration-150"
-                            disabled={
-                              deletingCommentId === comment.id || updatingCommentId === comment.id
-                            }
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-foreground" />
-                            {t("commentDelete")}
-                          </button>
+                          {isOwnComment ? (
+                            <>
+                              <PostDetailMenuItemButton
+                                onClick={() => {
+                                  beginEditComment(comment);
+                                }}
+                                icon={<Pencil className="w-3.5 h-3.5 text-foreground" />}
+                                disabled={Boolean(updatingCommentId || deletingCommentId)}
+                              >
+                                {t("commentEdit")}
+                              </PostDetailMenuItemButton>
+                              <PostDetailMenuItemButton
+                                onClick={() => {
+                                  requestDeleteComment(comment.id);
+                                }}
+                                icon={<Trash2 className="w-3.5 h-3.5 text-foreground" />}
+                                disabled={
+                                  deletingCommentId === comment.id || updatingCommentId === comment.id
+                                }
+                              >
+                                {t("commentDelete")}
+                              </PostDetailMenuItemButton>
+                            </>
+                          ) : (
+                            <PostDetailMenuItemButton
+                              onClick={() => {
+                                requestBanCommentAuthor(comment.author.id);
+                              }}
+                              icon={<UserX className="w-3.5 h-3.5 text-foreground" />}
+                              disabled={
+                                banningCommentAuthorId === comment.author.id ||
+                                Boolean(updatingCommentId || deletingCommentId)
+                              }
+                            >
+                              {t("commentBan")}
+                            </PostDetailMenuItemButton>
+                          )}
                         </div>
                       ) : null}
                     </div>
@@ -446,7 +490,9 @@ export default function PostDetailCommentsSection({
                       ? currentUserId === comment.author.id
                         ? t("commentDeletedByAuthor")
                         : t("commentDeleted")
-                      : comment.content}
+                      : isBannedComment
+                        ? t("commentBannedContent")
+                        : comment.content}
                     </p>
                 )}
                 <div className="flex items-center gap-4">
@@ -503,6 +549,19 @@ export default function PostDetailCommentsSection({
           isConfirming={Boolean(deletingCommentId)}
           cancelButtonClassName={CANCEL_CONFIRM_BUTTON_CLASS_NAME}
           confirmButtonClassName={DELETE_CONFIRM_BUTTON_CLASS_NAME}
+        />
+
+        <PostDetailConfirmDialog
+          isOpen={Boolean(banningCommentAuthorTargetId)}
+          title={t("commentBanConfirmTitle")}
+          description={t("reportConfirmDescription")}
+          cancelLabel={t("close")}
+          confirmLabel={t("reportConfirmAction")}
+          onCancel={closeBanCommentAuthorDialog}
+          onConfirm={async () => {
+            await handleConfirmBanCommentAuthor();
+          }}
+          isConfirming={Boolean(banningCommentAuthorId)}
         />
       </div>
     </section>

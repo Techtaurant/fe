@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "./useUser";
 import { createComment, deleteComment, fetchComments, updateComment } from "../services/comments";
+import { banUser, isBanApiError } from "../services/users/ban";
 import {
   redirectToGoogleLogin,
   resolveCreateCommentError,
@@ -33,6 +34,7 @@ export function useComments(
     useState<ValidationErrors>({});
   const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [banningCommentAuthorId, setBanningCommentAuthorId] = useState<string | null>(null);
 
   const commentsQueryKey = queryKeys.comments.list({
     postId,
@@ -171,6 +173,10 @@ export function useComments(
     },
   });
 
+  const banUserMutation = useMutation({
+    mutationFn: (targetUserId: string) => banUser(targetUserId),
+  });
+
   useEffect(() => {
     if (commentsQuery.error) {
       const resolved = resolveFetchCommentsError(commentsQuery.error);
@@ -293,6 +299,94 @@ export function useComments(
     }
   };
 
+  const handleBanCommentAuthor = async (targetUserId: string) => {
+    if (!user) {
+      redirectToGoogleLogin();
+      return false;
+    }
+
+    setBanningCommentAuthorId(targetUserId);
+    try {
+      await banUserMutation.mutateAsync(targetUserId);
+      queryClient.setQueryData<InfiniteData<FetchCommentsResponse>>(
+        commentsQueryKey,
+        (current) => {
+          if (!current) return current;
+
+          const nextPages = current.pages.map((page) => ({
+            ...page,
+            data: {
+              ...page.data,
+              content: page.data.content.map((item) =>
+                item.authorId === targetUserId
+                  ? {
+                      ...item,
+                      isBanned: true,
+                      authorProfileImageUrl: null,
+                    }
+                  : item,
+              ),
+            },
+          }));
+
+          return {
+            ...current,
+            pages: nextPages,
+          };
+        },
+      );
+      return true;
+    } catch (error: unknown) {
+      if (isBanApiError(error)) {
+        if (error.code === "UNAUTHORIZED") {
+          redirectToGoogleLogin();
+          return false;
+        }
+
+        if (error.code === "CONFLICT") {
+          queryClient.setQueryData<InfiniteData<FetchCommentsResponse>>(
+            commentsQueryKey,
+            (current) => {
+              if (!current) return current;
+
+              const nextPages = current.pages.map((page) => ({
+                ...page,
+                data: {
+                  ...page.data,
+                  content: page.data.content.map((item) =>
+                    item.authorId === targetUserId
+                      ? {
+                          ...item,
+                          isBanned: true,
+                          authorProfileImageUrl: null,
+                        }
+                      : item,
+                  ),
+                },
+              }));
+
+              return {
+                ...current,
+                pages: nextPages,
+              };
+            },
+          );
+          return true;
+        }
+
+        alert(error.message || "사용자 차단에 실패했습니다.");
+        return false;
+      }
+
+      alert("사용자 차단에 실패했습니다.");
+      return false;
+    } finally {
+      setBanningCommentAuthorId((currentId) =>
+        currentId === targetUserId ? null : currentId,
+      );
+    }
+  };
+
   return {
     comments,
     isCommentsLoading: commentsQuery.isPending,
@@ -306,7 +400,9 @@ export function useComments(
     handleDeleteComment,
     updatingCommentId,
     deletingCommentId,
+    banningCommentAuthorId,
     handleLoadMoreComments,
     handleCreateComment,
+    handleBanCommentAuthor,
   };
 }

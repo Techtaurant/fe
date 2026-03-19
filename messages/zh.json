@@ -8,7 +8,8 @@
     "profile": "个人资料",
     "logout": "退出登录",
     "login": "登录",
-    "myPosts": "我的文章"
+    "myPosts": "我的文章",
+    "settings": "设置"
   },
   "BottomNav": {
     "home": "首页",
@@ -82,13 +83,16 @@
     "privateBadge": "私密",
     "menuOpen": "打开更多菜单",
     "menuEdit": "编辑",
-    "menuToggleToPrivate": "设为私密",
-    "menuToggleToPublic": "设为公开",
+    "menuToggleToPrivate": "私密",
+    "menuToggleToPublic": "公开",
     "menuDelete": "删除",
     "menuReport": "拉黑",
     "deleteConfirmTitle": "要删除这篇文章吗？",
     "deleteConfirmDescription": "删除后将无法恢复。",
     "deleteConfirmAction": "删除",
+    "visibilityConfirmToPrivateTitle": "要将这篇文章设为私密吗？",
+    "visibilityConfirmToPublicTitle": "要将这篇文章设为公开吗？",
+    "visibilityConfirmDescription": "此设置可随时再次更改。",
     "reportConfirmTitle": "要拉黑这个用户吗？",
     "reportConfirmDescription": "拉黑后将不会显示该用户的帖子和评论。",
     "reportConfirmAction": "拉黑",
@@ -109,6 +113,10 @@
     "commentEdit": "编辑",
     "commentSave": "保存",
     "commentDelete": "删除",
+    "commentBan": "拉黑",
+    "commentBanConfirmTitle": "要拉黑这个用户吗？",
+    "commentBannedAuthor": "已拉黑用户",
+    "commentBannedContent": "这条评论来自已拉黑用户。",
     "commentDeleteConfirm": "要删除此评论吗？",
     "commentDeleted": "此评论已删除。",
     "commentDeletedByAuthor": "该评论已由作者删除。",
@@ -165,7 +173,38 @@
     "deleteForbidden": "您无权删除其他用户的文章。",
     "deleteFailed": "删除文章失败。",
     "reportSubmitted": "拉黑请求已提交。",
+    "reportFailed": "拉黑用户失败。",
     "editNotReady": "编辑功能即将上线。"
+  },
+  "SettingsPage": {
+    "title": "设置",
+    "description": "可管理主题、语言和已拉黑账号。",
+    "loginRequired": "登录后可使用设置功能。",
+    "loginAction": "登录",
+    "theme": {
+      "title": "显示主题",
+      "description": "选择应用的显示模式。"
+    },
+    "language": {
+      "title": "语言",
+      "description": "选择应用显示语言。"
+    },
+    "locale": {
+      "ko": "韩语",
+      "en": "英语",
+      "ja": "日语",
+      "zh": "中文"
+    },
+    "bans": {
+      "title": "管理（已拉黑账号）",
+      "description": "可查看并解除已拉黑的账号。",
+      "loading": "正在加载已拉黑账号...",
+      "empty": "暂无已拉黑账号。",
+      "bannedAt": "拉黑时间: {date}",
+      "unbanAction": "解除拉黑",
+      "unbanning": "解除中...",
+      "unbanFailed": "解除拉黑失败。"
+    }
   },
   "OAuthCallback": {
     "processing": "正在处理登录..."

@@ -9,6 +9,8 @@ import PostDetailCommentsSection from "./post-detail/PostDetailCommentsSection";
 import PostDetailConfirmDialog, {
   DELETE_CONFIRM_BUTTON_CLASS_NAME,
   CANCEL_CONFIRM_BUTTON_CLASS_NAME,
+  PRIVATE_CONFIRM_BUTTON_CLASS_NAME,
+  PUBLIC_CONFIRM_BUTTON_CLASS_NAME,
 } from "./post-detail/PostDetailConfirmDialog";
 import PostDetailHeader from "./post-detail/PostDetailHeader";
 import { Comment, FeedMode, Post } from "../types";
@@ -39,14 +41,17 @@ interface PostDetailProps {
   onCreateComment: (content: string) => Promise<void>;
   onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
   onDeleteComment: (commentId: string) => Promise<boolean>;
+  onBanCommentAuthor: (targetUserId: string) => Promise<boolean>;
   onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
   updatingCommentId: string | null;
   deletingCommentId: string | null;
+  banningCommentAuthorId: string | null;
   onAuthorClick?: () => void;
   isVisibilityUpdating: boolean;
   isDeleting: boolean;
+  isReporting: boolean;
 }
 
 export default function PostDetail({
@@ -73,14 +78,17 @@ export default function PostDetail({
   onCreateComment,
   onUpdateComment,
   onDeleteComment,
+  onBanCommentAuthor,
   onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
   updatingCommentId,
   deletingCommentId,
+  banningCommentAuthorId,
   onAuthorClick,
   isVisibilityUpdating,
   isDeleting,
+  isReporting,
 }: PostDetailProps) {
   const t = useTranslations("PostDetail");
   const locale = useLocale();
@@ -90,7 +98,10 @@ export default function PostDetail({
   const canToggleRead = !isOwner;
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
+  const [isVisibilityConfirmOpen, setIsVisibilityConfirmOpen] = useState(false);
   const [commentFocusRequestKey, setCommentFocusRequestKey] = useState(0);
+  const nextVisibilityStatus = post.status === "PRIVATE" ? "PUBLISHED" : "PRIVATE";
+  const isNextStatusPrivate = nextVisibilityStatus === "PRIVATE";
 
   const formatCount = (count: number): string => {
     if (locale === "ko") {
@@ -118,7 +129,7 @@ export default function PostDetail({
           onBack={onBack}
           onEdit={onEdit}
           onAuthorClick={onAuthorClick}
-          onToggleVisibility={onToggleVisibility}
+          onToggleVisibility={() => setIsVisibilityConfirmOpen(true)}
           onRequestDelete={() => setIsDeleteConfirmOpen(true)}
           onRequestReport={() => setIsReportConfirmOpen(true)}
           isVisibilityUpdating={isVisibilityUpdating}
@@ -153,6 +164,7 @@ export default function PostDetail({
           onCreateComment={onCreateComment}
           onUpdateComment={onUpdateComment}
           onDeleteComment={onDeleteComment}
+          onBanCommentAuthor={onBanCommentAuthor}
           onClearCommentFieldError={onClearCommentFieldError}
           onLoadMoreComments={onLoadMoreComments}
           onCommentsSortChange={onCommentsSortChange}
@@ -160,6 +172,7 @@ export default function PostDetail({
           postAuthorId={post.author?.id ?? null}
           updatingCommentId={updatingCommentId}
           deletingCommentId={deletingCommentId}
+          banningCommentAuthorId={banningCommentAuthorId}
           focusRequestKey={commentFocusRequestKey}
         />
 
@@ -182,6 +195,30 @@ export default function PostDetail({
         />
 
         <PostDetailConfirmDialog
+          isOpen={isVisibilityConfirmOpen}
+          title={
+            isNextStatusPrivate
+              ? t("visibilityConfirmToPrivateTitle")
+              : t("visibilityConfirmToPublicTitle")
+          }
+          description={t("visibilityConfirmDescription")}
+          cancelLabel={t("close")}
+          confirmLabel={isNextStatusPrivate ? t("menuToggleToPrivate") : t("menuToggleToPublic")}
+          onCancel={() => setIsVisibilityConfirmOpen(false)}
+          onConfirm={async () => {
+            await onToggleVisibility();
+            setIsVisibilityConfirmOpen(false);
+          }}
+          isConfirming={isVisibilityUpdating}
+          cancelButtonClassName={CANCEL_CONFIRM_BUTTON_CLASS_NAME}
+          confirmButtonClassName={
+            isNextStatusPrivate
+              ? PRIVATE_CONFIRM_BUTTON_CLASS_NAME
+              : PUBLIC_CONFIRM_BUTTON_CLASS_NAME
+          }
+        />
+
+        <PostDetailConfirmDialog
           isOpen={isReportConfirmOpen}
           title={t("reportConfirmTitle")}
           description={t("reportConfirmDescription")}
@@ -192,6 +229,7 @@ export default function PostDetail({
             await onReport();
             setIsReportConfirmOpen(false);
           }}
+          isConfirming={isReporting}
         />
       </main>
     </div>
