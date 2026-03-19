@@ -53,6 +53,8 @@ export default function PostDetailPage() {
     handleLoadMoreComments,
     handleCreateComment,
     handleBanCommentAuthor,
+    handleLikeComment,
+    handleDislikeComment,
   } = useComments(postId, () => {
     setPost((current) => {
       if (!current) return current;
@@ -135,6 +137,8 @@ export default function PostDetailPage() {
       onUpdateComment={handleUpdateComment}
       onDeleteComment={handleDeleteComment}
       onBanCommentAuthor={handleBanCommentAuthor}
+      onLikeComment={handleLikeComment}
+      onDislikeComment={handleDislikeComment}
       onClearCommentFieldError={clearCreateCommentFieldError}
       onLoadMoreComments={handleLoadMoreComments}
       onCommentsSortChange={setCommentsSort}

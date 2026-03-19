@@ -1,18 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { useLocale, useTranslations } from "next-intl";
-import { MoreVertical, Pencil, Trash2, UserX } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Comment } from "@/app/types";
 import { CommentSort } from "@/app/services/comments/types";
 import { ValidationErrors } from "@/app/services/comments/apiError";
-import { formatDisplayTime } from "@/app/utils";
-import PostDetailConfirmDialog, {
-  DELETE_CONFIRM_BUTTON_CLASS_NAME,
-  CANCEL_CONFIRM_BUTTON_CLASS_NAME,
-} from "./PostDetailConfirmDialog";
-import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
+import PostDetailCommentItem from "./PostDetailCommentItem";
+import PostDetailCommentReplies from "./PostDetailCommentReplies";
 
 interface PostDetailCommentsSectionProps {
   comments: Comment[];
@@ -21,10 +15,12 @@ interface PostDetailCommentsSectionProps {
   commentsHasNext: boolean;
   isCommentsLoadingMore: boolean;
   createCommentFieldErrors: ValidationErrors;
-  onCreateComment: (content: string) => Promise<void>;
+  onCreateComment: (content: string, parentId?: string) => Promise<void>;
   onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
   onDeleteComment: (commentId: string) => Promise<boolean>;
   onBanCommentAuthor: (targetUserId: string) => Promise<boolean>;
+  onLikeComment: (commentId: string) => void;
+  onDislikeComment: (commentId: string) => void;
   onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
@@ -47,6 +43,8 @@ export default function PostDetailCommentsSection({
   onUpdateComment,
   onDeleteComment,
   onBanCommentAuthor,
+  onLikeComment,
+  onDislikeComment,
   onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
@@ -58,28 +56,128 @@ export default function PostDetailCommentsSection({
   focusRequestKey,
 }: PostDetailCommentsSectionProps) {
   const t = useTranslations("PostDetail");
-  const locale = useLocale();
   const commentInputRef = useRef<HTMLDivElement | null>(null);
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const editingCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const commentMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const replyingCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isCommentExpanded, setIsCommentExpanded] = useState(false);
   const [commentValue, setCommentValue] = useState("");
-  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editingCommentValue, setEditingCommentValue] = useState("");
-  const [isEditingActionsBelow, setIsEditingActionsBelow] = useState(false);
-  const [activeMenuCommentId, setActiveMenuCommentId] = useState<string | null>(null);
-  const [deletingCommentTargetId, setDeletingCommentTargetId] = useState<string | null>(null);
-  const [banningCommentAuthorTargetId, setBanningCommentAuthorTargetId] = useState<string | null>(
-    null,
-  );
+  const [openRepliesByCommentId, setOpenRepliesByCommentId] = useState<Record<string, boolean>>({});
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [replyingCommentId, setReplyingCommentId] = useState<string | null>(null);
+  const [replyingCommentValue, setReplyingCommentValue] = useState("");
+  const [isReplyActionsBelow, setIsReplyActionsBelow] = useState(false);
+  const [replySubmittingCommentId, setReplySubmittingCommentId] = useState<string | null>(null);
+  const [replyCountsByCommentId, setReplyCountsByCommentId] = useState<Record<string, number>>({});
   const collapsedTextareaHeight = "44px";
+
   const commentFieldErrorMessage =
     createCommentFieldErrors.content ||
     createCommentFieldErrors.postId ||
     Object.values(createCommentFieldErrors)[0] ||
     null;
+
+  const resizeReplyTextarea = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+    setIsReplyActionsBelow(textarea.scrollHeight > 40);
+  };
+
+  const beginReplyComment = (comment: Comment) => {
+    if (comment.isDeleted || comment.isBanned) return;
+    setReplyingCommentId(comment.id);
+    setReplyingCommentValue("");
+    setIsReplyActionsBelow(false);
+    setOpenRepliesByCommentId((current) => ({
+      ...current,
+      [comment.id]: true,
+    }));
+
+    setTimeout(() => {
+      const textarea = replyingCommentTextareaRef.current;
+      if (!textarea) return;
+      resizeReplyTextarea(textarea);
+      textarea.focus();
+    }, 0);
+  };
+
+  const cancelReplyComment = () => {
+    setReplyingCommentId(null);
+    setReplyingCommentValue("");
+    setIsReplyActionsBelow(false);
+    setReplySubmittingCommentId(null);
+  };
+
+  const handleCreateReply = async (parentCommentId: string) => {
+    const trimmed = replyingCommentValue.trim();
+    if (!trimmed || replySubmittingCommentId) return;
+    setReplySubmittingCommentId(parentCommentId);
+    try {
+      await onCreateComment(trimmed, parentCommentId);
+      setReplyCountsByCommentId((current) => ({
+        ...current,
+        [parentCommentId]: (current[parentCommentId] ?? 0) + 1,
+      }));
+      setReplyingCommentValue("");
+      setIsReplyActionsBelow(false);
+      setOpenRepliesByCommentId((current) => ({
+        ...current,
+        [parentCommentId]: true,
+      }));
+      setTimeout(() => {
+        const textarea = replyingCommentTextareaRef.current;
+        if (!textarea) return;
+        resizeReplyTextarea(textarea);
+        textarea.focus();
+      }, 0);
+    } finally {
+      setReplySubmittingCommentId(null);
+    }
+  };
+
+  const toggleReplies = (commentId: string) => {
+    const isOpen = Boolean(openRepliesByCommentId[commentId]);
+    if (isOpen) {
+      if (replyingCommentId === commentId) {
+        cancelReplyComment();
+      }
+      setOpenRepliesByCommentId((current) => ({
+        ...current,
+        [commentId]: false,
+      }));
+      return;
+    }
+
+    const targetComment = comments.find((item) => item.id === commentId);
+    if (!targetComment || targetComment.isDeleted || targetComment.isBanned) return;
+    beginReplyComment(targetComment);
+  };
+
+  const getReplyCount = (comment: Comment) => {
+    const normalizedReplyCount = Number(comment.replyCount ?? 0);
+    const safeReplyCount = Number.isFinite(normalizedReplyCount)
+      ? Math.max(0, normalizedReplyCount)
+      : 0;
+    return Math.max(replyCountsByCommentId[comment.id] ?? 0, safeReplyCount);
+  };
+
+  const getRepliesLabel = (comment: Comment) => {
+    const replyCount = getReplyCount(comment);
+    if (replyCount > 0) {
+      return t("replies", { count: replyCount });
+    }
+    return t("repliesZero");
+  };
+
+  const handleRepliesCountChange = (parentCommentId: string, loadedReplyCount: number) => {
+    setReplyCountsByCommentId((current) => {
+      const currentReplyCount = current[parentCommentId] ?? 0;
+      if (loadedReplyCount <= currentReplyCount) return current;
+      return {
+        ...current,
+        [parentCommentId]: loadedReplyCount,
+      };
+    });
+  };
 
   useEffect(() => {
     if (focusRequestKey <= 0) return;
@@ -93,137 +191,23 @@ export default function PostDetailCommentsSection({
   }, [focusRequestKey]);
 
   useEffect(() => {
-    if (!activeMenuCommentId) return;
+    setReplyCountsByCommentId((current) => {
+      const next = { ...current };
 
-    const handleOutsideClick = (event: MouseEvent) => {
-      const menuRef = commentMenuRefs.current[activeMenuCommentId];
-      if (!menuRef) return;
+      comments.forEach((comment) => {
+        const normalizedReplyCount = Number(comment.replyCount ?? 0);
+        const safeReplyCount = Number.isFinite(normalizedReplyCount)
+          ? Math.max(0, normalizedReplyCount)
+          : 0;
+        const currentReplyCount = next[comment.id] ?? 0;
+        if (safeReplyCount > currentReplyCount) {
+          next[comment.id] = safeReplyCount;
+        }
+      });
 
-      if (!menuRef.contains(event.target as Node)) {
-        setActiveMenuCommentId(null);
-      }
-    };
-
-    window.addEventListener("mousedown", handleOutsideClick);
-    return () => window.removeEventListener("mousedown", handleOutsideClick);
-  }, [activeMenuCommentId]);
-
-  useEffect(() => {
-    if (!editingCommentId) return;
-
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        cancelEditComment();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeydown);
-    return () => window.removeEventListener("keydown", handleKeydown);
-  }, [editingCommentId]);
-
-  const isCommentMenuOpen = (commentId: string) => activeMenuCommentId === commentId;
-
-  const toggleCommentMenu = (commentId: string) => {
-    setActiveMenuCommentId((current) => (current === commentId ? null : commentId));
-  };
-
-  const closeCommentMenu = () => {
-    setActiveMenuCommentId(null);
-  };
-
-  const resizeEditingTextarea = (textarea: HTMLTextAreaElement) => {
-    textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
-    setIsEditingActionsBelow(textarea.scrollHeight > 40);
-  };
-
-  useEffect(() => {
-    if (!deletingCommentTargetId) return;
-
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setDeletingCommentTargetId(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeydown);
-    return () => window.removeEventListener("keydown", handleKeydown);
-  }, [deletingCommentTargetId]);
-
-  const beginEditComment = (comment: Comment) => {
-    if (comment.isDeleted) return;
-    closeCommentMenu();
-    setIsEditingActionsBelow(false);
-    setEditingCommentId(comment.id);
-    setEditingCommentValue(comment.content);
-    setTimeout(() => {
-      const textarea = editingCommentTextareaRef.current;
-      if (!textarea) return;
-      resizeEditingTextarea(textarea);
-      textarea.focus();
-    }, 0);
-  };
-
-  const cancelEditComment = () => {
-    setEditingCommentId(null);
-    setEditingCommentValue("");
-    setIsEditingActionsBelow(false);
-  };
-
-  const handleUpdateComment = async (commentId: string) => {
-    const trimmed = editingCommentValue.trim();
-    if (!trimmed) {
-      alert(t("commentContentRequired"));
-      return;
-    }
-
-    const updated = await onUpdateComment(commentId, trimmed);
-    if (updated) {
-      cancelEditComment();
-    }
-  };
-
-  const requestDeleteComment = (commentId: string) => {
-    if (Boolean(updatingCommentId || deletingCommentId)) return;
-    closeCommentMenu();
-    setDeletingCommentTargetId(commentId);
-  };
-
-  const handleConfirmDeleteComment = async () => {
-    if (!deletingCommentTargetId) return;
-
-    const deletingId = deletingCommentTargetId;
-    const deleted = await onDeleteComment(deletingId);
-    if (deleted && editingCommentId === deletingId) {
-      cancelEditComment();
-    }
-
-    if (deleted && deletingId === deletingCommentTargetId) {
-      setDeletingCommentTargetId(null);
-    }
-  };
-
-  const closeDeleteCommentDialog = () => {
-    setDeletingCommentTargetId(null);
-  };
-
-  const requestBanCommentAuthor = (targetUserId: string) => {
-    closeCommentMenu();
-    setBanningCommentAuthorTargetId(targetUserId);
-  };
-
-  const closeBanCommentAuthorDialog = () => {
-    setBanningCommentAuthorTargetId(null);
-  };
-
-  const handleConfirmBanCommentAuthor = async () => {
-    if (!banningCommentAuthorTargetId) return;
-
-    const banned = await onBanCommentAuthor(banningCommentAuthorTargetId);
-    if (banned) {
-      setBanningCommentAuthorTargetId(null);
-    }
-  };
+      return next;
+    });
+  }, [comments]);
 
   return (
     <section>
@@ -234,14 +218,14 @@ export default function PostDetailCommentsSection({
               ref={commentTextareaRef}
               placeholder={isCommentExpanded ? "" : t("commentPlaceholder")}
               value={commentValue}
-              onChange={(e) => {
-                setCommentValue(e.target.value);
+              onChange={(event) => {
+                setCommentValue(event.target.value);
                 if (createCommentFieldErrors.content) {
                   onClearCommentFieldError("content");
                 }
               }}
-              onInput={(e) => {
-                const target = e.currentTarget;
+              onInput={(event) => {
+                const target = event.currentTarget;
                 target.style.height = "auto";
                 target.style.height = `${target.scrollHeight}px`;
               }}
@@ -302,11 +286,9 @@ export default function PostDetailCommentsSection({
               </div>
             ) : null}
           </div>
-          {commentFieldErrorMessage && (
-            <p className="mt-2 px-2 text-sm font-medium text-red-600">
-              {commentFieldErrorMessage}
-            </p>
-          )}
+          {commentFieldErrorMessage ? (
+            <p className="mt-2 px-2 text-sm font-medium text-red-600">{commentFieldErrorMessage}</p>
+          ) : null}
         </div>
       </div>
 
@@ -333,197 +315,111 @@ export default function PostDetailCommentsSection({
             </button>
           ))}
         </div>
+
         {isCommentsLoading && comments.length === 0 ? (
           <div className="text-sm text-muted-foreground py-4">{t("loadingComments")}</div>
         ) : comments.length > 0 ? (
           comments.map((comment) => {
-            const isEditingCurrentComment = editingCommentId === comment.id;
-            const isPostAuthor = Boolean(
-              postAuthorId && comment.author.id === postAuthorId,
-            );
-            const isBannedComment = Boolean(comment.isBanned);
-            const canOpenCommentMenu =
-              !comment.isDeleted && !isBannedComment && Boolean(currentUserId);
-            const isOwnComment = currentUserId === comment.author.id;
+            const isReplyThreadOpen = Boolean(openRepliesByCommentId[comment.id]);
+            const isReplyingCurrentComment = replyingCommentId === comment.id;
 
             return (
-            <div key={comment.id} className="flex gap-3">
-                <div className="relative w-[30px] h-[30px] rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
-                {isBannedComment ? (
-                  <UserX className="h-4 w-4 text-muted-foreground" />
-                ) : comment.author.profileImageUrl ? (
-                  <Image
-                    src={comment.author.profileImageUrl}
-                    alt={comment.author.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <span className="text-sm font-bold text-muted-foreground">
-                    {comment.author.name.charAt(0)}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-sm text-foreground">
-                      {isBannedComment ? t("commentBannedAuthor") : comment.author.name}
-                    </span>
-                    {isPostAuthor ? (
-                      <span className="comment-author-badge">
-                        {t("commentAuthorBadge")}
-                      </span>
-                    ) : null}
-                    <span className="text-xs text-muted-foreground">
-                      {formatDisplayTime(comment.createdAt, locale)}
-                    </span>
-                  </div>
-                  {canOpenCommentMenu && editingCommentId !== comment.id ? (
-                    <div
-                      className="relative"
-                      ref={(node) => {
-                        commentMenuRefs.current[comment.id] = node;
-                      }}
+              <PostDetailCommentItem
+                key={comment.id}
+                comment={comment}
+                onLikeComment={onLikeComment}
+                onDislikeComment={onDislikeComment}
+                onUpdateComment={onUpdateComment}
+                onDeleteComment={onDeleteComment}
+                onBanCommentAuthor={onBanCommentAuthor}
+                currentUserId={currentUserId}
+                postAuthorId={postAuthorId}
+                updatingCommentId={updatingCommentId}
+                deletingCommentId={deletingCommentId}
+                banningCommentAuthorId={banningCommentAuthorId}
+                extraActions={
+                  !comment.isDeleted && !comment.isBanned ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleReplies(comment.id)}
+                      className="text-xs text-muted-foreground hover:text-foreground"
                     >
-                      <button
-                        type="button"
-                        aria-label={t("menuOpen")}
-                        onClick={() => {
-                          toggleCommentMenu(comment.id);
-                        }}
-                        className="p-1 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200"
-                        disabled={Boolean(updatingCommentId || deletingCommentId)}
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-
-                      {isCommentMenuOpen(comment.id) ? (
-                        <div className="absolute right-0 top-7 z-20 min-w-[120px] rounded-xl border border-border bg-background p-1 shadow-lg">
-                          {isOwnComment ? (
-                            <>
-                              <PostDetailMenuItemButton
-                                onClick={() => {
-                                  beginEditComment(comment);
-                                }}
-                                icon={<Pencil className="w-3.5 h-3.5 text-foreground" />}
-                                disabled={Boolean(updatingCommentId || deletingCommentId)}
-                              >
-                                {t("commentEdit")}
-                              </PostDetailMenuItemButton>
-                              <PostDetailMenuItemButton
-                                onClick={() => {
-                                  requestDeleteComment(comment.id);
-                                }}
-                                icon={<Trash2 className="w-3.5 h-3.5 text-foreground" />}
-                                disabled={
-                                  deletingCommentId === comment.id || updatingCommentId === comment.id
-                                }
-                              >
-                                {t("commentDelete")}
-                              </PostDetailMenuItemButton>
-                            </>
-                          ) : (
-                            <PostDetailMenuItemButton
-                              onClick={() => {
-                                requestBanCommentAuthor(comment.author.id);
-                              }}
-                              icon={<UserX className="w-3.5 h-3.5 text-foreground" />}
-                              disabled={
-                                banningCommentAuthorId === comment.author.id ||
-                                Boolean(updatingCommentId || deletingCommentId)
-                              }
-                            >
-                              {t("commentBan")}
-                            </PostDetailMenuItemButton>
-                          )}
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-                {isEditingCurrentComment ? (
-                  <div className="relative">
+                      {isReplyThreadOpen ? t("hideReplies") : getRepliesLabel(comment)}
+                    </button>
+                  ) : !comment.isBanned ? (
+                    <span className="text-xs text-muted-foreground">{getRepliesLabel(comment)}</span>
+                  ) : null
+                }
+              >
+                {isReplyingCurrentComment ? (
+                  <div className="mt-2 relative">
                     <textarea
-                      ref={editingCommentId === comment.id ? editingCommentTextareaRef : null}
-                      value={editingCommentValue}
-                      onChange={(e) => setEditingCommentValue(e.target.value)}
+                      ref={isReplyingCurrentComment ? replyingCommentTextareaRef : null}
+                      value={replyingCommentValue}
+                      onChange={(event) => setReplyingCommentValue(event.target.value)}
                       className={`w-full min-h-9 rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover focus:border-border ${
-                        isEditingActionsBelow ? "pr-3" : "pr-24"
+                        isReplyActionsBelow ? "pr-3" : "pr-24"
                       }`}
                       rows={1}
-                      onInput={(e) => {
-                        resizeEditingTextarea(e.currentTarget);
+                      onInput={(event) => {
+                        resizeReplyTextarea(event.currentTarget);
                       }}
-                      disabled={updatingCommentId === comment.id}
+                      disabled={replySubmittingCommentId === comment.id}
                     />
                     <div
                       className={
-                        isEditingActionsBelow
+                        isReplyActionsBelow
                           ? "mt-2 flex items-center justify-end gap-2"
                           : "absolute right-2 top-[6px] flex items-center gap-2"
                       }
                     >
                       <button
                         type="button"
-                        onClick={cancelEditComment}
-                        disabled={updatingCommentId === comment.id}
-                        className="w-[37px] h-6 rounded-md border border-border text-[11px] leading-none font-semibold flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={cancelReplyComment}
+                        disabled={replySubmittingCommentId === comment.id}
+                        className="min-w-[37px] h-6 px-2 rounded-md border border-border text-[11px] leading-none font-semibold whitespace-nowrap flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {t("cancel")}
                       </button>
                       <button
                         type="button"
                         onClick={() => {
-                          void handleUpdateComment(comment.id);
+                          void handleCreateReply(comment.id);
                         }}
-                        disabled={updatingCommentId === comment.id}
-                        className="w-[37px] h-6 rounded-md text-[11px] leading-none font-bold flex items-center justify-center save-action-button disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={replySubmittingCommentId === comment.id}
+                        className="min-w-[37px] h-6 px-2 rounded-md text-[11px] leading-none font-bold whitespace-nowrap flex items-center justify-center save-action-button disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {t("commentSave")}
+                        {t("comment")}
                       </button>
                     </div>
                   </div>
-                ) : (
-                  <p className="mb-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
-                    {comment.isDeleted
-                      ? currentUserId === comment.author.id
-                        ? t("commentDeletedByAuthor")
-                        : t("commentDeleted")
-                      : isBannedComment
-                        ? t("commentBannedContent")
-                        : comment.content}
-                    </p>
-                )}
-                <div className="flex items-center gap-4">
-                  <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                    <span>{comment.likeCount}</span>
-                  </button>
-                  <button className="text-xs text-muted-foreground hover:text-foreground">
-                    {t("replies", { count: comment.replyCount })}
-                  </button>
-                </div>
-              </div>
-            </div>
+                ) : null}
+
+                {isReplyThreadOpen ? (
+                  <PostDetailCommentReplies
+                    parentCommentId={comment.id}
+                    parentSort={commentsSort}
+                    onRepliesCountChange={handleRepliesCountChange}
+                    onLikeComment={onLikeComment}
+                    onDislikeComment={onDislikeComment}
+                    onUpdateComment={onUpdateComment}
+                    onDeleteComment={onDeleteComment}
+                    onBanCommentAuthor={onBanCommentAuthor}
+                    currentUserId={currentUserId}
+                    postAuthorId={postAuthorId}
+                    updatingCommentId={updatingCommentId}
+                    deletingCommentId={deletingCommentId}
+                    banningCommentAuthorId={banningCommentAuthorId}
+                  />
+                ) : null}
+              </PostDetailCommentItem>
             );
           })
         ) : (
           <p className="text-center text-muted-foreground py-8">{t("noComments")}</p>
         )}
-        {commentsHasNext && (
+
+        {commentsHasNext ? (
           <div className="flex justify-center pt-2">
             <button
               type="button"
@@ -534,35 +430,7 @@ export default function PostDetailCommentsSection({
               {isCommentsLoadingMore ? t("loadingMore") : t("loadMore")}
             </button>
           </div>
-        )}
-
-        <PostDetailConfirmDialog
-          isOpen={Boolean(deletingCommentTargetId)}
-          title={t("commentDeleteConfirm")}
-          description={t("deleteConfirmDescription")}
-          cancelLabel={t("close")}
-          confirmLabel={t("deleteConfirmAction")}
-          onCancel={closeDeleteCommentDialog}
-          onConfirm={async () => {
-            await handleConfirmDeleteComment();
-          }}
-          isConfirming={Boolean(deletingCommentId)}
-          cancelButtonClassName={CANCEL_CONFIRM_BUTTON_CLASS_NAME}
-          confirmButtonClassName={DELETE_CONFIRM_BUTTON_CLASS_NAME}
-        />
-
-        <PostDetailConfirmDialog
-          isOpen={Boolean(banningCommentAuthorTargetId)}
-          title={t("commentBanConfirmTitle")}
-          description={t("reportConfirmDescription")}
-          cancelLabel={t("close")}
-          confirmLabel={t("reportConfirmAction")}
-          onCancel={closeBanCommentAuthorDialog}
-          onConfirm={async () => {
-            await handleConfirmBanCommentAuthor();
-          }}
-          isConfirming={Boolean(banningCommentAuthorId)}
-        />
+        ) : null}
       </div>
     </section>
   );
