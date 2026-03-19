@@ -1,4 +1,4 @@
-import { Post, TechBlog, User } from "../types";
+import { Post, TechBlog } from "../types";
 
 export const DUMMY_TECH_BLOGS: TechBlog[] = [
   { id: "1", name: "토스", iconUrl: "/next.svg" },
@@ -11,36 +11,6 @@ export const DUMMY_TECH_BLOGS: TechBlog[] = [
   { id: "8", name: "뱅크샐러드", iconUrl: "/next.svg" },
   { id: "9", name: "야놀자", iconUrl: "/next.svg" },
   { id: "10", name: "컬리", iconUrl: "/next.svg" },
-];
-
-export const DUMMY_USERS: User[] = [
-  {
-    id: "u1",
-    name: "김개발",
-    email: "dev1@test.com",
-    profileImageUrl: "",
-    role: "USER",
-    followerCount: 154,
-    followingCount: 42,
-  },
-  {
-    id: "u2",
-    name: "이코딩",
-    email: "dev2@test.com",
-    profileImageUrl: "",
-    role: "USER",
-    followerCount: 89,
-    followingCount: 120,
-  },
-  {
-    id: "u3",
-    name: "박해커",
-    email: "dev3@test.com",
-    profileImageUrl: "",
-    role: "USER",
-    followerCount: 20,
-    followingCount: 15,
-  },
 ];
 
 export const DUMMY_COMPANY_POSTS: Post[] = [
@@ -102,47 +72,5 @@ export const DUMMY_COMPANY_POSTS: Post[] = [
     isRead: true,
     publishedAt: "2025-01-11",
     url: "https://engineering.linecorp.com",
-  },
-];
-
-export const DUMMY_COMMUNITY_POSTS: Post[] = [
-  {
-    id: "u1",
-    type: "community",
-    title: "주니어 개발자의 이직 회고",
-    viewCount: 1200,
-    likeCount: 56,
-    commentCount: 12,
-    tags: [],
-    author: DUMMY_USERS[0],
-    isRead: false,
-    publishedAt: "2025-01-16",
-    url: "/post/u1",
-  },
-  {
-    id: "u2",
-    type: "community",
-    title: "사이드 프로젝트 실패 경험담",
-    viewCount: 3400,
-    likeCount: 128,
-    commentCount: 45,
-    tags: [],
-    author: DUMMY_USERS[1],
-    isRead: false,
-    publishedAt: "2025-01-15",
-    url: "/post/u2",
-  },
-  {
-    id: "u3",
-    type: "community",
-    title: "오늘 배운 알고리즘 정리",
-    viewCount: 150,
-    likeCount: 5,
-    commentCount: 0,
-    tags: [],
-    author: DUMMY_USERS[2],
-    isRead: false,
-    publishedAt: "2025-01-14",
-    url: "/post/u3",
   },
 ];

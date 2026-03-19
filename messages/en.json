@@ -4,7 +4,7 @@
     "companyBlogs": "Company blogs",
     "community": "Community",
     "searchPlaceholder": "Search",
-    "writePost": "Write post",
+    "writePost": "Write",
     "profile": "Profile",
     "logout": "Log out",
     "login": "Log in",
@@ -144,6 +144,7 @@
   "SearchPage": {
     "placeholder": "Enter a keyword",
     "emptyPrompt": "Results appear when you enter a search term.",
+    "loading": "Loading search results...",
     "noResults": "No search results."
   },
   "DraftsPage": {
@@ -179,8 +180,27 @@
   "SettingsPage": {
     "title": "Settings",
     "description": "Manage appearance, language, and blocked accounts.",
+    "closeAria": "Close settings",
     "loginRequired": "Sign in to access settings.",
     "loginAction": "Log in",
+    "tabs": {
+      "general": "General",
+      "management": "Management"
+    },
+    "management": {
+      "profile": "Profile",
+      "edit": "Edit",
+      "blockedAccounts": "Blocked accounts"
+    },
+    "blockedModal": {
+      "title": "Blocked accounts",
+      "closeAria": "Close blocked accounts",
+      "loading": "Loading blocked accounts...",
+      "empty": "No blocked accounts",
+      "unblockAction": "Unblock",
+      "unblocking": "Processing...",
+      "unblockFailed": "Failed to unblock user."
+    },
     "theme": {
       "title": "Theme",
       "description": "Choose the appearance mode for the app."
