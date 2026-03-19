@@ -218,7 +218,7 @@ export default function Header({
           {isLoggedIn && !isLoading && (
             <button
               onClick={handleWritePostClick}
-              className="hidden md:inline-flex md:mr-2 h-9 w-[100px] items-center justify-center gap-2.5 rounded-lg
+              className="hidden md:inline-flex md:mr-2 h-9 min-w-[100px] px-3 items-center justify-center gap-2.5 whitespace-nowrap rounded-lg
                      bg-comment-submit-button text-white text-sm font-semibold
                      transition-colors duration-200
                      hover:bg-comment-submit-button-hover"
