@@ -86,8 +86,8 @@ export interface PostDetailResponse {
     tags?: { id: string; name: string }[];
     viewCount?: number;
     likeCount?: number;
+    likeStatus?: "NONE" | "LIKE" | "DISLIKE";
     commentCount?: number;
-    isLiked?: boolean;
     isRead?: boolean;
     createdAt: string;
     updatedAt: string;

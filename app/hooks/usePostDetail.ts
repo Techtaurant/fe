@@ -14,6 +14,7 @@ import {
   updatePostLike,
 } from "../services/posts";
 import { banUser, isBanApiError } from "../services/users/ban";
+import { FetchMyBansResponse } from "../services/users/ban/types";
 import { FeedMode, Post } from "../types";
 import { queryKeys } from "../lib/queryKeys";
 import {
@@ -24,7 +25,6 @@ import {
 
 type PostDetailQueryData = {
   post: Post;
-  isLiked: boolean;
 };
 
 type ReactionState = "like" | "dislike" | "none";
@@ -92,10 +92,15 @@ export function usePostDetail(postId: string) {
         if (!current) return current;
         return {
           ...current,
-          isLiked: nextReaction === "like",
           post: {
             ...current.post,
             likeCount: nextLikeCount,
+            likeStatus:
+              nextReaction === "none"
+                ? "NONE"
+                : nextReaction === "like"
+                  ? "LIKE"
+                  : "DISLIKE",
           },
         };
       },
@@ -120,7 +125,7 @@ export function usePostDetail(postId: string) {
     }
 
     const nextReaction = inferReactionFromServer({
-      isLiked: detailQuery.data.isLiked,
+      likeStatus: detailQuery.data.post.likeStatus,
     });
     if (nextReaction !== "none") {
       setStoredReactionState(postId, nextReaction);
@@ -143,7 +148,6 @@ export function usePostDetail(postId: string) {
     (updater: (current: Post | null) => Post | null) => {
       queryClient.setQueryData<{
         post: Post;
-        isLiked: boolean;
       } | null>(queryKeys.posts.detail(postId), (current) => {
         if (!current) return current;
         const nextPost = updater(current.post);
@@ -168,7 +172,93 @@ export function usePostDetail(postId: string) {
     mutationFn: () => deletePost(postId),
   });
   const banMutation = useMutation({
-    mutationFn: (targetUserId: string) => banUser(targetUserId),
+    mutationFn: ({ targetUserId }: {
+      targetUserId: string;
+      targetUserName: string;
+      targetUserProfileImageUrl: string | null;
+    }) => banUser(targetUserId),
+    onMutate: async ({ targetUserId, targetUserName, targetUserProfileImageUrl }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.user.bans() });
+      const previous = queryClient.getQueryData<FetchMyBansResponse>(queryKeys.user.bans());
+      const optimisticBan = {
+        userId: targetUserId,
+        name: targetUserName,
+        profileImageUrl: targetUserProfileImageUrl,
+        bannedAt: new Date().toISOString(),
+      };
+
+      queryClient.setQueryData<FetchMyBansResponse>(queryKeys.user.bans(), (current) => {
+        if (!current) {
+          return {
+            status: 200,
+            data: [optimisticBan],
+            message: "OK",
+          };
+        }
+
+        if (current.data.some((item) => item.userId === targetUserId)) {
+          return current;
+        }
+
+        return {
+          ...current,
+          data: [optimisticBan, ...current.data],
+        };
+      });
+
+      return { previous };
+    },
+    onError: (error, _variables, context) => {
+      if (isBanApiError(error) && error.code === "CONFLICT") {
+        return;
+      }
+
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.user.bans(), context.previous);
+      }
+    },
+    onSuccess: (result, { targetUserId, targetUserProfileImageUrl }) => {
+      if (!result.data) return;
+      const serverBan = {
+        userId: result.data.userId,
+        name: result.data.name,
+        bannedAt: result.data.bannedAt,
+        profileImageUrl: targetUserProfileImageUrl,
+      };
+
+      queryClient.setQueryData<FetchMyBansResponse>(queryKeys.user.bans(), (current) => {
+        if (!current) {
+          return {
+            status: 200,
+            data: [serverBan],
+            message: "OK",
+          };
+        }
+
+        const alreadyExists = current.data.some((item) => item.userId === targetUserId);
+        if (alreadyExists) {
+          return {
+            ...current,
+            data: current.data.map((item) =>
+              item.userId === targetUserId
+                ? {
+                    ...item,
+                    ...serverBan,
+                  }
+                : item,
+            ),
+          };
+        }
+
+        return {
+          ...current,
+          data: [serverBan, ...current.data],
+        };
+      });
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.bans() });
+    },
   });
 
   const handleReaction = async (target: "like" | "dislike") => {
@@ -387,12 +477,13 @@ export function usePostDetail(postId: string) {
     if (user.id === targetUserId) return;
 
     try {
-      await banMutation.mutateAsync(targetUserId);
+      await banMutation.mutateAsync({
+        targetUserId,
+        targetUserName: currentPost.author?.name ?? "Unknown user",
+        targetUserProfileImageUrl: currentPost.author?.profileImageUrl ?? null,
+      });
       setPost(() => null);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.user.bans() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.posts.all }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
     } catch (error: unknown) {
       if (isBanApiError(error)) {
         if (error.code === "UNAUTHORIZED") {
@@ -415,7 +506,7 @@ export function usePostDetail(postId: string) {
 
   const serverReaction: ReactionState | null = detailQuery.data
     ? inferReactionFromServer({
-        isLiked: detailQuery.data.isLiked,
+        likeStatus: detailQuery.data.post.likeStatus,
       })
     : null;
   const storedReaction: ReactionState = storedReactionQuery.data ?? "none";
@@ -426,7 +517,6 @@ export function usePostDetail(postId: string) {
     serverReaction,
     storedReaction,
   });
-  const isLiked = reactionState === "like";
   const post = detailQuery.data?.post ?? null;
   const isLoading = detailQuery.isPending;
   const isRead = Boolean(user) && Boolean(post?.isRead);
@@ -443,7 +533,6 @@ export function usePostDetail(postId: string) {
   return {
     post,
     setPost,
-    isLiked,
     reactionState,
     isRead,
     currentMode,
