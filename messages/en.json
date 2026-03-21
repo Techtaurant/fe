@@ -327,6 +327,7 @@
     "title": "Posts by author",
     "description": "Showing community posts created by the selected author.",
     "userId": "Author ID: {userId}",
+    "unknownAuthor": "User",
     "categories": {
       "title": "Categories",
       "all": "All posts",

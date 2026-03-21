@@ -327,6 +327,7 @@
     "title": "投稿者の投稿一覧",
     "description": "選択した投稿者のコミュニティ投稿を表示します。",
     "userId": "投稿者ID: {userId}",
+    "unknownAuthor": "ユーザー",
     "categories": {
       "title": "カテゴリ",
       "all": "すべての投稿",

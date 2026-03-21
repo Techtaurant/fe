@@ -327,6 +327,7 @@
     "title": "作者文章列表",
     "description": "展示所选作者发布的社区文章。",
     "userId": "作者 ID：{userId}",
+    "unknownAuthor": "用户",
     "categories": {
       "title": "分类",
       "all": "全部",

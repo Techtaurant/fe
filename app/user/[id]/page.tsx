@@ -191,7 +191,7 @@ export default function UserDetailPage() {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Record<string, boolean>>({});
 
   const hasUserId = Boolean(userId);
-  const { user: currentUser } = useUser();
+  const { user: currentUser, isLoading: isCurrentUserLoading } = useUser();
   const includePrivatePosts = Boolean(currentUser && currentUser.id === userId);
 
   const { categories } = useUserCategories({
@@ -307,14 +307,29 @@ export default function UserDetailPage() {
   });
 
   const profileAuthor = useMemo(() => {
+    const isCurrentUserPage = currentUser?.id === userId;
+    if (isCurrentUserPage) {
+      return {
+        profileName: currentUser?.name || "",
+        profileImageUrl: currentUser?.profileImageUrl || "",
+      };
+    }
+
     const firstPostWithAuthor = postsByAuthor.posts.find((post) => post.author?.name);
     return {
-      profileName: firstPostWithAuthor?.author?.name || userId,
+      profileName: firstPostWithAuthor?.author?.name || "",
       profileImageUrl: firstPostWithAuthor?.author?.profileImageUrl || "",
     };
-  }, [postsByAuthor.posts, userId]);
+  }, [currentUser?.id, currentUser?.name, currentUser?.profileImageUrl, postsByAuthor.posts, userId]);
 
   const { profileName, profileImageUrl } = profileAuthor;
+  const isCurrentUserPage = currentUser?.id === userId;
+  const isProfileLoading = hasUserId
+    ? isCurrentUserPage
+      ? isCurrentUserLoading
+      : postsByAuthor.isLoading
+    : false;
+  const displayProfileName = profileName || t("unknownAuthor");
 
   const handleCategoryToggle = useCallback((categoryId: string) => {
     setExpandedCategoryIds((current) => ({
@@ -391,21 +406,30 @@ export default function UserDetailPage() {
           </div>
 
           <div className="mb-6 flex items-center gap-4 px-1">
-            <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-              {profileImageUrl ? (
-                <Image
-                  src={profileImageUrl}
-                  alt={profileName}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-xl font-bold text-muted-foreground">
-                  {(profileName || "?").charAt(0)}
-                </span>
-              )}
-            </div>
-            <h1 className="text-3xl font-bold text-foreground truncate">{profileName}</h1>
+            {isProfileLoading ? (
+              <>
+                <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-muted animate-pulse" />
+                <div className="h-9 w-40 max-w-[65vw] rounded-md bg-muted animate-pulse" />
+              </>
+            ) : (
+              <>
+                <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                  {profileImageUrl ? (
+                    <Image
+                      src={profileImageUrl}
+                      alt={displayProfileName}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span className="text-xl font-bold text-muted-foreground">
+                      {(displayProfileName || "?").charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <h1 className="text-3xl font-bold text-foreground truncate">{displayProfileName}</h1>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 mb-4 border-b border-border">
