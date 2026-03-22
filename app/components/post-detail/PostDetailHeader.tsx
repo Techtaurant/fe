@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Post } from "@/app/types";
 import { formatDisplayTime } from "@/app/utils";
 import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
+import UnblockActionButton from "../ui/UnblockActionButton";
 
 function buildTagRoute(locale: string, tagId: string): string {
   return `/${locale}?mode=user&tagIds=${encodeURIComponent(tagId)}`;
@@ -21,6 +22,9 @@ interface PostDetailHeaderProps {
   onToggleVisibility: () => Promise<void> | void;
   onRequestDelete: () => void;
   onRequestReport: () => void;
+  onFollowAuthor: () => Promise<void> | void;
+  isFollowingAuthor: boolean;
+  isFollowingUpdating: boolean;
   isVisibilityUpdating: boolean;
   onAuthorClick?: () => void;
 }
@@ -33,6 +37,9 @@ export default function PostDetailHeader({
   onToggleVisibility,
   onRequestDelete,
   onRequestReport,
+  onFollowAuthor,
+  isFollowingAuthor,
+  isFollowingUpdating,
   isVisibilityUpdating,
   onAuthorClick,
 }: PostDetailHeaderProps) {
@@ -134,12 +141,6 @@ export default function PostDetailHeader({
         </div>
 
         <div className="ml-auto relative flex items-center gap-2" ref={menuRef}>
-          {!isOwner && (
-            <button className="px-4 py-1.5 rounded-full border border-blue-500 text-blue-500 text-sm font-medium hover:bg-blue-500/10 hover:text-blue-500 transition-colors duration-200">
-              {t("follow")}
-            </button>
-          )}
-
           <button
             type="button"
             aria-label={t("menuOpen")}
@@ -160,6 +161,31 @@ export default function PostDetailHeader({
               />
             </svg>
           </button>
+
+          {!isOwner && (
+            isFollowingAuthor ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  await onFollowAuthor();
+                }}
+                disabled={isFollowingUpdating}
+                className="h-[34px] rounded-md bg-[#F3F4F5] px-4 text-sm font-medium text-[#303949] transition-colors hover:bg-[#EBECEF] dark:bg-[#2C2C36] dark:text-[#E6E6E7] dark:hover:bg-[#353540] disabled:opacity-60"
+              >
+                {t("following")}
+              </button>
+            ) : (
+              <UnblockActionButton
+                size="headerFollow"
+                onClick={async () => {
+                  await onFollowAuthor();
+                }}
+                disabled={isFollowingUpdating}
+              >
+                {t("follow")}
+              </UnblockActionButton>
+            )
+          )}
 
           {isMenuOpen && (
             <div className="absolute right-0 top-12 z-20 min-w-[120px] rounded-xl border border-border bg-background p-1 shadow-lg">

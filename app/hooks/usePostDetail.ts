@@ -13,8 +13,13 @@ import {
   updatePost,
   updatePostLike,
 } from "../services/posts";
-import { banUser, isBanApiError } from "../services/users/ban";
-import { FetchMyBansResponse } from "../services/users/ban/types";
+import { isBanApiError } from "../services/users/ban";
+import {
+  fetchUserFollowings,
+  isFollowApiError,
+} from "../services/users/follow";
+import { useUserBlockActions } from "./useUserBlockActions";
+import { type ToggleFollowResult, useFollowActions } from "./useFollowActions";
 import { FeedMode, Post } from "../types";
 import { queryKeys } from "../lib/queryKeys";
 import {
@@ -28,13 +33,14 @@ type PostDetailQueryData = {
 };
 
 type ReactionState = "like" | "dislike" | "none";
-
 export function usePostDetail(postId: string) {
   const t = useTranslations("PostDetailPage");
   const queryClient = useQueryClient();
   const { user } = useUser();
   const currentMode: FeedMode = FEED_MODES.USER;
   const userId = user?.id ?? null;
+  const { blockUser, isBlocking: isReporting } = useUserBlockActions(userId);
+  const { toggleFollow, isPending: isFollowingUpdating } = useFollowActions();
   const [reactionOverride, setReactionOverride] = useState<{
     postId: string;
     value: ReactionState;
@@ -111,6 +117,11 @@ export function usePostDetail(postId: string) {
     queryKey: detailQueryKey,
     queryFn: () => fetchPostDetailWithMeta(postId),
   });
+  const myFollowingsQuery = useQuery({
+    queryKey: queryKeys.user.followings(userId ?? ""),
+    queryFn: () => fetchUserFollowings(userId ?? ""),
+    enabled: Boolean(userId),
+  });
   const storedReactionQuery = useQuery({
     queryKey: ["post-reaction", postId, userId ?? "guest"],
     queryFn: async (): Promise<ReactionState | null> => getStoredReaction(postId),
@@ -170,95 +181,6 @@ export function usePostDetail(postId: string) {
   });
   const deleteMutation = useMutation({
     mutationFn: () => deletePost(postId),
-  });
-  const banMutation = useMutation({
-    mutationFn: ({ targetUserId }: {
-      targetUserId: string;
-      targetUserName: string;
-      targetUserProfileImageUrl: string | null;
-    }) => banUser(targetUserId),
-    onMutate: async ({ targetUserId, targetUserName, targetUserProfileImageUrl }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.user.bans() });
-      const previous = queryClient.getQueryData<FetchMyBansResponse>(queryKeys.user.bans());
-      const optimisticBan = {
-        userId: targetUserId,
-        name: targetUserName,
-        profileImageUrl: targetUserProfileImageUrl,
-        bannedAt: new Date().toISOString(),
-      };
-
-      queryClient.setQueryData<FetchMyBansResponse>(queryKeys.user.bans(), (current) => {
-        if (!current) {
-          return {
-            status: 200,
-            data: [optimisticBan],
-            message: "OK",
-          };
-        }
-
-        if (current.data.some((item) => item.userId === targetUserId)) {
-          return current;
-        }
-
-        return {
-          ...current,
-          data: [optimisticBan, ...current.data],
-        };
-      });
-
-      return { previous };
-    },
-    onError: (error, _variables, context) => {
-      if (isBanApiError(error) && error.code === "CONFLICT") {
-        return;
-      }
-
-      if (context?.previous) {
-        queryClient.setQueryData(queryKeys.user.bans(), context.previous);
-      }
-    },
-    onSuccess: (result, { targetUserId, targetUserProfileImageUrl }) => {
-      if (!result.data) return;
-      const serverBan = {
-        userId: result.data.userId,
-        name: result.data.name,
-        bannedAt: result.data.bannedAt,
-        profileImageUrl: targetUserProfileImageUrl,
-      };
-
-      queryClient.setQueryData<FetchMyBansResponse>(queryKeys.user.bans(), (current) => {
-        if (!current) {
-          return {
-            status: 200,
-            data: [serverBan],
-            message: "OK",
-          };
-        }
-
-        const alreadyExists = current.data.some((item) => item.userId === targetUserId);
-        if (alreadyExists) {
-          return {
-            ...current,
-            data: current.data.map((item) =>
-              item.userId === targetUserId
-                ? {
-                    ...item,
-                    ...serverBan,
-                  }
-                : item,
-            ),
-          };
-        }
-
-        return {
-          ...current,
-          data: [serverBan, ...current.data],
-        };
-      });
-    },
-    onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.user.bans() });
-    },
   });
 
   const handleReaction = async (target: "like" | "dislike") => {
@@ -464,43 +386,95 @@ export function usePostDetail(postId: string) {
     }
   };
 
-  const handleReport = async () => {
+  const handleReport = async (): Promise<{ ok: boolean; errorMessage?: string }> => {
     if (!user) {
       redirectToSignIn();
-      return;
+      return { ok: false };
     }
 
     const currentPost = detailQuery.data?.post;
     const targetUserId = currentPost?.author?.id;
-    if (!currentPost || !targetUserId) return;
+    if (!currentPost || !targetUserId) return { ok: false };
 
-    if (user.id === targetUserId) return;
+    if (user.id === targetUserId) return { ok: false };
 
     try {
-      await banMutation.mutateAsync({
-        targetUserId,
-        targetUserName: currentPost.author?.name ?? "Unknown user",
-        targetUserProfileImageUrl: currentPost.author?.profileImageUrl ?? null,
-      });
-      setPost(() => null);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      const result = await blockUser(targetUserId);
+      if (result === "blocked" || result === "alreadyBlocked") {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      }
+      return { ok: true };
     } catch (error: unknown) {
       if (isBanApiError(error)) {
         if (error.code === "UNAUTHORIZED") {
           redirectToSignIn();
-          return;
+          return { ok: false };
         }
 
-        if (error.code === "CONFLICT") {
-          setPost(() => null);
-          return;
-        }
-
-        alert(error.message || t("reportFailed"));
-        return;
+        return { ok: false, errorMessage: error.message || t("reportFailed") };
       }
 
-      alert(t("reportFailed"));
+      return { ok: false, errorMessage: t("reportFailed") };
+    }
+  };
+
+  const handleFollowAuthor = async (): Promise<ToggleFollowResult | null> => {
+    if (!user) {
+      redirectToSignIn();
+      return null;
+    }
+
+    const currentPost = detailQuery.data?.post;
+    const targetUserId = currentPost?.author?.id;
+    if (!currentPost || !targetUserId) return null;
+
+    if (user.id === targetUserId) {
+      return null;
+    }
+
+    const isAlreadyFollowing = Boolean(
+      myFollowingsQuery.data?.data.some((item) => item.userId === targetUserId),
+    );
+
+    try {
+      const result = await toggleFollow({
+        actorUserId: user.id,
+        targetUserId,
+        isCurrentlyFollowing: isAlreadyFollowing,
+        targetUserName: currentPost.author?.name ?? "",
+        fallbackName: currentPost.author?.name ?? "",
+      });
+
+      if (!result.ok) {
+        if (result.reason === "unauthorized") {
+          redirectToSignIn();
+          return null;
+        }
+
+        if (result.reason === "self") {
+          return null;
+        }
+
+        if (result.reason === "api") {
+          return result;
+        }
+
+        return { ok: false, reason: "unknown", message: t("loadFailed") };
+      }
+
+      return {
+        ...result,
+      };
+    } catch (error: unknown) {
+      if (isFollowApiError(error)) {
+        if (error.code === "UNAUTHORIZED") {
+          redirectToSignIn();
+          return { ok: false, reason: "unauthorized", code: error.code };
+        }
+        return { ok: false, reason: "api", message: error.message, code: error.code };
+      }
+
+      return { ok: false, reason: "unknown", message: t("loadFailed") };
     }
   };
 
@@ -518,6 +492,9 @@ export function usePostDetail(postId: string) {
     storedReaction,
   });
   const post = detailQuery.data?.post ?? null;
+  const isFollowingAuthor = Boolean(
+    post?.author?.id && myFollowingsQuery.data?.data.some((item) => item.userId === post.author?.id),
+  );
   const isLoading = detailQuery.isPending;
   const isRead = Boolean(user) && Boolean(post?.isRead);
   const errorMessage = (() => {
@@ -545,7 +522,10 @@ export function usePostDetail(postId: string) {
     handleToggleVisibility,
     handleDelete,
     handleReport,
-    isReporting: banMutation.isPending,
+    handleFollowAuthor,
+    isFollowingAuthor,
+    isFollowingUpdating,
+    isReporting,
     isVisibilityUpdating: visibilityMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };

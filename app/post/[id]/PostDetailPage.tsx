@@ -2,19 +2,25 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
 import Header from "../../components/Header";
 import PostDetail from "../../components/PostDetail";
+import ActionSnackbar from "../../components/ui/ActionSnackbar";
+import { useActionSnackbar } from "../../hooks/useActionSnackbar";
 import { useComments } from "../../hooks/useComments";
 import { usePostDetail } from "../../hooks/usePostDetail";
 import { useUser } from "../../hooks/useUser";
 
 export default function PostDetailPage() {
   const t = useTranslations("PostDetailPage");
+  const userPageT = useTranslations("UserPage");
   const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const postId = params.id as string;
   const { user } = useUser();
+  const [isRedirectingAfterBlock, setIsRedirectingAfterBlock] = useState(false);
+  const { snackbar, showSnackbar } = useActionSnackbar();
 
   const {
     post,
@@ -31,6 +37,9 @@ export default function PostDetailPage() {
     handleToggleVisibility,
     handleDelete,
     handleReport,
+    handleFollowAuthor,
+    isFollowingAuthor,
+    isFollowingUpdating,
     isReporting,
     isVisibilityUpdating,
     isDeleting,
@@ -81,6 +90,21 @@ export default function PostDetailPage() {
   }
 
   if (errorMessage || !post) {
+    if (isRedirectingAfterBlock) {
+      return (
+        <div className="min-h-screen bg-background">
+          <Header
+            onMenuClick={() => {}}
+            currentMode={currentMode}
+            onModeChange={() => {}}
+          />
+          <div className="flex items-center justify-center py-20">
+            <p className="text-lg text-muted-foreground">{t("loading")}</p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background">
         <Header
@@ -98,56 +122,109 @@ export default function PostDetailPage() {
   }
 
   return (
-    <PostDetail
-      post={post}
-      comments={comments}
-      isRead={isRead}
-      reactionState={reactionState}
-      currentMode={currentMode}
-      isCommentsLoading={isCommentsLoading}
-      commentsHasNext={commentsHasNext}
-      isCommentsLoadingMore={isCommentsLoadingMore}
-      commentsSort={commentsSort}
-      createCommentFieldErrors={createCommentFieldErrors}
-      currentUserId={user?.id ?? null}
-      onBack={() => router.back()}
-      onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
-      onAuthorClick={
-        post.author?.id
-          ? () => {
-              router.push(`/${locale}/user/${post.author?.id}`);
-            }
-          : undefined
-      }
-      onToggleVisibility={handleToggleVisibility}
-      onDelete={async () => {
-        const deleted = await handleDelete();
-        if (deleted) {
-          router.replace(`/${locale}?mode=user`);
-          router.refresh();
+    <>
+      <ActionSnackbar
+        isOpen={Boolean(snackbar)}
+        variant={snackbar?.type ?? "error"}
+        message={
+          snackbar?.message
+            ? snackbar.message
+            : snackbar
+              ? snackbar.type === "followed"
+                ? userPageT("actions.followedWithName", { name: snackbar.name ?? "" })
+                : snackbar.type === "unfollowed"
+                  ? userPageT("actions.unfollowedWithName", { name: snackbar.name ?? "" })
+                  : ""
+            : ""
         }
-        return deleted;
-      }}
-      onReport={handleReport}
-      onLike={handleLike}
-      onDislike={handleDislike}
-      onToggleRead={handleToggleRead}
-      onShare={handleShare}
-      onCreateComment={handleCreateComment}
-      onUpdateComment={handleUpdateComment}
-      onDeleteComment={handleDeleteComment}
-      onBanCommentAuthor={handleBanCommentAuthor}
-      onLikeComment={handleLikeComment}
-      onDislikeComment={handleDislikeComment}
-      onClearCommentFieldError={clearCreateCommentFieldError}
-      onLoadMoreComments={handleLoadMoreComments}
-      onCommentsSortChange={setCommentsSort}
-      updatingCommentId={updatingCommentId}
-      deletingCommentId={deletingCommentId}
-      banningCommentAuthorId={banningCommentAuthorId}
-      isVisibilityUpdating={isVisibilityUpdating}
-      isDeleting={isDeleting}
-      isReporting={isReporting}
-    />
+      />
+
+      <PostDetail
+        post={post}
+        comments={comments}
+        isRead={isRead}
+        reactionState={reactionState}
+        currentMode={currentMode}
+        isCommentsLoading={isCommentsLoading}
+        commentsHasNext={commentsHasNext}
+        isCommentsLoadingMore={isCommentsLoadingMore}
+        commentsSort={commentsSort}
+        createCommentFieldErrors={createCommentFieldErrors}
+        currentUserId={user?.id ?? null}
+        onBack={() => router.back()}
+        onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
+        onAuthorClick={
+          post.author?.id
+            ? () => {
+                router.push(`/${locale}/user/${post.author?.id}`);
+              }
+            : undefined
+        }
+        onToggleVisibility={handleToggleVisibility}
+        onDelete={async () => {
+          const deleted = await handleDelete();
+          if (deleted) {
+            router.replace(`/${locale}?mode=user`);
+            router.refresh();
+          }
+          return deleted;
+        }}
+        onReport={async () => {
+          setIsRedirectingAfterBlock(true);
+          const result = await handleReport();
+          if (result.ok && post.author?.id) {
+            router.replace(`/${locale}/user/${post.author.id}?blocked=1`);
+            return;
+          }
+
+          if (result.errorMessage) {
+            showSnackbar({ type: "error", message: result.errorMessage });
+          }
+
+          setIsRedirectingAfterBlock(false);
+        }}
+        onFollowAuthor={async () => {
+          const result = await handleFollowAuthor();
+          if (!result) {
+            return;
+          }
+
+          if (!result.ok) {
+            if (result.reason === "unauthorized") {
+              return;
+            }
+
+            showSnackbar({
+              type: "error",
+              message: result.message || t("loadFailed"),
+            });
+            return;
+          }
+
+          showSnackbar({ type: result.action, name: result.name });
+        }}
+        isFollowingAuthor={isFollowingAuthor}
+        isFollowingUpdating={isFollowingUpdating}
+        onLike={handleLike}
+        onDislike={handleDislike}
+        onToggleRead={handleToggleRead}
+        onShare={handleShare}
+        onCreateComment={handleCreateComment}
+        onUpdateComment={handleUpdateComment}
+        onDeleteComment={handleDeleteComment}
+        onBanCommentAuthor={handleBanCommentAuthor}
+        onLikeComment={handleLikeComment}
+        onDislikeComment={handleDislikeComment}
+        onClearCommentFieldError={clearCreateCommentFieldError}
+        onLoadMoreComments={handleLoadMoreComments}
+        onCommentsSortChange={setCommentsSort}
+        updatingCommentId={updatingCommentId}
+        deletingCommentId={deletingCommentId}
+        banningCommentAuthorId={banningCommentAuthorId}
+        isVisibilityUpdating={isVisibilityUpdating}
+        isDeleting={isDeleting}
+        isReporting={isReporting}
+      />
+    </>
   );
 }
