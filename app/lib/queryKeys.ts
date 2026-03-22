@@ -3,6 +3,9 @@ export const queryKeys = {
     all: ["user"] as const,
     me: () => [...queryKeys.user.all, "me"] as const,
     bans: () => [...queryKeys.user.all, "bans"] as const,
+    followCounts: (userId: string) => [...queryKeys.user.all, "follow-counts", userId] as const,
+    followers: (userId: string) => [...queryKeys.user.all, "followers", userId] as const,
+    followings: (userId: string) => [...queryKeys.user.all, "followings", userId] as const,
   },
   posts: {
     all: ["posts"] as const,
