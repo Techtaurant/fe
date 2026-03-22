@@ -80,6 +80,7 @@
   "PostDetail": {
     "back": "Back",
     "follow": "Follow",
+    "following": "Following",
     "privateBadge": "Private",
     "menuOpen": "Open more menu",
     "menuEdit": "Edit",
@@ -328,6 +329,43 @@
     "description": "Showing community posts created by the selected author.",
     "userId": "Author ID: {userId}",
     "unknownAuthor": "User",
+    "stats": {
+      "posts": "Posts",
+      "followers": "Followers",
+      "following": "Following"
+    },
+    "actions": {
+      "follow": "Follow",
+      "following": "Following",
+      "remove": "Remove",
+      "followFailed": "Failed to follow the user.",
+      "unfollowFailed": "Failed to unfollow the user.",
+      "block": "Block",
+      "blocked": "User has been blocked.",
+      "blockedWithName": "Blocked {name}.",
+      "followedWithName": "You followed {name}",
+      "unfollowedWithName": "You unfollowed {name}.",
+      "unblockedWithName": "Unblocked {name}.",
+      "alreadyBlocked": "This user is already blocked.",
+      "blockFailed": "Failed to block the user.",
+      "unblock": "Unblock",
+      "unblockFailed": "Failed to unblock the user.",
+      "blockConfirmTitle": "Block this user?",
+      "blockConfirmDescription": "If blocked, this user's posts may no longer be visible.",
+      "cancel": "Cancel",
+      "confirm": "Block"
+    },
+    "blockedState": {
+      "title": "Blocked by {blockerName}",
+      "description": "Unblock {blockedName} to view this profile"
+    },
+    "followList": {
+      "title": "Follow",
+      "closeAria": "Close follow list",
+      "loading": "Loading list...",
+      "emptyFollowers": "No followers yet.",
+      "emptyFollowings": "No followings yet."
+    },
     "categories": {
       "title": "Categories",
       "all": "All posts",

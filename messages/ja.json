@@ -80,6 +80,7 @@
   "PostDetail": {
     "back": "戻る",
     "follow": "フォロー",
+    "following": "フォロー中",
     "privateBadge": "非公開",
     "menuOpen": "その他メニューを開く",
     "menuEdit": "編集",
@@ -328,6 +329,43 @@
     "description": "選択した投稿者のコミュニティ投稿を表示します。",
     "userId": "投稿者ID: {userId}",
     "unknownAuthor": "ユーザー",
+    "stats": {
+      "posts": "投稿",
+      "followers": "フォロワー",
+      "following": "フォロー中"
+    },
+    "actions": {
+      "follow": "フォロー",
+      "following": "フォロー中",
+      "remove": "削除",
+      "followFailed": "フォローに失敗しました。",
+      "unfollowFailed": "フォロー解除に失敗しました。",
+      "block": "ブロック",
+      "blocked": "ユーザーをブロックしました。",
+      "blockedWithName": "{name}さんをブロックしました",
+      "followedWithName": "{name}さんをフォローしました",
+      "unfollowedWithName": "{name}さんのフォローを解除しました",
+      "unblockedWithName": "{name}さんのブロックを解除しました",
+      "alreadyBlocked": "このユーザーはすでにブロック済みです。",
+      "blockFailed": "ユーザーのブロックに失敗しました。",
+      "unblock": "ブロック解除",
+      "unblockFailed": "ブロック解除に失敗しました。",
+      "blockConfirmTitle": "このユーザーをブロックしますか？",
+      "blockConfirmDescription": "ブロックすると、このユーザーの投稿が表示されなくなる可能性があります。",
+      "cancel": "キャンセル",
+      "confirm": "ブロック"
+    },
+    "blockedState": {
+      "title": "{blockerName}さんがブロックしたアカウントです",
+      "description": "{blockedName}のプロフィールを見るにはブロックを解除してください"
+    },
+    "followList": {
+      "title": "フォロー",
+      "closeAria": "フォロー一覧を閉じる",
+      "loading": "一覧を読み込み中です。",
+      "emptyFollowers": "フォロワーがいません。",
+      "emptyFollowings": "フォロー中のユーザーがいません。"
+    },
     "categories": {
       "title": "カテゴリ",
       "all": "すべての投稿",

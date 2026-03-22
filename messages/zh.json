@@ -80,6 +80,7 @@
   "PostDetail": {
     "back": "返回",
     "follow": "关注",
+    "following": "已关注",
     "privateBadge": "私密",
     "menuOpen": "打开更多菜单",
     "menuEdit": "编辑",
@@ -328,6 +329,43 @@
     "description": "展示所选作者发布的社区文章。",
     "userId": "作者 ID：{userId}",
     "unknownAuthor": "用户",
+    "stats": {
+      "posts": "文章",
+      "followers": "粉丝",
+      "following": "关注中"
+    },
+    "actions": {
+      "follow": "关注",
+      "following": "已关注",
+      "remove": "删除",
+      "followFailed": "关注失败。",
+      "unfollowFailed": "取消关注失败。",
+      "block": "屏蔽",
+      "blocked": "已屏蔽该用户。",
+      "blockedWithName": "已屏蔽 {name}。",
+      "followedWithName": "你已关注 {name}",
+      "unfollowedWithName": "你已取消关注 {name}。",
+      "unblockedWithName": "已解除对 {name} 的屏蔽。",
+      "alreadyBlocked": "该用户已被屏蔽。",
+      "blockFailed": "屏蔽用户失败。",
+      "unblock": "解除屏蔽",
+      "unblockFailed": "解除屏蔽失败。",
+      "blockConfirmTitle": "要屏蔽该用户吗？",
+      "blockConfirmDescription": "屏蔽后，你可能将看不到该用户的帖子。",
+      "cancel": "取消",
+      "confirm": "屏蔽"
+    },
+    "blockedState": {
+      "title": "这是 {blockerName} 屏蔽的账号",
+      "description": "如需查看 {blockedName} 的主页，请先解除屏蔽"
+    },
+    "followList": {
+      "title": "关注",
+      "closeAria": "关闭关注列表",
+      "loading": "正在加载列表...",
+      "emptyFollowers": "暂无粉丝。",
+      "emptyFollowings": "暂无关注。"
+    },
     "categories": {
       "title": "分类",
       "all": "全部",
