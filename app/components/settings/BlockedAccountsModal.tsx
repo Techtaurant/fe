@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Ban, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import AppModal from "../common/AppModal";
+import UnblockActionButton from "../ui/UnblockActionButton";
 
 interface BlockedAccountItem {
   userId: string;
@@ -95,16 +96,15 @@ export default function BlockedAccountsModal({
                     </p>
                   </div>
 
-                  <button
-                    type="button"
+                  <UnblockActionButton
                     disabled={isUnbanning}
                     onClick={async () => {
                       await onUnban(item.userId);
                     }}
-                    className="mr-[20px] mt-[2px] h-6 min-w-[60px] px-2 rounded-md bg-primary/10 text-xs leading-none font-semibold whitespace-nowrap text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mr-[20px] mt-[2px]"
                   >
                     {isUnbanning ? t("blockedModal.unblocking") : t("blockedModal.unblockAction")}
-                  </button>
+                  </UnblockActionButton>
                 </li>
               );
             })}
