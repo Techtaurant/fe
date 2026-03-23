@@ -273,9 +273,7 @@ export default function PostDetailCommentItem({
             }`}
           >
             {comment.isDeleted
-              ? currentUserId === comment.author.id
-                ? t("commentDeletedByAuthor")
-                : t("commentDeleted")
+              ? t("commentDeleted")
               : isBannedComment
                 ? t("commentBannedContent")
                 : comment.content}

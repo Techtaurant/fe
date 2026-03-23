@@ -34,6 +34,12 @@ function extractValidationErrors(payload: unknown): ValidationErrors | undefined
   return errors;
 }
 
+function extractApiMessage(payload: unknown): string | undefined {
+  if (typeof payload !== "object" || payload === null) return undefined;
+  const message = (payload as { message?: unknown }).message;
+  return typeof message === "string" ? message : undefined;
+}
+
 async function parseJson(response: Response): Promise<unknown> {
   return response.json();
 }
@@ -52,6 +58,12 @@ export async function createCommentRequest(
     });
   }
 
+  if (response.status === 403) {
+    throw new CommentApiError("FORBIDDEN", {
+      status: response.status,
+    });
+  }
+
   if (response.status === 404) {
     throw new CommentApiError("NOT_FOUND", {
       status: response.status,
@@ -66,7 +78,7 @@ export async function createCommentRequest(
     throw new CommentApiError("BAD_REQUEST", {
       status: response.status,
       validationErrors: extractValidationErrors(body),
-      message: "BAD_REQUEST",
+      message: extractApiMessage(body) || "BAD_REQUEST",
     });
   }
 

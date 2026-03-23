@@ -283,8 +283,16 @@ export async function setPostLike(
     body: JSON.stringify({ likeStatus }),
   });
 
+  if (response.status === 400) {
+    throw new Error("BAD_REQUEST");
+  }
+
   if (response.status === 401) {
     throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 403) {
+    throw new Error("FORBIDDEN");
   }
 
   if (response.status === 404) {
