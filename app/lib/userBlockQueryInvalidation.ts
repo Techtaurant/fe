@@ -17,7 +17,6 @@ export async function invalidateUserBlockRelatedQueries(
       : []),
     queryClient.invalidateQueries({ queryKey: [...queryKeys.posts.all, "user-community"] as const }),
     queryClient.invalidateQueries({ queryKey: [...queryKeys.posts.all, "user-community-category"] as const }),
-    queryClient.invalidateQueries({ queryKey: [...queryKeys.posts.all, "user-category-post-counts"] as const }),
     queryClient.invalidateQueries({ queryKey: [...queryKeys.posts.all, "user-categories"] as const }),
   ]);
 }

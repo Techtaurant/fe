@@ -55,6 +55,7 @@ export interface UserCategory {
   path: string;
   depth: number;
   parentId: string | null;
+  postCount?: number;
 }
 
 export interface UserCategoryResponse {

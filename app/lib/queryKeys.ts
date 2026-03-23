@@ -34,8 +34,6 @@ export const queryKeys = {
       path?: string;
       includePrivatePosts?: boolean;
     }) => [...queryKeys.posts.all, "user-community-category", params] as const,
-    userCategoryPostCounts: (params: { userId: string; includePrivatePosts?: boolean }) =>
-      [...queryKeys.posts.all, "user-category-post-counts", params] as const,
     userCategories: (params: { userId: string; path?: string }) =>
       [...queryKeys.posts.all, "user-categories", params] as const,
     draftsList: (params: { size: number }) =>
