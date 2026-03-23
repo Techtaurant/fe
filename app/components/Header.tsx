@@ -12,6 +12,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 import MobileBottomNav from "./BottomNav";
+import PrimaryRectButton from "./ui/PrimaryRectButton";
 import SearchInput from "./SearchInput";
 import SettingsModal from "./settings/SettingsModal";
 
@@ -216,16 +217,13 @@ export default function Header({
         <div className="flex items-center gap-2">
           {/* Write Post Button (로그인 사용자만) */}
           {isLoggedIn && !isLoading && (
-            <button
+            <PrimaryRectButton
               onClick={handleWritePostClick}
-              className="hidden md:inline-flex md:mr-2 h-9 min-w-[100px] px-3 items-center justify-center gap-2.5 whitespace-nowrap rounded-lg
-                     bg-comment-submit-button text-white text-sm font-semibold
-                     transition-colors duration-200
-                     hover:bg-comment-submit-button-hover"
+              className="hidden md:inline-flex md:mr-2 h-9 min-w-[100px] px-3 items-center justify-center gap-2.5 whitespace-nowrap text-sm font-semibold"
             >
               <PenLine className="h-3.5 w-3.5" />
               <span>{t("writePost")}</span>
-            </button>
+            </PrimaryRectButton>
           )}
 
           {/* Auth Button / Profile */}

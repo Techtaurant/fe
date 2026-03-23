@@ -1,15 +1,35 @@
 "use client";
 
 import { type ReactNode, useCallback, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, UserX } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { redirectToOAuthLogin } from "../../lib/authRedirect";
 import Header from "../../components/Header";
+import ActionSnackbar from "../../components/ui/ActionSnackbar";
+import PrimaryRectButton from "../../components/ui/PrimaryRectButton";
+import PostDetailConfirmDialog, {
+  DELETE_CONFIRM_BUTTON_CLASS_NAME,
+} from "../../components/post-detail/PostDetailConfirmDialog";
+import BlockedProfileState from "../../components/user/BlockedProfileState";
+import UserFollowListModal, {
+  FollowListTab,
+} from "../../components/user/UserFollowListModal";
 import CommunityFeedSection from "../../components/feed/CommunityFeedSection";
 import { FEED_MODES } from "../../constants/feed";
 import { FeedMode } from "../../types";
 import { PostListPeriod, PostListSort, UserCategory } from "../../services/posts/types";
+import { fetchMyBans, isBanApiError } from "../../services/users/ban";
+import {
+  fetchUserFollowCounts,
+  fetchUserFollowers,
+  fetchUserFollowings,
+} from "../../services/users/follow";
+import { useActionSnackbar } from "../../hooks/useActionSnackbar";
+import { useFollowActions } from "../../hooks/useFollowActions";
+import { useUserBlockActions } from "../../hooks/useUserBlockActions";
 import { useUserCategories } from "../../hooks/useUserCategories";
 import { useUserCommunityFeed } from "../../hooks/useUserCommunityFeed";
 import {
@@ -18,6 +38,7 @@ import {
   useUserCategoryPostCounts,
 } from "../../hooks/useUserCategoryPostCounts";
 import { useUser } from "../../hooks/useUser";
+import { queryKeys } from "../../lib/queryKeys";
 
 type CategoryFilter = {
   id: string;
@@ -182,17 +203,59 @@ function renderCategoryFilterButton(params: {
 export default function UserDetailPage() {
   const t = useTranslations("UserPage");
   const params = useParams();
+  const searchParams = useSearchParams();
   const userId = typeof params.id === "string" ? params.id : "";
+  const isBlockedIntent = searchParams.get("blocked") === "1";
   const [currentMode, setCurrentMode] = useState<FeedMode>(FEED_MODES.USER);
 
   const [period, setPeriod] = useState<PostListPeriod>("ALL");
   const [sort, setSort] = useState<PostListSort>("LATEST");
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [blockedProfileOverride, setBlockedProfileOverride] = useState<boolean | null>(
+    isBlockedIntent ? true : null,
+  );
+  const [isFollowListModalOpen, setIsFollowListModalOpen] = useState(false);
+  const [followListTab, setFollowListTab] = useState<FollowListTab>("followers");
   const [selectedCategoryPath, setSelectedCategoryPath] = useState<string | null>(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Record<string, boolean>>({});
 
+  const { snackbar, showSnackbar } = useActionSnackbar();
   const hasUserId = Boolean(userId);
-  const { user: currentUser } = useUser();
+  const { user: currentUser, isLoading: isCurrentUserLoading } = useUser();
+  const currentUserId = currentUser?.id ?? null;
+  const { toggleFollow, isPending: isFollowToggling } = useFollowActions();
+  const { blockUser, unblockUser, isBlocking, isUnblocking } = useUserBlockActions(currentUserId);
   const includePrivatePosts = Boolean(currentUser && currentUser.id === userId);
+
+  const followCountsQuery = useQuery({
+    queryKey: queryKeys.user.followCounts(userId),
+    queryFn: () => fetchUserFollowCounts(userId),
+    enabled: hasUserId,
+  });
+
+  const myFollowingsQuery = useQuery({
+    queryKey: queryKeys.user.followings(currentUserId ?? ""),
+    queryFn: () => fetchUserFollowings(currentUserId ?? ""),
+    enabled: Boolean(currentUserId),
+  });
+
+  const myBansQuery = useQuery({
+    queryKey: queryKeys.user.bans(),
+    queryFn: fetchMyBans,
+    enabled: Boolean(currentUserId),
+  });
+
+  const followersQuery = useQuery({
+    queryKey: queryKeys.user.followers(userId),
+    queryFn: () => fetchUserFollowers(userId),
+    enabled: hasUserId && isFollowListModalOpen && followListTab === "followers",
+  });
+
+  const followingsQuery = useQuery({
+    queryKey: queryKeys.user.followings(userId),
+    queryFn: () => fetchUserFollowings(userId),
+    enabled: hasUserId && isFollowListModalOpen && followListTab === "followings",
+  });
 
   const { categories } = useUserCategories({
     enabled: hasUserId,
@@ -307,14 +370,184 @@ export default function UserDetailPage() {
   });
 
   const profileAuthor = useMemo(() => {
+    const isCurrentUserPage = currentUser?.id === userId;
+    if (isCurrentUserPage) {
+      return {
+        profileName: currentUser?.name || "",
+        profileImageUrl: currentUser?.profileImageUrl || "",
+      };
+    }
+
     const firstPostWithAuthor = postsByAuthor.posts.find((post) => post.author?.name);
     return {
-      profileName: firstPostWithAuthor?.author?.name || userId,
+      profileName: firstPostWithAuthor?.author?.name || "",
       profileImageUrl: firstPostWithAuthor?.author?.profileImageUrl || "",
     };
-  }, [postsByAuthor.posts, userId]);
+  }, [currentUser?.id, currentUser?.name, currentUser?.profileImageUrl, postsByAuthor.posts, userId]);
 
   const { profileName, profileImageUrl } = profileAuthor;
+  const isCurrentUserPage = currentUser?.id === userId;
+  const showProfileActions = Boolean(hasUserId && !isCurrentUserLoading && !isCurrentUserPage);
+  const isProfileLoading = hasUserId
+    ? isCurrentUserPage
+      ? isCurrentUserLoading
+      : postsByAuthor.isLoading
+    : false;
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(), []);
+  const postCount = postsByAuthor.posts.length;
+  const followerCount = followCountsQuery.data?.data.followerCount ?? null;
+  const followingCount = followCountsQuery.data?.data.followingCount ?? null;
+  const myFollowingUserIdSet = useMemo(
+    () => new Set((myFollowingsQuery.data?.data ?? []).map((user) => user.userId)),
+    [myFollowingsQuery.data?.data],
+  );
+  const isFollowed = Boolean(currentUserId && myFollowingUserIdSet.has(userId));
+  const activeFollowList = followListTab === "followers"
+    ? followersQuery.data?.data ?? []
+    : followingsQuery.data?.data ?? [];
+  const isFollowListLoading = followListTab === "followers"
+    ? followersQuery.isLoading || followersQuery.isFetching
+    : followingsQuery.isLoading || followingsQuery.isFetching;
+  const formatCount = useCallback(
+    (value: number | null) => (value === null ? "-" : numberFormatter.format(value)),
+    [numberFormatter],
+  );
+  const profileStatsText = `${t("stats.posts")} ${formatCount(postCount)}`;
+  const displayProfileName = profileName || t("unknownAuthor");
+  const blockedUserName = myBansQuery.data?.data.find((item) => item.userId === userId)?.name
+    || displayProfileName;
+  const unblockToastTargetName = snackbar?.type === "blocked"
+    ? snackbar.name
+    : blockedUserName;
+  const isTargetUserBanned = Boolean(
+    myBansQuery.data?.data.some((item) => item.userId === userId),
+  );
+  const isBlockedProfile = blockedProfileOverride ?? isTargetUserBanned;
+
+  const handleToggleFollow = useCallback(
+    async (targetUserId: string, isCurrentlyFollowing: boolean, targetUserName?: string) => {
+      const result = await toggleFollow({
+        actorUserId: currentUser?.id ?? null,
+        targetUserId,
+        isCurrentlyFollowing,
+        targetUserName,
+        fallbackName: displayProfileName,
+      });
+
+      if (!result.ok) {
+        if (result.reason === "unauthorized") {
+          redirectToOAuthLogin();
+          return;
+        }
+
+        if (result.reason === "self") {
+          return;
+        }
+
+        const fallbackMessage = isCurrentlyFollowing
+          ? t("actions.unfollowFailed")
+          : t("actions.followFailed");
+        showSnackbar({ type: "error", message: result.message || fallbackMessage });
+        return;
+      }
+
+      if (result.action === "followed") {
+        showSnackbar({ type: "followed", name: result.name });
+      } else {
+        showSnackbar({ type: "unfollowed", name: result.name });
+      }
+    },
+    [currentUser?.id, displayProfileName, showSnackbar, t, toggleFollow],
+  );
+
+  const openFollowList = useCallback((tab: FollowListTab) => {
+    setFollowListTab(tab);
+    setIsFollowListModalOpen(true);
+  }, []);
+
+  const handleBlockUser = useCallback(async () => {
+    if (!userId || isBlocking) {
+      return;
+    }
+
+    if (!currentUser) {
+      redirectToOAuthLogin();
+      return;
+    }
+
+    if (currentUser.id === userId) {
+      return;
+    }
+
+    try {
+      const result = await blockUser(userId);
+      setBlockedProfileOverride(true);
+      showSnackbar({ type: "blocked", name: displayProfileName });
+
+      if (result === "alreadyBlocked") {
+        showSnackbar({ type: "error", message: t("actions.alreadyBlocked") });
+      }
+    } catch (error: unknown) {
+      if (isBanApiError(error)) {
+        if (error.code === "UNAUTHORIZED") {
+          redirectToOAuthLogin();
+          return;
+        }
+
+        showSnackbar({ type: "error", message: error.message || t("actions.blockFailed") });
+        return;
+      }
+
+      showSnackbar({ type: "error", message: t("actions.blockFailed") });
+    }
+  }, [blockUser, currentUser, displayProfileName, isBlocking, showSnackbar, t, userId]);
+
+  const handleBlockButtonClick = useCallback(() => {
+    if (!userId) {
+      return;
+    }
+
+    if (!currentUser) {
+      redirectToOAuthLogin();
+      return;
+    }
+
+    if (currentUser.id === userId) {
+      return;
+    }
+
+    setIsBlockConfirmOpen(true);
+  }, [currentUser, userId]);
+
+  const handleConfirmBlock = useCallback(async () => {
+    await handleBlockUser();
+    setIsBlockConfirmOpen(false);
+  }, [handleBlockUser]);
+
+  const handleUnblockUser = useCallback(async () => {
+    if (!userId || isUnblocking) {
+      return;
+    }
+
+    if (!currentUser) {
+      redirectToOAuthLogin();
+      return;
+    }
+
+    try {
+      await unblockUser(userId);
+
+      setBlockedProfileOverride(false);
+      showSnackbar({ type: "unblocked", name: unblockToastTargetName });
+    } catch (error: unknown) {
+      if (isBanApiError(error) && error.code === "UNAUTHORIZED") {
+        redirectToOAuthLogin();
+        return;
+      }
+
+      showSnackbar({ type: "error", message: t("actions.unblockFailed") });
+    }
+  }, [currentUser, isUnblocking, showSnackbar, t, unblockToastTargetName, unblockUser, userId]);
 
   const handleCategoryToggle = useCallback((categoryId: string) => {
     setExpandedCategoryIds((current) => ({
@@ -362,6 +595,46 @@ export default function UserDetailPage() {
         onMenuClick={() => {}}
       />
 
+      <ActionSnackbar
+        isOpen={Boolean(snackbar)}
+        variant={snackbar?.type ?? "unblocked"}
+        message={
+          snackbar?.message
+            ? snackbar.message
+            : snackbar
+              ? snackbar.type === "blocked"
+                ? t("actions.blockedWithName", { name: snackbar.name ?? "" })
+                : snackbar.type === "unblocked"
+                  ? t("actions.unblockedWithName", { name: snackbar.name ?? "" })
+                  : snackbar.type === "followed"
+                    ? t("actions.followedWithName", { name: snackbar.name ?? "" })
+                    : snackbar.type === "unfollowed"
+                      ? t("actions.unfollowedWithName", { name: snackbar.name ?? "" })
+                      : ""
+              : ""
+        }
+        undoLabel={t("actions.cancel")}
+        onUndo={
+          snackbar?.type === "blocked"
+            ? () => {
+                void handleUnblockUser();
+              }
+            : undefined
+        }
+        isUndoPending={isUnblocking}
+      />
+
+      {isBlockedProfile ? (
+        <BlockedProfileState
+          title={t("blockedState.title", { blockerName: currentUser?.name ?? t("unknownAuthor") })}
+          description={t("blockedState.description", { blockedName: blockedUserName })}
+          unblockLabel={t("actions.unblock")}
+          onUnblock={() => {
+            void handleUnblockUser();
+          }}
+          isUnblocking={isUnblocking}
+        />
+      ) : (
       <div className="md:flex max-w-[1280px] mx-auto px-4 md:px-6 py-6 gap-6">
         <aside className="hidden md:block w-[250px] shrink-0">
           <div className="rounded-xl border border-border bg-card p-4">
@@ -390,23 +663,127 @@ export default function UserDetailPage() {
             ) : null}
           </div>
 
-          <div className="mb-6 flex items-center gap-4 px-1">
-            <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-              {profileImageUrl ? (
-                <Image
-                  src={profileImageUrl}
-                  alt={profileName}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-xl font-bold text-muted-foreground">
-                  {(profileName || "?").charAt(0)}
-                </span>
-              )}
-            </div>
-            <h1 className="text-3xl font-bold text-foreground truncate">{profileName}</h1>
+          <div className="mb-6 flex flex-col gap-4 px-1 md:flex-row md:items-center md:justify-between">
+            {isProfileLoading ? (
+              <>
+                <div className="flex items-center gap-4">
+                  <div className="h-[52px] w-[52px] shrink-0 rounded-full bg-muted animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-9 w-40 max-w-[65vw] rounded-md bg-muted animate-pulse" />
+                    <div className="h-5 w-64 max-w-[75vw] rounded-md bg-muted animate-pulse" />
+                  </div>
+                </div>
+                {showProfileActions ? (
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-[120px] btn-rect bg-muted animate-pulse" />
+                    <div className="h-10 w-10 btn-rect bg-muted animate-pulse" />
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <div className="min-w-0 flex items-center gap-4">
+                  <div className="relative h-[52px] w-[52px] shrink-0 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                    {profileImageUrl ? (
+                      <Image
+                        src={profileImageUrl}
+                        alt={displayProfileName}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span className="text-xl font-bold text-muted-foreground">
+                        {(displayProfileName || "?").charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h1 className="text-[20px] font-bold text-foreground truncate">{displayProfileName}</h1>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] font-medium text-muted-foreground">
+                      <span className="truncate">{profileStatsText}</span>
+                      <span aria-hidden="true">·</span>
+                      <button
+                        type="button"
+                        onClick={() => openFollowList("followers")}
+                        className="truncate transition-colors hover:text-foreground"
+                      >
+                        {t("stats.followers")} {formatCount(followerCount)}
+                      </button>
+                      <span aria-hidden="true">·</span>
+                      <button
+                        type="button"
+                        onClick={() => openFollowList("followings")}
+                        className="truncate transition-colors hover:text-foreground"
+                      >
+                        {t("stats.following")} {formatCount(followingCount)}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {showProfileActions ? (
+                  <div className="flex items-center gap-3 md:shrink-0">
+                    {isFollowed ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void handleToggleFollow(userId, isFollowed, displayProfileName);
+                        }}
+                        disabled={isFollowToggling}
+                        className="h-10 min-w-[120px] btn-rect btn-neutral-surface px-5 text-[15px] font-semibold whitespace-nowrap text-muted-foreground transition-colors disabled:opacity-60"
+                      >
+                        {t("actions.following")}
+                      </button>
+                    ) : (
+                      <PrimaryRectButton
+                        onClick={() => {
+                          void handleToggleFollow(userId, isFollowed, displayProfileName);
+                        }}
+                        disabled={isFollowToggling}
+                        className="h-10 min-w-[120px] px-5 text-[15px] font-semibold whitespace-nowrap"
+                      >
+                        {t("actions.follow")}
+                      </PrimaryRectButton>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleBlockButtonClick}
+                      disabled={isBlocking}
+                      className="h-10 min-w-10 btn-rect btn-neutral-surface px-2 text-muted-foreground inline-flex items-center justify-center transition-colors disabled:opacity-60"
+                      aria-label={t("actions.block")}
+                    >
+                      <UserX className="h-5 w-5" />
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
+
+          <PostDetailConfirmDialog
+            isOpen={isBlockConfirmOpen}
+            title={t("actions.blockConfirmTitle")}
+            description={t("actions.blockConfirmDescription")}
+            cancelLabel={t("actions.cancel")}
+            confirmLabel={t("actions.confirm")}
+            onCancel={() => setIsBlockConfirmOpen(false)}
+            onConfirm={handleConfirmBlock}
+            isConfirming={isBlocking}
+            confirmButtonClassName={DELETE_CONFIRM_BUTTON_CLASS_NAME}
+          />
+
+          <UserFollowListModal
+            isOpen={isFollowListModalOpen}
+            isLoading={isFollowListLoading}
+            activeTab={followListTab}
+            users={activeFollowList}
+            currentUserId={currentUserId}
+            followingUserIdSet={myFollowingUserIdSet}
+            followerCount={followerCount}
+            followingCount={followingCount}
+            onClose={() => setIsFollowListModalOpen(false)}
+            onTabChange={setFollowListTab}
+            onToggleFollow={handleToggleFollow}
+          />
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 mb-4 border-b border-border">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
@@ -472,6 +849,7 @@ export default function UserDetailPage() {
           ) : null}
         </main>
       </div>
+      )}
     </div>
   );
 }

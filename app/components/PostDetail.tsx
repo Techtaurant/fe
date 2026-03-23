@@ -34,6 +34,9 @@ interface PostDetailProps {
   onToggleVisibility: () => Promise<void> | void;
   onDelete: () => Promise<boolean | void> | boolean | void;
   onReport: () => Promise<void> | void;
+  onFollowAuthor: () => Promise<void> | void;
+  isFollowingAuthor: boolean;
+  isFollowingUpdating: boolean;
   onLike: () => void;
   onDislike?: () => void;
   onToggleRead: () => void;
@@ -73,6 +76,9 @@ export default function PostDetail({
   onToggleVisibility,
   onDelete,
   onReport,
+  onFollowAuthor,
+  isFollowingAuthor,
+  isFollowingUpdating,
   onLike,
   onDislike,
   onToggleRead,
@@ -136,6 +142,9 @@ export default function PostDetail({
           onToggleVisibility={() => setIsVisibilityConfirmOpen(true)}
           onRequestDelete={() => setIsDeleteConfirmOpen(true)}
           onRequestReport={() => setIsReportConfirmOpen(true)}
+          onFollowAuthor={onFollowAuthor}
+          isFollowingAuthor={isFollowingAuthor}
+          isFollowingUpdating={isFollowingUpdating}
           isVisibilityUpdating={isVisibilityUpdating}
         />
 
