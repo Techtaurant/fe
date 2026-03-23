@@ -83,12 +83,11 @@ export async function fetchUserCategories(
 
 export async function fetchPostDetailWithMeta(postId: string): Promise<{
   post: Post;
-  isLiked: boolean;
 }> {
   const result = await fetchPostDetail(postId);
+
   return {
     post: mapDetailToPost(result.data),
-    isLiked: Boolean(result.data.isLiked),
   };
 }
 
@@ -107,17 +106,16 @@ export async function fetchDraftPostList(params?: {
 
 export async function fetchDraftPostDetail(postId: string): Promise<{
   post: Post;
-  isLiked: boolean;
   categoryPath: string;
 }> {
   const result = await fetchDraftDetail(postId);
   const mappedPost = mapDetailToPost(result.data);
+
   return {
     post: {
       ...mappedPost,
       viewCount: 0,
     },
-    isLiked: Boolean(result.data.isLiked),
     categoryPath: result.data.category?.path || "",
   };
 }

@@ -77,6 +77,7 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
     content: detail.content || "",
     viewCount: detail.viewCount ?? 0,
     likeCount: detail.likeCount ?? 0,
+    likeStatus: detail.likeStatus ?? "NONE",
     commentCount: detail.commentCount ?? 0,
     tags: detail.tags ?? [],
     author: {

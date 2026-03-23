@@ -101,7 +101,7 @@ export default function BlockedAccountsModal({
                     onClick={async () => {
                       await onUnban(item.userId);
                     }}
-                    className="mr-[20px] mt-[2px] h-6 w-[60px] rounded-md bg-primary/10 text-xs leading-none font-semibold text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mr-[20px] mt-[2px] h-6 min-w-[60px] px-2 rounded-md bg-primary/10 text-xs leading-none font-semibold whitespace-nowrap text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isUnbanning ? t("blockedModal.unblocking") : t("blockedModal.unblockAction")}
                   </button>

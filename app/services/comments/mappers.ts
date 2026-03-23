@@ -13,6 +13,7 @@ interface CommentPayload {
   depth: number;
   isDeleted: boolean;
   isBanned?: boolean;
+  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
   createdAt: string;
 }
 
@@ -34,6 +35,7 @@ function normalizeComment(
     },
     createdAt: payload.createdAt,
     likeCount: 0,
+    likeStatus: payload.likeStatus ?? "NONE",
     replyCount: 0,
     isDeleted: payload.isDeleted,
     isBanned: payload.isBanned ?? false,
@@ -55,6 +57,7 @@ export function mapCommentListItemToComment(item: CommentListResponse): Comment 
     },
     createdAt: item.createdAt,
     likeCount: item.likeCount,
+    likeStatus: item.likeStatus ?? "NONE",
     replyCount: item.replyCount,
     isDeleted: item.isDeleted,
     isBanned: item.isBanned ?? false,

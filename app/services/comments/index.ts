@@ -1,11 +1,20 @@
-import { createCommentRequest, fetchCommentsRequest } from "./client";
+import {
+  createCommentRequest,
+  fetchCommentsRequest,
+  fetchCommentRepliesRequest,
+  updateCommentLikeRequest,
+} from "./client";
 import {
   CreateCommentRequest,
   CreateCommentResponse,
   UpdateCommentRequest,
   UpdateCommentResponse,
+  UpdateCommentLikeRequest,
+  UpdateCommentLikeResponse,
   FetchCommentsRequest,
   FetchCommentsResponse,
+  FetchCommentRepliesRequest,
+  FetchCommentRepliesResponse,
 } from "./types";
 import { deleteCommentRequest, updateCommentRequest } from "./client";
 
@@ -30,4 +39,17 @@ export async function fetchComments(
   payload: FetchCommentsRequest,
 ): Promise<FetchCommentsResponse> {
   return fetchCommentsRequest(payload);
+}
+
+export async function fetchCommentReplies(
+  payload: FetchCommentRepliesRequest,
+): Promise<FetchCommentRepliesResponse> {
+  return fetchCommentRepliesRequest(payload);
+}
+
+export async function updateCommentLike(
+  commentId: string,
+  payload: UpdateCommentLikeRequest,
+): Promise<UpdateCommentLikeResponse> {
+  return updateCommentLikeRequest(commentId, payload);
 }

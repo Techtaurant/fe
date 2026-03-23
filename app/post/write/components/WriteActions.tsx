@@ -35,19 +35,19 @@ export default function WriteActions({
 
       <div className="flex gap-3">
         {showDraftActions && (
-          <div className="inline-flex overflow-hidden rounded-lg bg-muted/80">
+          <div className="inline-flex overflow-hidden rounded-lg bg-close-button">
             <button
               type="button"
               disabled={isPublishActionDisabled}
               onClick={onSaveDraft}
-              className="px-4 py-2.5 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 save-action-button"
+              className="px-4 py-2.5 text-base font-semibold text-foreground transition-colors hover:bg-close-button-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? t("saving") : t("saveDraft")}
             </button>
             <button
               type="button"
               onClick={onGoDraftList}
-              className="min-w-11 border-l border-border px-2.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="min-w-11 border-l border-white/80 dark:border-ring px-2.5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-close-button-hover"
               aria-label={t("draftListAria")}
             >
               {draftCountLabel}
@@ -59,7 +59,7 @@ export default function WriteActions({
           type="button"
           disabled={isPublishActionDisabled}
           onClick={onOpenPublishModal}
-          className="rounded-lg bg-primary px-7 py-2.5 text-base font-semibold text-primary-foreground transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-comment-submit-button px-7 py-2.5 text-base font-semibold text-white transition-colors duration-200 hover:bg-comment-submit-button-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? t("publishing") : t("publish")}
         </button>

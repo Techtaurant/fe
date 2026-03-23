@@ -1,69 +1,31 @@
-'use client';
+import { redirect } from "next/navigation";
+import { routing } from "@/i18n/routing";
 
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-const AUTH_RETURN_TO_STORAGE_KEY = 'auth:returnTo';
-const PENDING_PUBLISH_STORAGE_KEY = 'post:write:pendingPublish';
-const PENDING_PUBLISH_TTL_MS = 30 * 60 * 1000;
+function buildQueryString(params: Record<string, string | string[] | undefined>) {
+  const query = new URLSearchParams();
 
-function isSafeInternalPath(path: string | null): path is string {
-  return Boolean(path && path.startsWith('/') && !path.startsWith('//'));
+  Object.entries(params).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((v) => query.append(key, v));
+      return;
+    }
+
+    if (typeof value === "string") {
+      query.set(key, value);
+    }
+  });
+
+  return query.toString();
 }
 
-export default function OAuthCallback() {
-  const t = useTranslations('OAuthCallback');
-  const locale = useLocale();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default async function OAuthCallbackRedirect({ searchParams }: Props) {
+  const params = await searchParams;
+  const query = buildQueryString(params);
+  const target = `/${routing.defaultLocale}/oauth/callback${query ? `?${query}` : ""}`;
 
-  useEffect(() => {
-    const redirectFromQuery = searchParams.get('redirect');
-    if (isSafeInternalPath(redirectFromQuery)) {
-      router.replace(redirectFromQuery);
-      return;
-    }
-
-    const returnTo = window.sessionStorage.getItem(AUTH_RETURN_TO_STORAGE_KEY);
-    if (isSafeInternalPath(returnTo)) {
-      window.sessionStorage.removeItem(AUTH_RETURN_TO_STORAGE_KEY);
-      router.replace(returnTo);
-      return;
-    }
-
-    const pendingRaw = window.sessionStorage.getItem(PENDING_PUBLISH_STORAGE_KEY);
-    if (pendingRaw) {
-      try {
-        const parsed = JSON.parse(pendingRaw) as {
-          createdAt?: number;
-          path?: string;
-        };
-        const pendingPath = parsed.path ?? null;
-        if (
-          typeof parsed.createdAt === 'number' &&
-          Date.now() - parsed.createdAt <= PENDING_PUBLISH_TTL_MS &&
-          isSafeInternalPath(pendingPath)
-        ) {
-          router.replace(pendingPath);
-          return;
-        }
-      } catch {
-        // ignore invalid pending payload
-      }
-    }
-
-    // 쿠키는 자동으로 설정되어 있음 (HttpOnly라 JS에서 접근 불가)
-    // fallback은 메인 페이지로 이동
-    router.replace(`/${locale}`);
-  }, [locale, router, searchParams]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
-        <p className="text-muted-foreground">{t('processing')}</p>
-      </div>
-    </div>
-  );
+  redirect(target);
 }

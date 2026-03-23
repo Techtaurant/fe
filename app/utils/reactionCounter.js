@@ -31,9 +31,13 @@ export function calculateNextLikeCount({
 /**
  * 서버 응답을 기반으로 좋아요/싫어요 버튼 상태를 추론합니다.
  */
-export function inferReactionFromServer({ isLiked }) {
-  if (isLiked) {
+export function inferReactionFromServer({ likeStatus }) {
+  if (likeStatus === "LIKE") {
     return "like";
+  }
+
+  if (likeStatus === "DISLIKE") {
+    return "dislike";
   }
 
   return "none";

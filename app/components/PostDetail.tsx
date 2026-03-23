@@ -38,10 +38,12 @@ interface PostDetailProps {
   onDislike?: () => void;
   onToggleRead: () => void;
   onShare: () => void;
-  onCreateComment: (content: string) => Promise<void>;
+  onCreateComment: (content: string, parentId?: string) => Promise<void>;
   onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
   onDeleteComment: (commentId: string) => Promise<boolean>;
   onBanCommentAuthor: (targetUserId: string) => Promise<boolean>;
+  onLikeComment: (commentId: string) => void;
+  onDislikeComment: (commentId: string) => void;
   onClearCommentFieldError: (fieldName: string) => void;
   onLoadMoreComments: () => void;
   onCommentsSortChange: (sort: CommentSort) => void;
@@ -79,6 +81,8 @@ export default function PostDetail({
   onUpdateComment,
   onDeleteComment,
   onBanCommentAuthor,
+  onLikeComment,
+  onDislikeComment,
   onClearCommentFieldError,
   onLoadMoreComments,
   onCommentsSortChange,
@@ -165,6 +169,8 @@ export default function PostDetail({
           onUpdateComment={onUpdateComment}
           onDeleteComment={onDeleteComment}
           onBanCommentAuthor={onBanCommentAuthor}
+          onLikeComment={onLikeComment}
+          onDislikeComment={onDislikeComment}
           onClearCommentFieldError={onClearCommentFieldError}
           onLoadMoreComments={onLoadMoreComments}
           onCommentsSortChange={onCommentsSortChange}
