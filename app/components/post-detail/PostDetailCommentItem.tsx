@@ -27,6 +27,7 @@ interface PostDetailCommentItemProps {
   extraActions?: ReactNode;
   children?: ReactNode;
   compact?: boolean;
+  onShowError?: (message: string) => void;
 }
 
 export default function PostDetailCommentItem({
@@ -44,6 +45,7 @@ export default function PostDetailCommentItem({
   extraActions,
   children,
   compact = false,
+  onShowError,
 }: PostDetailCommentItemProps) {
   const t = useTranslations("PostDetail");
   const locale = useLocale();
@@ -94,7 +96,7 @@ export default function PostDetailCommentItem({
   const handleUpdate = async () => {
     const trimmed = editingValue.trim();
     if (!trimmed) {
-      alert(t("commentContentRequired"));
+      onShowError?.(t("commentContentRequired"));
       return;
     }
 

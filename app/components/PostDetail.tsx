@@ -57,6 +57,7 @@ interface PostDetailProps {
   isVisibilityUpdating: boolean;
   isDeleting: boolean;
   isReporting: boolean;
+  onShowError?: (message: string) => void;
 }
 
 export default function PostDetail({
@@ -99,6 +100,7 @@ export default function PostDetail({
   isVisibilityUpdating,
   isDeleting,
   isReporting,
+  onShowError,
 }: PostDetailProps) {
   const t = useTranslations("PostDetail");
   const locale = useLocale();
@@ -189,6 +191,7 @@ export default function PostDetail({
           deletingCommentId={deletingCommentId}
           banningCommentAuthorId={banningCommentAuthorId}
           focusRequestKey={commentFocusRequestKey}
+          onShowError={onShowError}
         />
 
         <PostDetailConfirmDialog

@@ -47,6 +47,7 @@ const COMMENTS_PAGE_SIZE = 20;
 export function useComments(
   postId: string,
   onCommentCreated?: () => void,
+  onErrorMessage?: (message: string) => void,
 ) {
   const queryClient = useQueryClient();
   const { user } = useUser();
@@ -405,10 +406,10 @@ export function useComments(
         return;
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
     }
-  }, [commentsQuery.error]);
+  }, [commentsQuery.error, onErrorMessage]);
 
   const comments = useMemo(
     () =>
@@ -448,7 +449,7 @@ export function useComments(
         setCreateCommentFieldErrors(resolved.fieldErrors);
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
     }
   };
@@ -481,12 +482,12 @@ export function useComments(
       if (resolved.fieldErrors) {
         const firstError = Object.values(resolved.fieldErrors)[0];
         if (firstError) {
-          alert(firstError);
+          onErrorMessage?.(firstError);
           return false;
         }
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
       return false;
     } finally {
@@ -511,7 +512,7 @@ export function useComments(
         return false;
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
       return false;
     } finally {
@@ -583,11 +584,11 @@ export function useComments(
           return true;
         }
 
-        alert(error.message || "사용자 차단에 실패했습니다.");
+        onErrorMessage?.(error.message || "사용자 차단에 실패했습니다.");
         return false;
       }
 
-      alert("사용자 차단에 실패했습니다.");
+      onErrorMessage?.("사용자 차단에 실패했습니다.");
       return false;
     } finally {
       setBanningCommentAuthorId((currentId) =>
@@ -641,7 +642,7 @@ export function useComments(
         return;
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
     }
   };

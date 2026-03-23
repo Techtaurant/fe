@@ -23,6 +23,7 @@ interface PostDetailCommentRepliesProps {
   updatingCommentId: string | null;
   deletingCommentId: string | null;
   banningCommentAuthorId: string | null;
+  onShowError?: (message: string) => void;
 }
 
 const REPLIES_PAGE_SIZE = 20;
@@ -40,6 +41,7 @@ export default function PostDetailCommentReplies({
   updatingCommentId,
   deletingCommentId,
   banningCommentAuthorId,
+  onShowError,
 }: PostDetailCommentRepliesProps) {
   const t = useTranslations("PostDetail");
   const repliesSort: CommentSort = parentSort === "LIKE" ? "LIKE" : "LATEST";
@@ -65,9 +67,9 @@ export default function PostDetailCommentReplies({
     if (!repliesQuery.error) return;
     const resolved = resolveFetchCommentsError(repliesQuery.error);
     if (resolved.alertMessage) {
-      alert(resolved.alertMessage);
+      onShowError?.(resolved.alertMessage);
     }
-  }, [repliesQuery.error]);
+  }, [onShowError, repliesQuery.error]);
 
   const replies = useMemo(
     () =>
@@ -98,6 +100,7 @@ export default function PostDetailCommentReplies({
               updatingCommentId={updatingCommentId}
               deletingCommentId={deletingCommentId}
               banningCommentAuthorId={banningCommentAuthorId}
+              onShowError={onShowError}
             />
           );
         })

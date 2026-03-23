@@ -3,7 +3,7 @@
 import { Check, User, X } from "lucide-react";
 
 export type ActionSnackbarVariant = "blocked" | "unblocked" | "followed" | "unfollowed";
-export type ActionSnackbarExtendedVariant = ActionSnackbarVariant | "error";
+export type ActionSnackbarExtendedVariant = ActionSnackbarVariant | "error" | "success";
 
 interface ActionSnackbarProps {
   isOpen: boolean;
@@ -36,7 +36,7 @@ export default function ActionSnackbar({
               <X className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 text-[#FF5A6D]" />
             </span>
           ) : null}
-          {variant === "followed" ? (
+          {variant === "followed" || variant === "success" ? (
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#03A87C] text-white">
               <Check className="h-3 w-3" strokeWidth={3} />
             </span>

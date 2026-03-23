@@ -30,6 +30,7 @@ interface PostDetailCommentsSectionProps {
   deletingCommentId: string | null;
   banningCommentAuthorId: string | null;
   focusRequestKey: number;
+  onShowError?: (message: string) => void;
 }
 
 export default function PostDetailCommentsSection({
@@ -54,6 +55,7 @@ export default function PostDetailCommentsSection({
   deletingCommentId,
   banningCommentAuthorId,
   focusRequestKey,
+  onShowError,
 }: PostDetailCommentsSectionProps) {
   const t = useTranslations("PostDetail");
   const commentInputRef = useRef<HTMLDivElement | null>(null);
@@ -299,6 +301,7 @@ export default function PostDetailCommentsSection({
                 updatingCommentId={updatingCommentId}
                 deletingCommentId={deletingCommentId}
                 banningCommentAuthorId={banningCommentAuthorId}
+                onShowError={onShowError}
                 extraActions={
                   !comment.isDeleted && !comment.isBanned ? (
                     <button
@@ -371,6 +374,7 @@ export default function PostDetailCommentsSection({
                     updatingCommentId={updatingCommentId}
                     deletingCommentId={deletingCommentId}
                     banningCommentAuthorId={banningCommentAuthorId}
+                    onShowError={onShowError}
                   />
                 ) : null}
               </PostDetailCommentItem>
