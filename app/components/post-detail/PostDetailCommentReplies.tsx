@@ -13,7 +13,6 @@ import PostDetailCommentItem from "./PostDetailCommentItem";
 interface PostDetailCommentRepliesProps {
   parentCommentId: string;
   parentSort: CommentSort;
-  onRepliesCountChange?: (parentCommentId: string, loadedReplyCount: number) => void;
   onLikeComment: (commentId: string) => void;
   onDislikeComment: (commentId: string) => void;
   onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
@@ -31,7 +30,6 @@ const REPLIES_PAGE_SIZE = 20;
 export default function PostDetailCommentReplies({
   parentCommentId,
   parentSort,
-  onRepliesCountChange,
   onLikeComment,
   onDislikeComment,
   onUpdateComment,
@@ -78,12 +76,6 @@ export default function PostDetailCommentReplies({
         .map(mapCommentListItemToComment),
     [repliesQuery.data?.pages],
   );
-
-  useEffect(() => {
-    if (!onRepliesCountChange) return;
-    onRepliesCountChange(parentCommentId, replies.length);
-  }, [onRepliesCountChange, parentCommentId, replies.length]);
-
 
   return (
     <div className="mt-3 ml-10 border-l border-border/70 pl-4 space-y-3">

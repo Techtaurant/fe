@@ -67,7 +67,6 @@ export default function PostDetailCommentsSection({
   const [replyingCommentValue, setReplyingCommentValue] = useState("");
   const [isReplyActionsBelow, setIsReplyActionsBelow] = useState(false);
   const [replySubmittingCommentId, setReplySubmittingCommentId] = useState<string | null>(null);
-  const [replyCountsByCommentId, setReplyCountsByCommentId] = useState<Record<string, number>>({});
   const collapsedTextareaHeight = "44px";
 
   const commentFieldErrorMessage =
@@ -113,10 +112,6 @@ export default function PostDetailCommentsSection({
     setReplySubmittingCommentId(parentCommentId);
     try {
       await onCreateComment(trimmed, parentCommentId);
-      setReplyCountsByCommentId((current) => ({
-        ...current,
-        [parentCommentId]: (current[parentCommentId] ?? 0) + 1,
-      }));
       setReplyingCommentValue("");
       setIsReplyActionsBelow(false);
       setOpenRepliesByCommentId((current) => ({
@@ -154,10 +149,7 @@ export default function PostDetailCommentsSection({
 
   const getReplyCount = (comment: Comment) => {
     const normalizedReplyCount = Number(comment.replyCount ?? 0);
-    const safeReplyCount = Number.isFinite(normalizedReplyCount)
-      ? Math.max(0, normalizedReplyCount)
-      : 0;
-    return Math.max(replyCountsByCommentId[comment.id] ?? 0, safeReplyCount);
+    return Number.isFinite(normalizedReplyCount) ? Math.max(0, normalizedReplyCount) : 0;
   };
 
   const getRepliesLabel = (comment: Comment) => {
@@ -166,17 +158,6 @@ export default function PostDetailCommentsSection({
       return t("replies", { count: replyCount });
     }
     return t("repliesZero");
-  };
-
-  const handleRepliesCountChange = (parentCommentId: string, loadedReplyCount: number) => {
-    setReplyCountsByCommentId((current) => {
-      const currentReplyCount = current[parentCommentId] ?? 0;
-      if (loadedReplyCount <= currentReplyCount) return current;
-      return {
-        ...current,
-        [parentCommentId]: loadedReplyCount,
-      };
-    });
   };
 
   useEffect(() => {
@@ -189,25 +170,6 @@ export default function PostDetailCommentsSection({
     setIsCommentExpanded(true);
     setTimeout(() => commentTextareaRef.current?.focus(), 150);
   }, [focusRequestKey]);
-
-  useEffect(() => {
-    setReplyCountsByCommentId((current) => {
-      const next = { ...current };
-
-      comments.forEach((comment) => {
-        const normalizedReplyCount = Number(comment.replyCount ?? 0);
-        const safeReplyCount = Number.isFinite(normalizedReplyCount)
-          ? Math.max(0, normalizedReplyCount)
-          : 0;
-        const currentReplyCount = next[comment.id] ?? 0;
-        if (safeReplyCount > currentReplyCount) {
-          next[comment.id] = safeReplyCount;
-        }
-      });
-
-      return next;
-    });
-  }, [comments]);
 
   return (
     <section>
@@ -399,7 +361,6 @@ export default function PostDetailCommentsSection({
                   <PostDetailCommentReplies
                     parentCommentId={comment.id}
                     parentSort={commentsSort}
-                    onRepliesCountChange={handleRepliesCountChange}
                     onLikeComment={onLikeComment}
                     onDislikeComment={onDislikeComment}
                     onUpdateComment={onUpdateComment}

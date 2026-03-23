@@ -98,20 +98,21 @@ export function useComments(
       );
 
       if (variables.parentId) {
-        updateCommentInCache(variables.parentId, (item) => ({
-          ...item,
-          replyCount: item.replyCount + 1,
-        }));
-
         void queryClient.invalidateQueries({
           predicate: (query) => {
-            const queryKey = query.queryKey as [string, string, { commentId?: string }] | unknown[];
+            const queryKey = query.queryKey as [string, unknown, unknown?] | unknown[];
             if (!Array.isArray(queryKey)) return false;
             if (queryKey[0] !== "comments") return false;
-            if (queryKey[1] !== "replies") return false;
-            const params = queryKey[2];
+
+            if (queryKey[1] === "replies") {
+              const params = queryKey[2];
+              if (!params || typeof params !== "object") return false;
+              return (params as { commentId?: string }).commentId === variables.parentId;
+            }
+
+            const params = queryKey[1];
             if (!params || typeof params !== "object") return false;
-            return (params as { commentId?: string }).commentId === variables.parentId;
+            return (params as { postId?: string }).postId === postId;
           },
         });
 
@@ -158,33 +159,6 @@ export function useComments(
       onCommentCreated?.();
     },
   });
-
-  const updateCommentInCache = useCallback(
-    (commentId: string, updater: (item: CommentListResponse) => CommentListResponse) => {
-      queryClient.setQueryData<InfiniteData<FetchCommentsResponse>>(
-        commentsQueryKey,
-        (current) => {
-          if (!current) return current;
-
-          const nextPages = current.pages.map((page) => ({
-            ...page,
-            data: {
-              ...page.data,
-              content: page.data.content.map((item) =>
-                item.id === commentId ? updater(item) : item,
-              ),
-            },
-          }));
-
-          return {
-            ...current,
-            pages: nextPages,
-          };
-        },
-      );
-    },
-    [commentsQueryKey, queryClient],
-  );
 
   const updateCommentInAllCommentCaches = useCallback(
     (commentId: string, updater: (item: CommentListResponse) => CommentListResponse) => {
@@ -299,11 +273,32 @@ export function useComments(
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: string) => deleteComment(commentId),
     onSuccess: (_result, deletedCommentId) => {
+      const deletedComment = findCommentInAllCommentCaches(deletedCommentId);
+
       updateCommentInAllCommentCaches(deletedCommentId, (item) => ({
         ...item,
         content: item.content,
         isDeleted: true,
       }));
+
+      void queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey as [string, unknown, unknown?] | unknown[];
+          if (!Array.isArray(queryKey)) return false;
+          if (queryKey[0] !== "comments") return false;
+
+          if (queryKey[1] === "replies") {
+            if (!deletedComment?.parentId) return false;
+            const params = queryKey[2];
+            if (!params || typeof params !== "object") return false;
+            return (params as { commentId?: string }).commentId === deletedComment.parentId;
+          }
+
+          const params = queryKey[1];
+          if (!params || typeof params !== "object") return false;
+          return (params as { postId?: string }).postId === postId;
+        },
+      });
     },
   });
 
