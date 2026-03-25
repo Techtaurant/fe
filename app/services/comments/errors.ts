@@ -107,6 +107,14 @@ export function resolveCreateCommentError(
     };
   }
 
+  if (message === "FORBIDDEN") {
+    return {
+      shouldRedirectToLogin: false,
+      fieldErrors: null,
+      alertMessage: "접근 권한이 없습니다.",
+    };
+  }
+
   if (message === "BAD_REQUEST") {
     const errors = getValidationErrors(error);
     if (errors) {
@@ -116,6 +124,15 @@ export function resolveCreateCommentError(
         alertMessage: null,
       };
     }
+
+    if (isCommentApiError(error) && error.message && error.message !== "BAD_REQUEST") {
+      return {
+        shouldRedirectToLogin: false,
+        fieldErrors: null,
+        alertMessage: error.message,
+      };
+    }
+
     return {
       shouldRedirectToLogin: false,
       fieldErrors: null,

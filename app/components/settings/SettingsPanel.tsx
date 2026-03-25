@@ -9,9 +9,11 @@ import { useTheme } from "../ThemeProvider";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { useUser } from "@/app/hooks/useUser";
+import { useActionSnackbar } from "@/app/hooks/useActionSnackbar";
 import { redirectToOAuthLogin } from "@/app/lib/authRedirect";
 import { useUserBans } from "@/app/hooks/useUserBans";
 import BlockedAccountsModal from "./BlockedAccountsModal";
+import ActionSnackbar from "../ui/ActionSnackbar";
 
 type ThemeMode = "light" | "dark" | "system";
 type SettingsTab = "general" | "management";
@@ -81,6 +83,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const [isBlockedAccountsModalOpen, setIsBlockedAccountsModalOpen] = useState(false);
+  const { snackbar, showSnackbar } = useActionSnackbar();
   const {
     bans,
     isLoading: isBansLoading,
@@ -114,13 +117,22 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const handleUnbanUser = async (targetUserId: string) => {
     const result = await unbanByUserId(targetUserId);
     if (!result.ok) {
-      alert(t("blockedModal.unblockFailed"));
+      showSnackbar({
+        type: "error",
+        message: t("blockedModal.unblockFailed"),
+      });
     }
   };
 
   return (
-    <div className="relative flex h-[560px] w-full max-w-[660px] flex-col overflow-hidden rounded-2xl bg-background/95 shadow-2xl backdrop-blur-sm">
-      <div className="grid min-h-0 flex-1 grid-cols-[200px_1fr] gap-0">
+    <>
+      <ActionSnackbar
+        isOpen={Boolean(snackbar)}
+        variant={snackbar?.type ?? "error"}
+        message={snackbar?.message ?? ""}
+      />
+      <div className="relative flex h-[560px] w-full max-w-[660px] flex-col overflow-hidden rounded-2xl bg-background/95 shadow-2xl backdrop-blur-sm">
+        <div className="grid min-h-0 flex-1 grid-cols-[200px_1fr] gap-0">
         <aside className="border-r border-border bg-transparent p-4">
           <div className="flex flex-col gap-2">
             {([
@@ -278,14 +290,15 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
         </section>
       </div>
 
-      <BlockedAccountsModal
-        isOpen={isBlockedAccountsModalOpen}
-        isLoading={isBansLoading}
-        bans={sortedBans}
-        unbanningUserId={unbanningUserId}
-        onClose={() => setIsBlockedAccountsModalOpen(false)}
-        onUnban={handleUnbanUser}
-      />
-    </div>
+        <BlockedAccountsModal
+          isOpen={isBlockedAccountsModalOpen}
+          isLoading={isBansLoading}
+          bans={sortedBans}
+          unbanningUserId={unbanningUserId}
+          onClose={() => setIsBlockedAccountsModalOpen(false)}
+          onUnban={handleUnbanUser}
+        />
+      </div>
+    </>
   );
 }

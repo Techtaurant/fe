@@ -13,7 +13,6 @@ import PostDetailCommentItem from "./PostDetailCommentItem";
 interface PostDetailCommentRepliesProps {
   parentCommentId: string;
   parentSort: CommentSort;
-  onRepliesCountChange?: (parentCommentId: string, loadedReplyCount: number) => void;
   onLikeComment: (commentId: string) => void;
   onDislikeComment: (commentId: string) => void;
   onUpdateComment: (commentId: string, content: string) => Promise<boolean>;
@@ -24,6 +23,7 @@ interface PostDetailCommentRepliesProps {
   updatingCommentId: string | null;
   deletingCommentId: string | null;
   banningCommentAuthorId: string | null;
+  onShowError?: (message: string) => void;
 }
 
 const REPLIES_PAGE_SIZE = 20;
@@ -31,7 +31,6 @@ const REPLIES_PAGE_SIZE = 20;
 export default function PostDetailCommentReplies({
   parentCommentId,
   parentSort,
-  onRepliesCountChange,
   onLikeComment,
   onDislikeComment,
   onUpdateComment,
@@ -42,6 +41,7 @@ export default function PostDetailCommentReplies({
   updatingCommentId,
   deletingCommentId,
   banningCommentAuthorId,
+  onShowError,
 }: PostDetailCommentRepliesProps) {
   const t = useTranslations("PostDetail");
   const repliesSort: CommentSort = parentSort === "LIKE" ? "LIKE" : "LATEST";
@@ -67,9 +67,9 @@ export default function PostDetailCommentReplies({
     if (!repliesQuery.error) return;
     const resolved = resolveFetchCommentsError(repliesQuery.error);
     if (resolved.alertMessage) {
-      alert(resolved.alertMessage);
+      onShowError?.(resolved.alertMessage);
     }
-  }, [repliesQuery.error]);
+  }, [onShowError, repliesQuery.error]);
 
   const replies = useMemo(
     () =>
@@ -78,12 +78,6 @@ export default function PostDetailCommentReplies({
         .map(mapCommentListItemToComment),
     [repliesQuery.data?.pages],
   );
-
-  useEffect(() => {
-    if (!onRepliesCountChange) return;
-    onRepliesCountChange(parentCommentId, replies.length);
-  }, [onRepliesCountChange, parentCommentId, replies.length]);
-
 
   return (
     <div className="mt-3 ml-10 border-l border-border/70 pl-4 space-y-3">
@@ -106,6 +100,7 @@ export default function PostDetailCommentReplies({
               updatingCommentId={updatingCommentId}
               deletingCommentId={deletingCommentId}
               banningCommentAuthorId={banningCommentAuthorId}
+              onShowError={onShowError}
             />
           );
         })

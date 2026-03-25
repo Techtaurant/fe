@@ -33,7 +33,10 @@ type PostDetailQueryData = {
 };
 
 type ReactionState = "like" | "dislike" | "none";
-export function usePostDetail(postId: string) {
+export function usePostDetail(
+  postId: string,
+  onNotifyMessage?: (message: string, type?: "error" | "success") => void,
+) {
   const t = useTranslations("PostDetailPage");
   const queryClient = useQueryClient();
   const { user } = useUser();
@@ -227,10 +230,10 @@ export function usePostDetail(postId: string) {
         return;
       }
       if (message === "NOT_FOUND") {
-        alert(t("notFound"));
+        onNotifyMessage?.(t("notFound"), "error");
         return;
       }
-      alert(t("reactionFailed"));
+      onNotifyMessage?.(t("reactionFailed"), "error");
     }
   };
 
@@ -284,19 +287,19 @@ export function usePostDetail(postId: string) {
         return;
       }
       if (message === "NOT_FOUND") {
-        alert(t("notFound"));
+        onNotifyMessage?.(t("notFound"), "error");
         return;
       }
-      alert(t("markReadFailed"));
+      onNotifyMessage?.(t("markReadFailed"), "error");
     }
   };
 
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      alert(t("linkCopied"));
+      onNotifyMessage?.(t("linkCopied"), "success");
     } catch {
-      alert(t("copyFailed"));
+      onNotifyMessage?.(t("copyFailed"), "error");
     }
   };
 
@@ -340,10 +343,10 @@ export function usePostDetail(postId: string) {
         return;
       }
       if (message === "NOT_FOUND") {
-        alert(t("notFound"));
+        onNotifyMessage?.(t("notFound"), "error");
         return;
       }
-      alert(t("visibilityChangeFailed"));
+      onNotifyMessage?.(t("visibilityChangeFailed"), "error");
     }
   };
 
@@ -365,7 +368,7 @@ export function usePostDetail(postId: string) {
       await deleteMutation.mutateAsync();
       queryClient.removeQueries({ queryKey: queryKeys.posts.all });
       queryClient.removeQueries({ queryKey: detailQueryKey });
-      alert(t("deleted"));
+      onNotifyMessage?.(t("deleted"), "success");
       return true;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "UNKNOWN";
@@ -374,14 +377,14 @@ export function usePostDetail(postId: string) {
         return false;
       }
       if (message === "FORBIDDEN") {
-        alert(t("deleteForbidden"));
+        onNotifyMessage?.(t("deleteForbidden"), "error");
         return false;
       }
       if (message === "NOT_FOUND") {
-        alert(t("notFound"));
+        onNotifyMessage?.(t("notFound"), "error");
         return false;
       }
-      alert(t("deleteFailed"));
+      onNotifyMessage?.(t("deleteFailed"), "error");
       return false;
     }
   };

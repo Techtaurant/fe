@@ -32,11 +32,7 @@ import { useFollowActions } from "../../hooks/useFollowActions";
 import { useUserBlockActions } from "../../hooks/useUserBlockActions";
 import { useUserCategories } from "../../hooks/useUserCategories";
 import { useUserCommunityFeed } from "../../hooks/useUserCommunityFeed";
-import {
-  UNCATEGORIZED_CATEGORY_ID,
-  UNCATEGORIZED_CATEGORY_PATH,
-  useUserCategoryPostCounts,
-} from "../../hooks/useUserCategoryPostCounts";
+import { UNCATEGORIZED_CATEGORY_ID, UNCATEGORIZED_CATEGORY_PATH } from "@/app/constants/category";
 import { useUser } from "../../hooks/useUser";
 import { queryKeys } from "../../lib/queryKeys";
 
@@ -77,7 +73,6 @@ function buildCategoryTree(filters: CategoryFilter[]): CategoryTreeNode[] {
 
 function buildCategoryFilters(
   categories: UserCategory[],
-  countsByCategoryId: Record<string, number>,
 ): CategoryFilter[] {
   return categories
     .map((category) => ({
@@ -85,7 +80,7 @@ function buildCategoryFilters(
       path: category.path,
       label: category.name,
       depth: Math.max(category.depth - 1, 0),
-      count: countsByCategoryId[category.id] ?? 0,
+      count: category.postCount ?? 0,
     }))
     .sort((a, b) => a.path.localeCompare(b.path));
 }
@@ -200,6 +195,22 @@ function renderCategoryFilterButton(params: {
   );
 }
 
+function CategoryFilterPanelContent(params: {
+  title: string;
+  actionRows: ReactNode[];
+  categoryRows: ReactNode[];
+}) {
+  const { title, actionRows, categoryRows } = params;
+
+  return (
+    <>
+      <div className="mb-3 px-1 text-sm font-semibold text-foreground">{title}</div>
+      <div className="mt-2 flex flex-col gap-1">{actionRows}</div>
+      {categoryRows.length > 0 ? <div className="mt-2 flex flex-col gap-1">{categoryRows}</div> : null}
+    </>
+  );
+}
+
 export default function UserDetailPage() {
   const t = useTranslations("UserPage");
   const params = useParams();
@@ -262,27 +273,8 @@ export default function UserDetailPage() {
     userId,
   });
 
-  const { countsByCategoryId } = useUserCategoryPostCounts({
-    enabled: hasUserId,
-    userId,
-    categories,
-    includePrivatePosts,
-  });
-
-  const categoryFilters = useMemo(
-    () => buildCategoryFilters(categories, countsByCategoryId),
-    [categories, countsByCategoryId],
-  );
-
-  const uncategorizedCategoryFilter = useMemo(
-    () => ({
-      id: UNCATEGORIZED_CATEGORY_ID,
-      path: UNCATEGORIZED_CATEGORY_PATH,
-      label: t("categories.uncategorized"),
-      count: countsByCategoryId[UNCATEGORIZED_CATEGORY_ID] ?? 0,
-    }),
-    [countsByCategoryId, t],
-  );
+  const categoryFilters = useMemo(() => buildCategoryFilters(categories), [categories]);
+  const uncategorizedLabel = t("categories.uncategorized");
 
   const categoryActionItems = useMemo(
     () => [
@@ -293,11 +285,13 @@ export default function UserDetailPage() {
         count: null,
       },
       {
-        ...uncategorizedCategoryFilter,
+        id: UNCATEGORIZED_CATEGORY_ID,
         path: UNCATEGORIZED_CATEGORY_PATH,
+        label: uncategorizedLabel,
+        count: null,
       },
     ],
-    [t, uncategorizedCategoryFilter],
+    [t, uncategorizedLabel],
   );
 
   const categoryTree = useMemo(() => buildCategoryTree(categoryFilters), [categoryFilters]);
@@ -638,29 +632,21 @@ export default function UserDetailPage() {
       <div className="md:flex max-w-[1280px] mx-auto px-4 md:px-6 py-6 gap-6">
         <aside className="hidden md:block w-[250px] shrink-0">
           <div className="rounded-xl border border-border bg-card p-4">
-            <div className="mb-3 px-1 text-sm font-semibold text-foreground">
-              {t("categories.title")}
-            </div>
-
-            <div className="mt-2 flex flex-col gap-1">{renderedCategoryActionRows}</div>
-
-            {categoryTree.length > 0 ? (
-              <div className="mt-2 flex flex-col gap-1">{renderedCategoryRows}</div>
-            ) : null}
+            <CategoryFilterPanelContent
+              title={t("categories.title")}
+              actionRows={renderedCategoryActionRows}
+              categoryRows={renderedCategoryRows}
+            />
           </div>
         </aside>
 
         <main className="flex-1 min-w-0">
           <div className="md:hidden mb-4 rounded-xl border border-border bg-card p-3">
-            <div className="mb-3 px-1 text-sm font-semibold text-foreground">
-              {t("categories.title")}
-            </div>
-
-            <div className="mt-2 flex flex-col gap-1">{renderedCategoryActionRows}</div>
-
-            {categoryTree.length > 0 ? (
-              <div className="mt-2 flex flex-col gap-1">{renderedCategoryRows}</div>
-            ) : null}
+            <CategoryFilterPanelContent
+              title={t("categories.title")}
+              actionRows={renderedCategoryActionRows}
+              categoryRows={renderedCategoryRows}
+            />
           </div>
 
           <div className="mb-6 flex flex-col gap-4 px-1 md:flex-row md:items-center md:justify-between">

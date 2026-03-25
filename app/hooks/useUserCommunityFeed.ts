@@ -8,7 +8,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { fetchUserPostList } from "../services/posts";
 import { isPlaceholderCategoryPath, normalizeCategoryPath } from "./useUserCategories";
 import { PostListPeriod, PostListSort } from "../services/posts/types";
-import { UNCATEGORIZED_CATEGORY_ID } from "./useUserCategoryPostCounts";
+import { UNCATEGORIZED_CATEGORY_ID } from "@/app/constants/category";
 
 interface UseUserCommunityFeedOptions {
   enabled: boolean;

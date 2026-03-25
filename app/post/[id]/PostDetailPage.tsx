@@ -21,6 +21,12 @@ export default function PostDetailPage() {
   const { user } = useUser();
   const [isRedirectingAfterBlock, setIsRedirectingAfterBlock] = useState(false);
   const { snackbar, showSnackbar } = useActionSnackbar();
+  const showErrorSnackbar = (message: string) => {
+    showSnackbar({ type: "error", message });
+  };
+  const showSnackbarMessage = (message: string, type: "error" | "success" = "error") => {
+    showSnackbar({ type, message });
+  };
 
   const {
     post,
@@ -43,7 +49,7 @@ export default function PostDetailPage() {
     isReporting,
     isVisibilityUpdating,
     isDeleting,
-  } = usePostDetail(postId);
+  } = usePostDetail(postId, showSnackbarMessage);
 
   const {
     comments,
@@ -72,7 +78,7 @@ export default function PostDetailPage() {
         commentCount: (current.commentCount || 0) + 1,
       };
     });
-  });
+  }, showErrorSnackbar);
 
   if (isLoading) {
     return (
@@ -224,6 +230,7 @@ export default function PostDetailPage() {
         isVisibilityUpdating={isVisibilityUpdating}
         isDeleting={isDeleting}
         isReporting={isReporting}
+        onShowError={showErrorSnackbar}
       />
     </>
   );

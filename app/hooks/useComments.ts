@@ -47,6 +47,7 @@ const COMMENTS_PAGE_SIZE = 20;
 export function useComments(
   postId: string,
   onCommentCreated?: () => void,
+  onErrorMessage?: (message: string) => void,
 ) {
   const queryClient = useQueryClient();
   const { user } = useUser();
@@ -98,20 +99,21 @@ export function useComments(
       );
 
       if (variables.parentId) {
-        updateCommentInCache(variables.parentId, (item) => ({
-          ...item,
-          replyCount: item.replyCount + 1,
-        }));
-
         void queryClient.invalidateQueries({
           predicate: (query) => {
-            const queryKey = query.queryKey as [string, string, { commentId?: string }] | unknown[];
+            const queryKey = query.queryKey as [string, unknown, unknown?] | unknown[];
             if (!Array.isArray(queryKey)) return false;
             if (queryKey[0] !== "comments") return false;
-            if (queryKey[1] !== "replies") return false;
-            const params = queryKey[2];
+
+            if (queryKey[1] === "replies") {
+              const params = queryKey[2];
+              if (!params || typeof params !== "object") return false;
+              return (params as { commentId?: string }).commentId === variables.parentId;
+            }
+
+            const params = queryKey[1];
             if (!params || typeof params !== "object") return false;
-            return (params as { commentId?: string }).commentId === variables.parentId;
+            return (params as { postId?: string }).postId === postId;
           },
         });
 
@@ -158,33 +160,6 @@ export function useComments(
       onCommentCreated?.();
     },
   });
-
-  const updateCommentInCache = useCallback(
-    (commentId: string, updater: (item: CommentListResponse) => CommentListResponse) => {
-      queryClient.setQueryData<InfiniteData<FetchCommentsResponse>>(
-        commentsQueryKey,
-        (current) => {
-          if (!current) return current;
-
-          const nextPages = current.pages.map((page) => ({
-            ...page,
-            data: {
-              ...page.data,
-              content: page.data.content.map((item) =>
-                item.id === commentId ? updater(item) : item,
-              ),
-            },
-          }));
-
-          return {
-            ...current,
-            pages: nextPages,
-          };
-        },
-      );
-    },
-    [commentsQueryKey, queryClient],
-  );
 
   const updateCommentInAllCommentCaches = useCallback(
     (commentId: string, updater: (item: CommentListResponse) => CommentListResponse) => {
@@ -299,11 +274,32 @@ export function useComments(
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: string) => deleteComment(commentId),
     onSuccess: (_result, deletedCommentId) => {
+      const deletedComment = findCommentInAllCommentCaches(deletedCommentId);
+
       updateCommentInAllCommentCaches(deletedCommentId, (item) => ({
         ...item,
         content: item.content,
         isDeleted: true,
       }));
+
+      void queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey as [string, unknown, unknown?] | unknown[];
+          if (!Array.isArray(queryKey)) return false;
+          if (queryKey[0] !== "comments") return false;
+
+          if (queryKey[1] === "replies") {
+            if (!deletedComment?.parentId) return false;
+            const params = queryKey[2];
+            if (!params || typeof params !== "object") return false;
+            return (params as { commentId?: string }).commentId === deletedComment.parentId;
+          }
+
+          const params = queryKey[1];
+          if (!params || typeof params !== "object") return false;
+          return (params as { postId?: string }).postId === postId;
+        },
+      });
     },
   });
 
@@ -410,10 +406,10 @@ export function useComments(
         return;
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
     }
-  }, [commentsQuery.error]);
+  }, [commentsQuery.error, onErrorMessage]);
 
   const comments = useMemo(
     () =>
@@ -453,7 +449,7 @@ export function useComments(
         setCreateCommentFieldErrors(resolved.fieldErrors);
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
     }
   };
@@ -486,12 +482,12 @@ export function useComments(
       if (resolved.fieldErrors) {
         const firstError = Object.values(resolved.fieldErrors)[0];
         if (firstError) {
-          alert(firstError);
+          onErrorMessage?.(firstError);
           return false;
         }
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
       return false;
     } finally {
@@ -516,7 +512,7 @@ export function useComments(
         return false;
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
       return false;
     } finally {
@@ -588,11 +584,11 @@ export function useComments(
           return true;
         }
 
-        alert(error.message || "사용자 차단에 실패했습니다.");
+        onErrorMessage?.(error.message || "사용자 차단에 실패했습니다.");
         return false;
       }
 
-      alert("사용자 차단에 실패했습니다.");
+      onErrorMessage?.("사용자 차단에 실패했습니다.");
       return false;
     } finally {
       setBanningCommentAuthorId((currentId) =>
@@ -646,7 +642,7 @@ export function useComments(
         return;
       }
       if (resolved.alertMessage) {
-        alert(resolved.alertMessage);
+        onErrorMessage?.(resolved.alertMessage);
       }
     }
   };
