@@ -119,6 +119,7 @@ export function usePostDetail(
   const detailQuery = useQuery({
     queryKey: detailQueryKey,
     queryFn: () => fetchPostDetailWithMeta(postId),
+    enabled: Boolean(postId),
   });
   const myFollowingsQuery = useQuery({
     queryKey: queryKeys.user.followings(userId ?? ""),
@@ -501,6 +502,10 @@ export function usePostDetail(
   const isLoading = detailQuery.isPending;
   const isRead = Boolean(user) && Boolean(post?.isRead);
   const errorMessage = (() => {
+    if (!postId) {
+      return t("notFound");
+    }
+
     if (!detailQuery.error) return null;
     const message =
       detailQuery.error instanceof Error ? detailQuery.error.message : "UNKNOWN";

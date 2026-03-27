@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Post } from "../types";
 import { formatDisplayTime } from "@/app/utils";
+import { buildLocalizedCommunityPostPath } from "@/app/lib/communityPostRoute";
 
 interface PostCardProps {
   post: Post;
@@ -98,7 +99,13 @@ export default function PostCard({
 
     // 커뮤니티 글은 상세 페이지로, 기업 글은 외부 링크로 이동
     if (post.type === "community") {
-      router.push(`/${locale}/post/${post.id}`);
+      router.push(buildLocalizedCommunityPostPath({
+        locale,
+        nickname: post.author?.nickname,
+        fallbackName: post.author?.name,
+        categoryPath: post.categoryPath,
+        postId: post.id,
+      }));
     } else {
       window.open(post.url, "_blank");
     }
