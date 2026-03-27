@@ -370,7 +370,12 @@
       "title": "Categories",
       "all": "All posts",
       "uncategorized": "Uncategorized",
-      "empty": "No categories yet"
+      "empty": "No categories yet",
+      "expandSubcategories": "Expand subcategories",
+      "collapseSubcategories": "Collapse subcategories",
+      "closeSidebar": "Close category sidebar",
+      "close": "Close",
+      "mobileSectionTitle": "Categories"
     },
     "empty": "No posts to display.",
     "period": {

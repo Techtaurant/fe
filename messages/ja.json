@@ -370,7 +370,12 @@
       "title": "カテゴリ",
       "all": "すべての投稿",
       "uncategorized": "カテゴリなし",
-      "empty": "カテゴリがありません"
+      "empty": "カテゴリがありません",
+      "expandSubcategories": "サブカテゴリを展開",
+      "collapseSubcategories": "サブカテゴリを折りたたむ",
+      "closeSidebar": "カテゴリサイドバーを閉じる",
+      "close": "閉じる",
+      "mobileSectionTitle": "カテゴリ"
     },
     "empty": "表示する投稿がありません。",
     "period": {

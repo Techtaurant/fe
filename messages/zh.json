@@ -370,7 +370,12 @@
       "title": "分类",
       "all": "全部",
       "uncategorized": "未分类",
-      "empty": "暂无分类"
+      "empty": "暂无分类",
+      "expandSubcategories": "展开子分类",
+      "collapseSubcategories": "收起子分类",
+      "closeSidebar": "关闭分类侧边栏",
+      "close": "关闭",
+      "mobileSectionTitle": "分类"
     },
     "empty": "暂无可显示的文章。",
     "period": {

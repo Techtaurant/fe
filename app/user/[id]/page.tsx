@@ -1,10 +1,10 @@
 "use client";
 
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ChevronDown, ChevronRight, UserX } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText, Folder, FolderOpen, UserX } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { redirectToOAuthLogin } from "../../lib/authRedirect";
 import Header from "../../components/Header";
@@ -32,7 +32,6 @@ import { useFollowActions } from "../../hooks/useFollowActions";
 import { useUserBlockActions } from "../../hooks/useUserBlockActions";
 import { useUserCategories } from "../../hooks/useUserCategories";
 import { useUserCommunityFeed } from "../../hooks/useUserCommunityFeed";
-import { UNCATEGORIZED_CATEGORY_ID, UNCATEGORIZED_CATEGORY_PATH } from "@/app/constants/category";
 import { useUser } from "../../hooks/useUser";
 import { queryKeys } from "../../lib/queryKeys";
 
@@ -91,6 +90,10 @@ function renderCategoryList(params: {
   expandedCategoryIds: Record<string, boolean>;
   onSelectCategory: (path: string) => void;
   onToggleCategory: (categoryId: string) => void;
+  collapseAriaLabel: string;
+  expandAriaLabel: string;
+  toggleOnRowClick?: boolean;
+  openOnlyOnRowClick?: boolean;
 }) {
   const {
     nodes,
@@ -98,14 +101,16 @@ function renderCategoryList(params: {
     expandedCategoryIds,
     onSelectCategory,
     onToggleCategory,
+    collapseAriaLabel,
+    expandAriaLabel,
+    toggleOnRowClick = true,
+    openOnlyOnRowClick = false,
   } = params;
 
   const renderList = (children: CategoryTreeNode[]): ReactNode[] =>
     children.flatMap((node) => {
       const hasChildren = node.children.length > 0;
-      const shouldAutoExpand =
-        selectedCategoryPath !== null &&
-        (node.path === selectedCategoryPath || selectedCategoryPath.startsWith(`${node.path}/`));
+      const shouldAutoExpand = false;
       const isExpanded = expandedCategoryIds[node.id] ?? shouldAutoExpand;
       const isSelected = selectedCategoryPath === node.path;
 
@@ -114,23 +119,53 @@ function renderCategoryList(params: {
       return [
         <div
           key={node.id}
-          className={`w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors ${
+          className={`w-full text-left py-2 pr-2 rounded-md text-sm transition-colors ${
             isSelected
-              ? "bg-muted text-foreground font-medium"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-muted font-bold"
+              : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
           } cursor-pointer`}
-          style={{ paddingLeft: `${16 + node.depth * 12}px` }}
+          style={{
+            paddingLeft: `${10 + node.depth * 16}px`,
+            ...(isSelected ? { color: "var(--color-blue-500)" } : {}),
+          }}
           role="button"
           tabIndex={0}
-          onClick={() => onSelectCategory(node.path)}
+          onClick={() => {
+            onSelectCategory(node.path);
+            if (toggleOnRowClick && hasChildren) {
+              if (!openOnlyOnRowClick || !isExpanded) {
+                onToggleCategory(node.id);
+              }
+            }
+          }}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
               onSelectCategory(node.path);
+              if (toggleOnRowClick && hasChildren) {
+                if (!openOnlyOnRowClick || !isExpanded) {
+                  onToggleCategory(node.id);
+                }
+              }
             }
           }}
         >
           <div className="flex items-center gap-2">
+            {hasChildren ? (
+              isExpanded ? (
+                <FolderOpen className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              ) : (
+                <Folder className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              )
+            ) : (
+              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            )}
+
+            <span className="whitespace-nowrap">{node.label}</span>
+            <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-border bg-background px-1.5 text-[11px] leading-none text-muted-foreground">
+              {node.count}
+            </span>
+
             {hasChildren ? (
               <button
                 type="button"
@@ -138,21 +173,16 @@ function renderCategoryList(params: {
                   event.stopPropagation();
                   onToggleCategory(node.id);
                 }}
-                className="h-4 w-4 rounded-full bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center justify-center transition-colors"
-                aria-label={isExpanded ? "Collapse subcategories" : "Expand subcategories"}
+                className="ml-auto h-4 w-4 rounded-full bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center justify-center transition-colors"
+                aria-label={isExpanded ? collapseAriaLabel : expandAriaLabel}
               >
                 {isExpanded ? (
-                  <ChevronDown className="h-3.5 w-3.5" />
+                  <ChevronUp className="h-3.5 w-3.5" />
                 ) : (
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronDown className="h-3.5 w-3.5" />
                 )}
               </button>
-            ) : (
-              <span className="h-4 w-4" />
-            )}
-
-            <span className="whitespace-nowrap">{node.label}</span>
-            <span className="ml-1 inline-flex text-xs text-muted-foreground">({node.count})</span>
+            ) : null}
           </div>
         </div>,
         ...renderedChildren,
@@ -189,7 +219,11 @@ function renderCategoryFilterButton(params: {
     >
       <div className="flex items-center justify-between gap-2">
         <span className="whitespace-nowrap">{item.label}</span>
-        {item.count !== null ? <span className="text-xs text-muted-foreground">({item.count})</span> : null}
+        {item.count !== null ? (
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-border bg-background px-1.5 text-[11px] leading-none text-muted-foreground">
+            {item.count}
+          </span>
+        ) : null}
       </div>
     </button>
   );
@@ -204,7 +238,7 @@ function CategoryFilterPanelContent(params: {
 
   return (
     <>
-      <div className="mb-3 px-1 text-sm font-semibold text-foreground">{title}</div>
+      {title ? <div className="mb-3 px-1 text-sm font-semibold text-foreground">{title}</div> : null}
       <div className="mt-2 flex flex-col gap-1">{actionRows}</div>
       {categoryRows.length > 0 ? <div className="mt-2 flex flex-col gap-1">{categoryRows}</div> : null}
     </>
@@ -229,6 +263,7 @@ export default function UserDetailPage() {
   const [followListTab, setFollowListTab] = useState<FollowListTab>("followers");
   const [selectedCategoryPath, setSelectedCategoryPath] = useState<string | null>(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Record<string, boolean>>({});
+  const [isMobileCategorySidebarOpen, setIsMobileCategorySidebarOpen] = useState(false);
 
   const { snackbar, showSnackbar } = useActionSnackbar();
   const hasUserId = Boolean(userId);
@@ -274,25 +309,6 @@ export default function UserDetailPage() {
   });
 
   const categoryFilters = useMemo(() => buildCategoryFilters(categories), [categories]);
-  const uncategorizedLabel = t("categories.uncategorized");
-
-  const categoryActionItems = useMemo(
-    () => [
-      {
-        id: "all",
-        path: null as null,
-        label: t("categories.all"),
-        count: null,
-      },
-      {
-        id: UNCATEGORIZED_CATEGORY_ID,
-        path: UNCATEGORIZED_CATEGORY_PATH,
-        label: uncategorizedLabel,
-        count: null,
-      },
-    ],
-    [t, uncategorizedLabel],
-  );
 
   const categoryTree = useMemo(() => buildCategoryTree(categoryFilters), [categoryFilters]);
 
@@ -322,13 +338,17 @@ export default function UserDetailPage() {
     setSelectedCategoryPath(path);
   }, []);
 
+  const handleMobileCategorySelect = useCallback((path: string) => {
+    setSelectedCategoryPath(path);
+  }, []);
+
+  const handleMobileActionCategorySelect = useCallback((path: string | null) => {
+    setSelectedCategoryPath(path);
+  }, []);
+
   const activeCategoryPath = useMemo(() => {
     if (selectedCategoryPath === null) {
       return null;
-    }
-
-    if (selectedCategoryPath === UNCATEGORIZED_CATEGORY_PATH) {
-      return UNCATEGORIZED_CATEGORY_PATH;
     }
 
     return categoryFilters.some((category) => category.path === selectedCategoryPath)
@@ -339,10 +359,6 @@ export default function UserDetailPage() {
   const selectedCategoryIds = useMemo(() => {
     if (!activeCategoryPath) {
       return [] as string[];
-    }
-
-    if (activeCategoryPath === UNCATEGORIZED_CATEGORY_PATH) {
-      return [UNCATEGORIZED_CATEGORY_ID];
     }
 
     return categories
@@ -389,6 +405,17 @@ export default function UserDetailPage() {
     : false;
   const numberFormatter = useMemo(() => new Intl.NumberFormat(), []);
   const postCount = postsByAuthor.posts.length;
+  const categoryActionItems = useMemo(
+    () => [
+      {
+        id: "all",
+        path: null as null,
+        label: t("categories.all"),
+        count: postCount,
+      },
+    ],
+    [postCount, t],
+  );
   const followerCount = followCountsQuery.data?.data.followerCount ?? null;
   const followingCount = followCountsQuery.data?.data.followingCount ?? null;
   const myFollowingUserIdSet = useMemo(
@@ -550,21 +577,59 @@ export default function UserDetailPage() {
     }));
   }, []);
 
+  useEffect(() => {
+    if (!isMobileCategorySidebarOpen) {
+      return;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMobileCategorySidebarOpen]);
+
   const renderedCategoryRows = useMemo(
     () =>
       renderCategoryList({
         nodes: categoryTree,
         selectedCategoryPath: activeCategoryPath,
-        expandedCategoryIds,
-        onSelectCategory: handleCategorySelect,
-        onToggleCategory: handleCategoryToggle,
-      }),
+          expandedCategoryIds,
+          onSelectCategory: handleCategorySelect,
+          onToggleCategory: handleCategoryToggle,
+          collapseAriaLabel: t("categories.collapseSubcategories"),
+          expandAriaLabel: t("categories.expandSubcategories"),
+        }),
     [
       categoryTree,
       expandedCategoryIds,
       handleCategorySelect,
       handleCategoryToggle,
       activeCategoryPath,
+      t,
+    ],
+  );
+
+  const renderedMobileCategoryRows = useMemo(
+    () =>
+      renderCategoryList({
+        nodes: categoryTree,
+        selectedCategoryPath: activeCategoryPath,
+        expandedCategoryIds,
+        onSelectCategory: handleMobileCategorySelect,
+        onToggleCategory: handleCategoryToggle,
+        collapseAriaLabel: t("categories.collapseSubcategories"),
+        expandAriaLabel: t("categories.expandSubcategories"),
+        toggleOnRowClick: true,
+      }),
+    [
+      categoryTree,
+      activeCategoryPath,
+      expandedCategoryIds,
+      handleMobileCategorySelect,
+      handleCategoryToggle,
+      t,
     ],
   );
 
@@ -581,12 +646,25 @@ export default function UserDetailPage() {
     [activeCategoryPath, categoryActionItems],
   );
 
+  const renderedMobileCategoryActionRows = useMemo(
+    () =>
+      categoryActionItems.map((item) =>
+        renderCategoryFilterButton({
+          item,
+          isSelected:
+            item.path === null ? activeCategoryPath === null : activeCategoryPath === item.path,
+          onSelectCategory: handleMobileActionCategorySelect,
+        }),
+      ),
+    [activeCategoryPath, categoryActionItems, handleMobileActionCategorySelect],
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Header
         currentMode={currentMode}
         onModeChange={setCurrentMode}
-        onMenuClick={() => {}}
+        onMenuClick={() => setIsMobileCategorySidebarOpen(true)}
       />
 
       <ActionSnackbar
@@ -629,26 +707,70 @@ export default function UserDetailPage() {
           isUnblocking={isUnblocking}
         />
       ) : (
-      <div className="md:flex max-w-[1280px] mx-auto px-4 md:px-6 py-6 gap-6">
-        <aside className="hidden md:block w-[250px] shrink-0">
-          <div className="rounded-xl border border-border bg-card p-4">
+      <div className="md:flex max-w-[1400px] mx-auto">
+        {isMobileCategorySidebarOpen ? (
+          <button
+            type="button"
+            className="md:hidden fixed inset-0 z-[350] bg-black/45"
+            aria-label={t("categories.closeSidebar")}
+            onClick={() => setIsMobileCategorySidebarOpen(false)}
+          />
+        ) : null}
+
+        <aside
+          className={[
+            "fixed md:static top-0 left-0 h-full md:h-auto",
+            "w-[280px] max-w-[85vw] shrink-0",
+            "overflow-y-auto border-r border-border",
+            "bg-sidebar p-6",
+            "z-[400] md:z-auto shadow-2xl md:shadow-none",
+            "transition-transform duration-300 ease-in-out",
+            isMobileCategorySidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          ].join(" ")}
+        >
+          <div className="md:hidden mb-4 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-foreground">{t("categories.mobileSectionTitle")}</div>
+            <button
+              type="button"
+              onClick={() => setIsMobileCategorySidebarOpen(false)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label={t("categories.closeSidebar")}
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="hidden md:block">
             <CategoryFilterPanelContent
               title={t("categories.title")}
               actionRows={renderedCategoryActionRows}
               categoryRows={renderedCategoryRows}
+            />
+          </div>
+
+          <div className="md:hidden">
+            <CategoryFilterPanelContent
+              title=""
+              actionRows={renderedMobileCategoryActionRows}
+              categoryRows={renderedMobileCategoryRows}
             />
           </div>
         </aside>
 
-        <main className="flex-1 min-w-0">
-          <div className="md:hidden mb-4 rounded-xl border border-border bg-card p-3">
-            <CategoryFilterPanelContent
-              title={t("categories.title")}
-              actionRows={renderedCategoryActionRows}
-              categoryRows={renderedCategoryRows}
-            />
-          </div>
-
+        <main className="flex-1 min-w-0 px-4 md:px-6 py-6">
           <div className="mb-6 flex flex-col gap-4 px-1 md:flex-row md:items-center md:justify-between">
             {isProfileLoading ? (
               <>
