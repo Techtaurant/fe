@@ -15,6 +15,7 @@ import WriteEditorPreview from "./components/WriteEditorPreview";
 import WriteFormFields from "./components/WriteFormFields";
 import { useAutoSave } from "./hooks/useAutoSave";
 import { useDraftBootstrap } from "./hooks/useDraftBootstrap";
+import { usePostImageUpload } from "./hooks/usePostImageUpload";
 import { usePublishFlow } from "./hooks/usePublishFlow";
 import { useSessionPrecheck } from "./hooks/useSessionPrecheck";
 import { useWriteFormState } from "./hooks/useWriteFormState";
@@ -39,6 +40,7 @@ function WritePostPageContent() {
   const draftCountQueryKey = [...queryKeys.posts.all, "drafts-count"] as const;
 
   const form = useWriteFormState();
+  const imageUpload = usePostImageUpload();
   const { setError, setSuccess } = form;
 
   const draftBootstrap = useDraftBootstrap({
@@ -135,6 +137,7 @@ function WritePostPageContent() {
 
   const isPublishActionDisabled =
     publishFlow.isSubmitting ||
+    imageUpload.isUploading ||
     draftBootstrap.isDraftLoading ||
     Boolean(draftBootstrap.draftErrorMessage) ||
     form.isAuthExpiredModalOpen;
@@ -216,6 +219,10 @@ function WritePostPageContent() {
             fieldErrors={form.fieldErrors}
             setContent={form.setContent}
             setFieldErrors={form.setFieldErrors}
+            isUploading={imageUpload.isUploading}
+            uploadError={imageUpload.uploadError}
+            onUploadImages={imageUpload.uploadImages}
+            onClearUploadError={imageUpload.clearUploadError}
           />
 
         </form>

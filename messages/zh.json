@@ -262,7 +262,9 @@
       "badRequest": "请求无效，请检查输入内容。",
       "http": "请求失败。({code})",
       "saveFailed": "保存文章时发生错误。",
-      "resumeFailed": "登录后的自动重试失败，请重试。"
+      "resumeFailed": "登录后的自动重试失败，请重试。",
+      "invalidImageType": "只能上传图片文件。",
+      "imageUploadFailed": "图片上传失败，请重试。"
     },
     "notice": {
       "autoSaved": "已自动保存。",
@@ -302,6 +304,9 @@
     },
     "editor": {
       "markdownEdit": "Markdown 编辑",
+      "addImage": "添加图片",
+      "uploading": "上传中...",
+      "imageHint": "点击按钮添加图片，或将图片拖拽到此编辑区",
       "contentPlaceholder": "请使用 Markdown 格式输入内容\n\n# 标题\n## 副标题\n\n**粗体**\n*斜体*\n\n- 列表项\n\n```code\n代码块\n```",
       "contentRequired": "请输入内容。",
       "preview": "预览",

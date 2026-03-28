@@ -262,7 +262,9 @@
       "badRequest": "不正なリクエストです。入力内容を確認してください。",
       "http": "リクエストに失敗しました。({code})",
       "saveFailed": "投稿保存中にエラーが発生しました。",
-      "resumeFailed": "ログイン後の自動再試行に失敗しました。もう一度お試しください。"
+      "resumeFailed": "ログイン後の自動再試行に失敗しました。もう一度お試しください。",
+      "invalidImageType": "画像ファイルのみアップロードできます。",
+      "imageUploadFailed": "画像のアップロードに失敗しました。もう一度お試しください。"
     },
     "notice": {
       "autoSaved": "自動保存されました。",
@@ -302,6 +304,9 @@
     },
     "editor": {
       "markdownEdit": "Markdown 編集",
+      "addImage": "写真を追加",
+      "uploading": "アップロード中...",
+      "imageHint": "ボタンで画像を追加するか、このエディターへドラッグしてください",
       "contentPlaceholder": "Markdown 形式で内容を入力してください\n\n# タイトル\n## サブタイトル\n\n**太字**\n*斜体*\n\n- リスト項目\n\n```code\nコードブロック\n```",
       "contentRequired": "内容を入力してください。",
       "preview": "プレビュー",
