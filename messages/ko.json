@@ -370,7 +370,12 @@
       "title": "카테고리",
       "all": "전체 글",
       "uncategorized": "카테고리 없는 글",
-      "empty": "아직 카테고리가 없습니다"
+      "empty": "아직 카테고리가 없습니다",
+      "expandSubcategories": "하위 카테고리 펼치기",
+      "collapseSubcategories": "하위 카테고리 접기",
+      "closeSidebar": "카테고리 사이드바 닫기",
+      "close": "닫기",
+      "mobileSectionTitle": "카테고리"
     },
     "empty": "표시할 게시물이 없습니다.",
     "period": {

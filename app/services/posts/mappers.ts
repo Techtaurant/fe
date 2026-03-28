@@ -1,4 +1,5 @@
 import { Post } from "@/app/types";
+import { buildCommunityPostPath } from "@/app/lib/communityPostRoute";
 import { PostDetailResponse, PostListItem } from "./types";
 
 const API_BASE_URL =
@@ -48,6 +49,7 @@ export function mapListItemToPost(item: PostListItem): Post {
     author: {
       id: authorId,
       name: item.authorName,
+      nickname: item.authorNickname,
       email: "",
       profileImageUrl: normalizeUrl(item.authorProfileImageUrl) || "",
       role: "USER",
@@ -55,7 +57,12 @@ export function mapListItemToPost(item: PostListItem): Post {
     categoryPath,
     isRead: item.isRead,
     publishedAt: resolvedPublishedAt,
-    url: `/post/${item.id}`,
+    url: buildCommunityPostPath({
+      nickname: item.authorNickname,
+      fallbackName: item.authorName,
+      categoryPath,
+      postId: item.id,
+    }),
     thumbnailUrl: normalizeUrl(item.thumbnailUrl),
   };
 }
@@ -83,6 +90,7 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
     author: {
       id: detail.author.id,
       name: detail.author.name,
+      nickname: detail.author.nickname,
       email: "",
       profileImageUrl: normalizeUrl(detail.author.profileImageUrl) || "",
       role: "USER",
@@ -90,6 +98,11 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
     categoryPath,
     isRead: Boolean(detail.isRead),
     publishedAt: resolvedPublishedAt,
-    url: `/post/${detail.id}`,
+    url: buildCommunityPostPath({
+      nickname: detail.author.nickname,
+      fallbackName: detail.author.name,
+      categoryPath,
+      postId: detail.id,
+    }),
   };
 }

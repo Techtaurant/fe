@@ -9,6 +9,7 @@ export interface PostListItem {
   content?: string;
   authorId?: string;
   categoryPath?: string;
+  authorNickname?: string;
   category?: {
     id?: string;
     path?: string;
@@ -75,6 +76,7 @@ export interface PostDetailResponse {
     author: {
       id: string;
       name: string;
+      nickname?: string;
       profileImageUrl?: string;
     };
     category?: {
