@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import type { KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,7 +25,7 @@ import {
   writeLocalDraftSnapshot,
 } from "./lib/storage";
 
-export default function WritePostPage() {
+function WritePostPageContent() {
   const t = useTranslations("WritePage");
   const locale = useLocale();
   const router = useRouter();
@@ -259,5 +259,13 @@ export default function WritePostPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function WritePostPage() {
+  return (
+    <Suspense fallback={null}>
+      <WritePostPageContent />
+    </Suspense>
   );
 }

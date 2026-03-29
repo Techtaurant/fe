@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -245,7 +245,7 @@ function CategoryFilterPanelContent(params: {
   );
 }
 
-export default function UserDetailPage() {
+function UserDetailPageContent() {
   const t = useTranslations("UserPage");
   const params = useParams();
   const searchParams = useSearchParams();
@@ -959,5 +959,13 @@ export default function UserDetailPage() {
       </div>
       )}
     </div>
+  );
+}
+
+export default function UserDetailPage() {
+  return (
+    <Suspense fallback={null}>
+      <UserDetailPageContent />
+    </Suspense>
   );
 }
