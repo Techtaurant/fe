@@ -2,6 +2,47 @@
 
 다양한 기술 블로그의 최신 포스트를 한곳에서 확인할 수 있는 플랫폼입니다.
 
+## Cloudflare Workers Deploy
+
+- Runtime: Cloudflare Workers + `@opennextjs/cloudflare`
+- Worker config: `wrangler.jsonc`
+- Edge middleware entry: `middleware.ts`
+
+### Install
+
+```bash
+pnpm install
+```
+
+### Required environment variables
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=https://your-api-domain.com
+```
+
+- Set the same key in Cloudflare Workers build/deploy environment variables
+- Update backend CORS and OAuth allowed origins to your frontend domain
+
+### Local validation
+
+```bash
+pnpm build
+pnpm cf:build
+pnpm cf:preview
+```
+
+### Deploy
+
+```bash
+pnpm cf:deploy
+```
+
+### Cloudflare dashboard build settings
+
+- Build command: `npx @opennextjs/cloudflare build`
+- Deploy command: `npx @opennextjs/cloudflare deploy`
+- Root directory: repository root
+
 ## 기술 스택
 
 - **Next.js 16** (App Router)
@@ -26,8 +67,7 @@ app/
 └── globals.css             # 디자인 시스템
 
 prd/
-├── design-system.json      # 디자인 시스템 정의
-└── techtaurant-logo.png    # 로고 이미지
+└── design-system.json      # 디자인 시스템 정의
 ```
 
 ## 컴포넌트 아키텍처

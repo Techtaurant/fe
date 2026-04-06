@@ -1,0 +1,52 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "techtaurant",
+  "compatibility_date": "2025-03-01",
+  "workers_dev": false,
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "routes": [
+    {
+      "pattern": "techtaurant.com",
+      "custom_domain": true,
+    },
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "techtaurant",
+    },
+  ],
+  "images": {
+    "binding": "IMAGES",
+  },
+  "env": {
+    "dev": {
+      "name": "techtaurant-dev",
+      "workers_dev": false,
+      "routes": [
+        {
+          "pattern": "dev.techtaurant.com",
+          "custom_domain": true,
+        },
+      ],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS",
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "techtaurant-dev",
+        },
+      ],
+      "images": {
+        "binding": "IMAGES",
+      },
+    },
+  },
+}

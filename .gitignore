@@ -56,3 +56,6 @@ conf/ssl
 # qa artifacts
 .qa-artifacts/
 scripts
+
+# deploy
+.open-next

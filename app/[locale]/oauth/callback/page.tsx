@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -12,7 +12,7 @@ function isSafeInternalPath(path: string | null): path is string {
   return Boolean(path && path.startsWith("/") && !path.startsWith("//"));
 }
 
-export default function OAuthCallback() {
+function OAuthCallbackContent() {
   const t = useTranslations("OAuthCallback");
   const locale = useLocale();
   const router = useRouter();
@@ -64,5 +64,22 @@ export default function OAuthCallback() {
         <p className="text-muted-foreground">{t("processing")}</p>
       </div>
     </div>
+  );
+}
+
+export default function OAuthCallback() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }

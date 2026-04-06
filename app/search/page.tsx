@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
@@ -61,7 +61,7 @@ function filterPosts(posts: Post[], query: string) {
   });
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const t = useTranslations("SearchPage");
   const locale = useLocale();
   const searchParams = useSearchParams();
@@ -160,5 +160,13 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
