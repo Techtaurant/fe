@@ -1,0 +1,78 @@
+name: Cloudflare Deploy
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.13.1 --activate
+
+      - name: Get pnpm store directory
+        id: pnpm-store
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Select deploy target
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "DEPLOY_SCRIPT=cf:deploy:prod" >> "$GITHUB_ENV"
+            echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_PROD }}" >> "$GITHUB_ENV"
+            echo "DEPLOY_HOST=techtaurant.com" >> "$GITHUB_ENV"
+          else
+            echo "DEPLOY_SCRIPT=cf:deploy:dev" >> "$GITHUB_ENV"
+            echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_DEV }}" >> "$GITHUB_ENV"
+            echo "DEPLOY_HOST=dev.techtaurant.com" >> "$GITHUB_ENV"
+          fi
+
+      - name: Validate deploy variables
+        run: |
+          if [[ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]]; then
+            echo "Missing CLOUDFLARE_API_TOKEN secret"
+            exit 1
+          fi
+          if [[ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]]; then
+            echo "Missing CLOUDFLARE_ACCOUNT_ID secret"
+            exit 1
+          fi
+          if [[ -z "${NEXT_PUBLIC_API_BASE_URL}" ]]; then
+            echo "Missing NEXT_PUBLIC_API_BASE_URL for ${DEPLOY_HOST}. Set NEXT_PUBLIC_API_BASE_URL_DEV and NEXT_PUBLIC_API_BASE_URL_PROD repository variables."
+            exit 1
+          fi
+
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
+        run: pnpm run $DEPLOY_SCRIPT
