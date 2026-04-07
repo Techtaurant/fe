@@ -1,9 +1,9 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Header from "./Header";
-import MarkdownRenderer from "./MarkdownRenderer";
+import MarkdownRenderer, { extractTableOfContents } from "./MarkdownRenderer";
 import PostDetailActionBar from "./post-detail/PostDetailActionBar";
 import PostDetailCommentsSection from "./post-detail/PostDetailCommentsSection";
 import PostDetailConfirmDialog, {
@@ -13,6 +13,7 @@ import PostDetailConfirmDialog, {
   PUBLIC_CONFIRM_BUTTON_CLASS_NAME,
 } from "./post-detail/PostDetailConfirmDialog";
 import PostDetailHeader from "./post-detail/PostDetailHeader";
+import PostDetailTableOfContents from "./post-detail/PostDetailTableOfContents";
 import { Comment, FeedMode, Post } from "../types";
 import { CommentSort } from "../services/comments/types";
 import { ValidationErrors } from "../services/comments/apiError";
@@ -112,8 +113,14 @@ export default function PostDetail({
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const [isVisibilityConfirmOpen, setIsVisibilityConfirmOpen] = useState(false);
   const [commentFocusRequestKey, setCommentFocusRequestKey] = useState(0);
-  const nextVisibilityStatus = post.status === "PRIVATE" ? "PUBLISHED" : "PRIVATE";
+  const nextVisibilityStatus =
+    post.status === "PRIVATE" ? "PUBLISHED" : "PRIVATE";
   const isNextStatusPrivate = nextVisibilityStatus === "PRIVATE";
+  const tableOfContents = useMemo(
+    () => extractTableOfContents(post.content || ""),
+    [post.content],
+  );
+  const hasTableOfContents = tableOfContents.length > 0;
 
   const formatCount = (count: number): string => {
     if (locale === "ko") {
@@ -134,65 +141,81 @@ export default function PostDetail({
         onModeChange={() => {}}
       />
 
-      <main className="max-w-[728px] mx-auto px-4 md:px-6 pt-8 pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:py-12">
-        <PostDetailHeader
-          post={post}
-          isOwner={isOwner}
-          onBack={onBack}
-          onEdit={onEdit}
-          onAuthorClick={onAuthorClick}
-          onToggleVisibility={() => setIsVisibilityConfirmOpen(true)}
-          onRequestDelete={() => setIsDeleteConfirmOpen(true)}
-          onRequestReport={() => setIsReportConfirmOpen(true)}
-          onFollowAuthor={onFollowAuthor}
-          isFollowingAuthor={isFollowingAuthor}
-          isFollowingUpdating={isFollowingUpdating}
-          isVisibilityUpdating={isVisibilityUpdating}
-        />
+      <main className="mx-auto px-4 pt-8 pb-[calc(max(18rem,100vh)+env(safe-area-inset-bottom))] md:px-6 md:pt-12 md:pb-[calc(max(24rem,100vh)+env(safe-area-inset-bottom))]">
+        <div
+          className={
+            hasTableOfContents
+              ? "mx-auto max-w-[1048px] xl:grid xl:grid-cols-[minmax(0,728px)_240px] xl:gap-12"
+              : "mx-auto max-w-[728px]"
+          }
+        >
+          <div className="min-w-0">
+            <PostDetailHeader
+              post={post}
+              isOwner={isOwner}
+              onBack={onBack}
+              onEdit={onEdit}
+              onAuthorClick={onAuthorClick}
+              onToggleVisibility={() => setIsVisibilityConfirmOpen(true)}
+              onRequestDelete={() => setIsDeleteConfirmOpen(true)}
+              onRequestReport={() => setIsReportConfirmOpen(true)}
+              onFollowAuthor={onFollowAuthor}
+              isFollowingAuthor={isFollowingAuthor}
+              isFollowingUpdating={isFollowingUpdating}
+              isVisibilityUpdating={isVisibilityUpdating}
+            />
 
-        <article className="mb-12">
-          <MarkdownRenderer content={post.content || ""} />
-        </article>
+            <article className="mb-12">
+              <MarkdownRenderer content={post.content || ""} />
+            </article>
 
-        <PostDetailActionBar
-          reactionState={reactionState}
-          isRead={isRead}
-          showReadToggle={canToggleRead}
-          likeCount={post.likeCount || 0}
-          commentCount={post.commentCount || 0}
-          viewCount={post.viewCount || 0}
-          formatCount={formatCount}
-          onLike={onLike}
-          onDislike={onDislike}
-          onToggleRead={onToggleRead}
-          onShare={onShare}
-          onFocusComment={() => setCommentFocusRequestKey((prev) => prev + 1)}
-        />
+            <PostDetailActionBar
+              reactionState={reactionState}
+              isRead={isRead}
+              showReadToggle={canToggleRead}
+              likeCount={post.likeCount || 0}
+              commentCount={post.commentCount || 0}
+              viewCount={post.viewCount || 0}
+              formatCount={formatCount}
+              onLike={onLike}
+              onDislike={onDislike}
+              onToggleRead={onToggleRead}
+              onShare={onShare}
+              onFocusComment={() =>
+                setCommentFocusRequestKey((prev) => prev + 1)
+              }
+            />
 
-        <PostDetailCommentsSection
-          comments={comments}
-          commentsSort={commentsSort}
-          isCommentsLoading={isCommentsLoading}
-          commentsHasNext={commentsHasNext}
-          isCommentsLoadingMore={isCommentsLoadingMore}
-          createCommentFieldErrors={createCommentFieldErrors}
-          onCreateComment={onCreateComment}
-          onUpdateComment={onUpdateComment}
-          onDeleteComment={onDeleteComment}
-          onBanCommentAuthor={onBanCommentAuthor}
-          onLikeComment={onLikeComment}
-          onDislikeComment={onDislikeComment}
-          onClearCommentFieldError={onClearCommentFieldError}
-          onLoadMoreComments={onLoadMoreComments}
-          onCommentsSortChange={onCommentsSortChange}
-          currentUserId={currentUserId}
-          postAuthorId={post.author?.id ?? null}
-          updatingCommentId={updatingCommentId}
-          deletingCommentId={deletingCommentId}
-          banningCommentAuthorId={banningCommentAuthorId}
-          focusRequestKey={commentFocusRequestKey}
-          onShowError={onShowError}
-        />
+            <PostDetailCommentsSection
+              comments={comments}
+              commentsSort={commentsSort}
+              isCommentsLoading={isCommentsLoading}
+              commentsHasNext={commentsHasNext}
+              isCommentsLoadingMore={isCommentsLoadingMore}
+              createCommentFieldErrors={createCommentFieldErrors}
+              onCreateComment={onCreateComment}
+              onUpdateComment={onUpdateComment}
+              onDeleteComment={onDeleteComment}
+              onBanCommentAuthor={onBanCommentAuthor}
+              onLikeComment={onLikeComment}
+              onDislikeComment={onDislikeComment}
+              onClearCommentFieldError={onClearCommentFieldError}
+              onLoadMoreComments={onLoadMoreComments}
+              onCommentsSortChange={onCommentsSortChange}
+              currentUserId={currentUserId}
+              postAuthorId={post.author?.id ?? null}
+              updatingCommentId={updatingCommentId}
+              deletingCommentId={deletingCommentId}
+              banningCommentAuthorId={banningCommentAuthorId}
+              focusRequestKey={commentFocusRequestKey}
+              onShowError={onShowError}
+            />
+          </div>
+
+          {hasTableOfContents ? (
+            <PostDetailTableOfContents headings={tableOfContents} />
+          ) : null}
+        </div>
 
         <PostDetailConfirmDialog
           isOpen={isDeleteConfirmOpen}
@@ -221,7 +244,11 @@ export default function PostDetail({
           }
           description={t("visibilityConfirmDescription")}
           cancelLabel={t("close")}
-          confirmLabel={isNextStatusPrivate ? t("menuToggleToPrivate") : t("menuToggleToPublic")}
+          confirmLabel={
+            isNextStatusPrivate
+              ? t("menuToggleToPrivate")
+              : t("menuToggleToPublic")
+          }
           onCancel={() => setIsVisibilityConfirmOpen(false)}
           onConfirm={async () => {
             await onToggleVisibility();
