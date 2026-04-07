@@ -99,6 +99,23 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
         .markdown-content ol {
           padding-left: 1.5rem;
           margin-bottom: 1rem;
+          list-style-position: outside;
+        }
+
+        .markdown-content ul {
+          list-style-type: disc;
+        }
+
+        .markdown-content ol {
+          list-style-type: decimal;
+        }
+
+        .markdown-content ul ul {
+          list-style-type: circle;
+        }
+
+        .markdown-content ul ul ul {
+          list-style-type: square;
         }
 
         .markdown-content li {
