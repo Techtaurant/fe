@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Comment } from "@/app/types";
 import { CommentSort } from "@/app/services/comments/types";
 import { ValidationErrors } from "@/app/services/comments/apiError";
+import { scrollToElementBelowHeader } from "@/app/lib/scrollToElementBelowHeader";
 import PostDetailCommentItem from "./PostDetailCommentItem";
 import PostDetailCommentReplies from "./PostDetailCommentReplies";
 
@@ -165,10 +166,10 @@ export default function PostDetailCommentsSection({
   useEffect(() => {
     if (focusRequestKey <= 0) return;
 
-    commentInputRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    if (commentInputRef.current) {
+      scrollToElementBelowHeader(commentInputRef.current, "smooth");
+    }
+
     setIsCommentExpanded(true);
     setTimeout(() => commentTextareaRef.current?.focus(), 150);
   }, [focusRequestKey]);

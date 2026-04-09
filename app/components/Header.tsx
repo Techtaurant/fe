@@ -140,7 +140,7 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-[300] bg-background border-b border-border">
+    <header data-app-header="true" className="sticky top-0 z-[300] bg-background border-b border-border">
       <div className="h-16 max-w-[1400px] mx-auto px-4 md:px-6 flex items-center justify-between">
         {/* 햄버거 메뉴 버튼 (모바일만) */}
         <button

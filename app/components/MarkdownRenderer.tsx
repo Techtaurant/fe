@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -7,8 +8,94 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { ALLOWED_HTML_TAGS } from "@/app/constants/markdownAllowedHtml";
 
+export interface TableOfContentsHeading {
+  id: string;
+  text: string;
+  level: 1 | 2 | 3;
+}
+
 interface MarkdownRendererProps {
   content: string;
+}
+
+function normalizeHeadingText(text: string): string {
+  return text
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/[*~]/g, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function slugifyHeadingText(text: string): string {
+  const normalizedText = normalizeHeadingText(text);
+
+  return normalizedText
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{N}-]+/gu, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function createHeadingId(text: string, counts: Map<string, number>): string {
+  const normalizedText = slugifyHeadingText(text) || normalizeHeadingText(text);
+  const currentCount = counts.get(normalizedText) ?? 0;
+  counts.set(normalizedText, currentCount + 1);
+
+  if (currentCount === 0) {
+    return normalizedText;
+  }
+
+  return `${normalizedText}-${currentCount + 1}`;
+}
+
+function extractTextFromReactNode(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(extractTextFromReactNode).join("");
+  }
+
+  if (node && typeof node === "object" && "props" in node) {
+    const children = (node as { props?: { children?: ReactNode } }).props?.children;
+    return children ? extractTextFromReactNode(children) : "";
+  }
+
+  return "";
+}
+
+export function extractTableOfContents(content: string): TableOfContentsHeading[] {
+  const headingCounts = new Map<string, number>();
+
+  return content
+    .split("\n")
+    .map((line) => line.match(/^(#{1,3})\s+(.+)$/))
+    .filter((match): match is RegExpMatchArray => Boolean(match))
+    .map((match) => {
+      const level = match[1].length as 1 | 2 | 3;
+      const text = normalizeHeadingText(match[2]);
+
+      if (!text) {
+        return null;
+      }
+
+      return {
+        id: createHeadingId(text, headingCounts),
+        text,
+        level,
+      } satisfies TableOfContentsHeading;
+    })
+    .filter((heading): heading is TableOfContentsHeading => heading !== null);
 }
 
 const sanitizedSchema = {
@@ -46,9 +133,60 @@ const sanitizedSchema = {
  * - 지정한 HTML 태그만 허용하고 나머지는 제거
  */
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
+  const tableOfContents = useMemo(() => extractTableOfContents(content), [content]);
+  const headingIdsByText = useMemo(() => {
+    const nextHeadingIds = new Map<string, string[]>();
+
+    tableOfContents.forEach((heading) => {
+      const ids = nextHeadingIds.get(heading.text) ?? [];
+      ids.push(heading.id);
+      nextHeadingIds.set(heading.text, ids);
+    });
+
+    return nextHeadingIds;
+  }, [tableOfContents]);
+  const renderedHeadingCounts = new Map<string, number>();
+
+  const getRenderedHeadingId = (children: ReactNode) => {
+    const text = normalizeHeadingText(extractTextFromReactNode(children));
+    const currentCount = renderedHeadingCounts.get(text) ?? 0;
+    renderedHeadingCounts.set(text, currentCount + 1);
+
+    return headingIdsByText.get(text)?.[currentCount] ?? createHeadingId(text, new Map());
+  };
+
   return (
     <div className="markdown-content">
       <ReactMarkdown
+        components={{
+          h1: ({ children, ...props }) => {
+            const id = getRenderedHeadingId(children);
+
+            return (
+              <h1 id={id} {...props}>
+                {children}
+              </h1>
+            );
+          },
+          h2: ({ children, ...props }) => {
+            const id = getRenderedHeadingId(children);
+
+            return (
+              <h2 id={id} {...props}>
+                {children}
+              </h2>
+            );
+          },
+          h3: ({ children, ...props }) => {
+            const id = getRenderedHeadingId(children);
+
+            return (
+              <h3 id={id} {...props}>
+                {children}
+              </h3>
+            );
+          },
+        }}
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizedSchema], rehypeHighlight]}
       >
@@ -71,6 +209,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           margin-top: 2rem;
           margin-bottom: 1rem;
           line-height: 1.3;
+          scroll-margin-top: 4rem;
         }
 
         .markdown-content h2 {
@@ -81,6 +220,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           margin-bottom: 0.75rem;
           line-height: 1.4;
           padding-bottom: 0.5rem;
+          scroll-margin-top: 4rem;
         }
 
         .markdown-content h3 {
@@ -89,6 +229,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           color: var(--foreground);
           margin-top: 1.5rem;
           margin-bottom: 0.5rem;
+          scroll-margin-top: 4rem;
         }
 
         .markdown-content p {
@@ -99,6 +240,23 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
         .markdown-content ol {
           padding-left: 1.5rem;
           margin-bottom: 1rem;
+          list-style-position: outside;
+        }
+
+        .markdown-content ul {
+          list-style-type: disc;
+        }
+
+        .markdown-content ol {
+          list-style-type: decimal;
+        }
+
+        .markdown-content ul ul {
+          list-style-type: circle;
+        }
+
+        .markdown-content ul ul ul {
+          list-style-type: square;
         }
 
         .markdown-content li {
