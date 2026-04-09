@@ -1,9 +1,15 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Dispatch, DragEvent, SetStateAction } from "react";
 import { useTranslations } from "next-intl";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
 import { FieldErrors } from "../lib/types";
 import type { UploadedAttachment } from "@/app/services/attachments";
+import { fetchAttachmentPreviewUrl } from "@/app/services/attachments";
+
+const ATTACHMENT_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MARKDOWN_IMAGE_PATTERN = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g;
+const HTML_IMAGE_PATTERN = /(<img[^>]+src=["'])([^"']+)(["'][^>]*>)/gi;
 
 interface WriteEditorPreviewProps {
   content: string;
@@ -22,6 +28,26 @@ function buildImageMarkdown(images: UploadedAttachment[]) {
     .join("\n\n");
 }
 
+function extractAttachmentIds(content: string): string[] {
+  const attachmentIds = new Set<string>();
+
+  for (const match of content.matchAll(MARKDOWN_IMAGE_PATTERN)) {
+    const candidate = match[2]?.trim();
+    if (candidate && ATTACHMENT_ID_PATTERN.test(candidate)) {
+      attachmentIds.add(candidate);
+    }
+  }
+
+  for (const match of content.matchAll(HTML_IMAGE_PATTERN)) {
+    const candidate = match[2]?.trim();
+    if (candidate && ATTACHMENT_ID_PATTERN.test(candidate)) {
+      attachmentIds.add(candidate);
+    }
+  }
+
+  return [...attachmentIds];
+}
+
 export default function WriteEditorPreview({
   content,
   fieldErrors,
@@ -36,6 +62,137 @@ export default function WriteEditorPreview({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
+  const [previewUrlByAttachmentId, setPreviewUrlByAttachmentId] = useState<
+    Record<string, string>
+  >({});
+  const loadingAttachmentIdsRef = useRef<Set<string>>(new Set());
+  const objectPreviewUrlByAttachmentIdRef = useRef<Map<string, string>>(new Map());
+  const attachmentIdsInContent = useMemo(() => extractAttachmentIds(content), [content]);
+  const resolvePreviewImageSrc = useCallback(
+    (src: string): string | null => {
+      if (ATTACHMENT_ID_PATTERN.test(src)) {
+        return previewUrlByAttachmentId[src] ?? null;
+      }
+
+      return src;
+    },
+    [previewUrlByAttachmentId],
+  );
+
+  useEffect(() => {
+    const usedAttachmentIds = new Set(attachmentIdsInContent);
+    const revokedAttachmentIds: string[] = [];
+
+    objectPreviewUrlByAttachmentIdRef.current.forEach((previewUrl, attachmentId) => {
+      if (usedAttachmentIds.has(attachmentId)) {
+        return;
+      }
+
+      URL.revokeObjectURL(previewUrl);
+      objectPreviewUrlByAttachmentIdRef.current.delete(attachmentId);
+      revokedAttachmentIds.push(attachmentId);
+    });
+
+    if (revokedAttachmentIds.length === 0) {
+      return;
+    }
+
+    setPreviewUrlByAttachmentId((previous) => {
+      const next = { ...previous };
+      revokedAttachmentIds.forEach((attachmentId) => {
+        delete next[attachmentId];
+      });
+      return next;
+    });
+  }, [attachmentIdsInContent]);
+
+  useEffect(() => {
+    const missingAttachmentIds = attachmentIdsInContent.filter(
+      (attachmentId) =>
+        !previewUrlByAttachmentId[attachmentId] &&
+        !loadingAttachmentIdsRef.current.has(attachmentId),
+    );
+
+    if (missingAttachmentIds.length === 0) {
+      return;
+    }
+
+    let isCancelled = false;
+    missingAttachmentIds.forEach((attachmentId) => {
+      loadingAttachmentIdsRef.current.add(attachmentId);
+    });
+
+    void Promise.all(
+      missingAttachmentIds.map(async (attachmentId) => {
+        try {
+          const previewUrl = await fetchAttachmentPreviewUrl(attachmentId);
+          return { attachmentId, previewUrl };
+        } catch {
+          return null;
+        } finally {
+          loadingAttachmentIdsRef.current.delete(attachmentId);
+        }
+      }),
+    ).then((results) => {
+      if (isCancelled) {
+        return;
+      }
+
+      const resolvedEntries = results.filter(
+        (entry): entry is { attachmentId: string; previewUrl: string } => entry !== null,
+      );
+
+      if (resolvedEntries.length === 0) {
+        return;
+      }
+
+      setPreviewUrlByAttachmentId((previous) => {
+        const next = { ...previous };
+        resolvedEntries.forEach(({ attachmentId, previewUrl }) => {
+          next[attachmentId] = previewUrl;
+        });
+        return next;
+      });
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [attachmentIdsInContent, previewUrlByAttachmentId]);
+
+  useEffect(
+    () => () => {
+      objectPreviewUrlByAttachmentIdRef.current.forEach((previewUrl) => {
+        URL.revokeObjectURL(previewUrl);
+      });
+      objectPreviewUrlByAttachmentIdRef.current.clear();
+    },
+    [],
+  );
+
+  const registerUploadedImagePreviewUrls = (uploadedImages: UploadedAttachment[]) => {
+    const nextPreviewUrlByAttachmentId: Record<string, string> = {};
+
+    uploadedImages.forEach(({ attachmentId, previewUrl }) => {
+      if (!previewUrl) {
+        return;
+      }
+
+      nextPreviewUrlByAttachmentId[attachmentId] = previewUrl;
+      if (previewUrl.startsWith("blob:")) {
+        objectPreviewUrlByAttachmentIdRef.current.set(attachmentId, previewUrl);
+      }
+    });
+
+    if (Object.keys(nextPreviewUrlByAttachmentId).length === 0) {
+      return;
+    }
+
+    setPreviewUrlByAttachmentId((previous) => ({
+      ...previous,
+      ...nextPreviewUrlByAttachmentId,
+    }));
+  };
 
   const insertImagesAtCursor = (images: UploadedAttachment[]) => {
     const textarea = textareaRef.current;
@@ -77,6 +234,7 @@ export default function WriteEditorPreview({
 
     try {
       const uploadedImages = await onUploadImages(files);
+      registerUploadedImagePreviewUrls(uploadedImages);
       insertImagesAtCursor(uploadedImages);
     } catch {
       return;
@@ -187,7 +345,10 @@ export default function WriteEditorPreview({
         </div>
         <div className="flex-1 overflow-y-auto p-4">
           {content ? (
-            <MarkdownRenderer content={content} />
+            <MarkdownRenderer
+              content={content}
+              resolveImageSrc={resolvePreviewImageSrc}
+            />
           ) : (
             <div className="flex h-full items-center justify-center text-center text-muted-foreground">
               <p>{t("previewEmpty")}</p>
