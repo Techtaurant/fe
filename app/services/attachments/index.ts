@@ -7,6 +7,17 @@ import { httpClient } from "@/app/utils/httpClient";
 export interface UploadedAttachment {
   attachmentId: string;
   fileName: string;
+  previewUrl?: string;
+}
+
+interface AttachmentPreviewUrlResponse {
+  status: number;
+  data: {
+    attachmentId: string;
+    objectKey: string;
+    presignedUrl: string;
+  };
+  message: string;
 }
 
 async function createAttachmentPresignedUrl(
@@ -64,10 +75,44 @@ export async function uploadPostImages(files: File[]): Promise<UploadedAttachmen
 
       await uploadFileToPresignedUrl(presigned.presignedUrl, file);
 
+      const previewUrl =
+        typeof URL !== "undefined" && typeof URL.createObjectURL === "function"
+          ? URL.createObjectURL(file)
+          : undefined;
+
       return {
         attachmentId: presigned.attachmentId,
         fileName: file.name,
+        previewUrl,
       };
     }),
   );
+}
+
+export async function fetchAttachmentPreviewUrl(attachmentId: string): Promise<string> {
+  const response = await httpClient(
+    `/api/attachments/${encodeURIComponent(attachmentId)}/preview-url`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (response.status === 400) {
+    throw new Error("BAD_REQUEST");
+  }
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  const body = (await response.json()) as AttachmentPreviewUrlResponse;
+  return body.data.presignedUrl;
 }
