@@ -262,7 +262,9 @@
       "badRequest": "Invalid request. Please check your input.",
       "http": "Request failed. ({code})",
       "saveFailed": "An error occurred while saving the post.",
-      "resumeFailed": "Automatic retry after sign-in failed. Please try again."
+      "resumeFailed": "Automatic retry after sign-in failed. Please try again.",
+      "invalidImageType": "Only image files can be uploaded.",
+      "imageUploadFailed": "Image upload failed. Please try again."
     },
     "notice": {
       "autoSaved": "Auto-saved.",
@@ -302,6 +304,9 @@
     },
     "editor": {
       "markdownEdit": "Markdown editor",
+      "addImage": "Add photo",
+      "uploading": "Uploading...",
+      "imageHint": "Add images with the button or drag them into this editor",
       "contentPlaceholder": "Write your content in markdown format\n\n# Title\n## Subtitle\n\n**Bold text**\n*Italic text*\n\n- List item\n\n```code\ncode block\n```",
       "contentRequired": "Please enter content.",
       "preview": "Preview",

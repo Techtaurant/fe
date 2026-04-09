@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { CreatePostRequest, PostStatus } from "@/app/types";
+import { extractAttachmentIdsFromContent } from "../lib/attachmentIds";
 import { FieldErrors } from "../lib/types";
 
 export function useWriteFormState() {
@@ -75,6 +76,9 @@ export function useWriteFormState() {
       ...(trimmedContent ? { content: trimmedContent } : {}),
       ...(trimmedCategory ? { categoryPath: trimmedCategory } : {}),
       ...(tags.length > 0 ? { tags } : {}),
+      ...(trimmedContent
+        ? { attachmentIds: extractAttachmentIdsFromContent(trimmedContent) }
+        : {}),
       status,
     };
   };

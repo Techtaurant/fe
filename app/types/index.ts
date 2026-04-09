@@ -92,6 +92,7 @@ export interface CreatePostRequest {
   content?: string;
   categoryPath?: string;
   tags?: string[];
+  attachmentIds?: string[];
   status?: PostStatus;
 }
 
@@ -101,6 +102,7 @@ export interface UpdatePostRequest {
   content?: string;
   categoryPath?: string;
   tags?: string[];
+  attachmentIds?: string[];
   status?: PostStatus;
 }
 
@@ -117,6 +119,23 @@ export interface CreatePostResponse {
     tags: string[];
     createdAt: string;
     updatedAt: string;
+  };
+  message: string;
+}
+
+export interface CreateAttachmentPresignedUrlRequest {
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+  referenceType: "POST" | "PROFILE";
+}
+
+export interface CreateAttachmentPresignedUrlResponse {
+  status: number;
+  data: {
+    attachmentId: string;
+    objectKey: string;
+    presignedUrl: string;
   };
   message: string;
 }

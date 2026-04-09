@@ -16,6 +16,7 @@ export interface TableOfContentsHeading {
 
 interface MarkdownRendererProps {
   content: string;
+  resolveImageSrc?: (src: string) => string | null;
 }
 
 function normalizeHeadingText(text: string): string {
@@ -101,6 +102,10 @@ export function extractTableOfContents(content: string): TableOfContentsHeading[
 const sanitizedSchema = {
   ...defaultSchema,
   tagNames: ALLOWED_HTML_TAGS,
+  protocols: {
+    ...(defaultSchema.protocols ?? {}),
+    src: [...(defaultSchema.protocols?.src ?? []), "blob"],
+  },
   attributes: {
     a: ["href", "title", "target", "rel"],
     abbr: ["title"],
@@ -132,7 +137,10 @@ const sanitizedSchema = {
  * - 코드 하이라이팅
  * - 지정한 HTML 태그만 허용하고 나머지는 제거
  */
-export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
+export default function MarkdownRenderer({
+  content,
+  resolveImageSrc,
+}: MarkdownRendererProps) {
   const tableOfContents = useMemo(() => extractTableOfContents(content), [content]);
   const headingIdsByText = useMemo(() => {
     const nextHeadingIds = new Map<string, string[]>();
@@ -159,6 +167,18 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
     <div className="markdown-content">
       <ReactMarkdown
         components={{
+          img: ({ src, alt, ...props }) => {
+            if (typeof src !== "string" || src.trim().length === 0) {
+              return null;
+            }
+
+            const resolvedSrc = resolveImageSrc ? resolveImageSrc(src) : src;
+            if (!resolvedSrc || resolvedSrc.trim().length === 0) {
+              return null;
+            }
+
+            return <img src={resolvedSrc} alt={alt ?? ""} {...props} />;
+          },
           h1: ({ children, ...props }) => {
             const id = getRenderedHeadingId(children);
 
