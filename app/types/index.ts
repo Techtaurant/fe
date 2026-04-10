@@ -45,6 +45,10 @@ export interface Post {
   techBlog?: TechBlog; // 기업 블로그 글일 경우
   author?: User; // 커뮤니티 글일 경우
   isRead: boolean;
+  attachmentPresignedUrls?: {
+    attachmentId: string;
+    presignedUrl: string;
+  }[];
   publishedAt: string;
   url: string; // 원문 링크 (기업) 또는 내부 링크 (커뮤니티)
 }

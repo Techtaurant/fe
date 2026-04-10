@@ -92,6 +92,10 @@ export interface PostDetailResponse {
     likeStatus?: "NONE" | "LIKE" | "DISLIKE";
     commentCount?: number;
     isRead?: boolean;
+    attachmentPresignedUrls?: {
+      attachmentId: string;
+      presignedUrl: string;
+    }[];
     createdAt: string;
     updatedAt: string;
   };
