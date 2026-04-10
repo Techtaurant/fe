@@ -18,6 +18,9 @@ import { Comment, FeedMode, Post } from "../types";
 import { CommentSort } from "../services/comments/types";
 import { ValidationErrors } from "../services/comments/apiError";
 
+const ATTACHMENT_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface PostDetailProps {
   post: Post;
   comments: Comment[];
@@ -120,7 +123,25 @@ export default function PostDetail({
     () => extractTableOfContents(post.content || ""),
     [post.content],
   );
+  const attachmentPresignedUrlMap = useMemo(
+    () =>
+      new Map(
+        (post.attachmentPresignedUrls ?? []).map(({ attachmentId, presignedUrl }) => [
+          attachmentId,
+          presignedUrl,
+        ]),
+      ),
+    [post.attachmentPresignedUrls],
+  );
   const hasTableOfContents = tableOfContents.length > 0;
+
+  const resolvePostImageSrc = (src: string): string | null => {
+    if (!ATTACHMENT_ID_PATTERN.test(src)) {
+      return src;
+    }
+
+    return attachmentPresignedUrlMap.get(src) ?? null;
+  };
 
   const formatCount = (count: number): string => {
     if (locale === "ko") {
@@ -166,7 +187,10 @@ export default function PostDetail({
             />
 
             <article className="mb-12">
-              <MarkdownRenderer content={post.content || ""} />
+              <MarkdownRenderer
+                content={post.content || ""}
+                resolveImageSrc={resolvePostImageSrc}
+              />
             </article>
 
             <PostDetailActionBar

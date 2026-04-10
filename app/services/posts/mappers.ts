@@ -97,6 +97,7 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
     },
     categoryPath,
     isRead: Boolean(detail.isRead),
+    attachmentPresignedUrls: detail.attachmentPresignedUrls,
     publishedAt: resolvedPublishedAt,
     url: buildCommunityPostPath({
       nickname: detail.author.nickname,
