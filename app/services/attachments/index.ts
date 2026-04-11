@@ -97,7 +97,7 @@ export async function uploadPostImages(files: File[]): Promise<UploadedAttachmen
 }
 
 export async function uploadProfileImages(files: File[]): Promise<UploadedAttachment[]> {
-  return uploadFilesByReferenceType(files, "PROFILE");
+  return uploadFilesByReferenceType(files, "USER");
 }
 
 export async function fetchAttachmentPreviewUrl(attachmentId: string): Promise<string> {

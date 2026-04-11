@@ -893,7 +893,7 @@ function UserDetailPageContent() {
             confirmButtonClassName={DELETE_CONFIRM_BUTTON_CLASS_NAME}
           />
 
-          {isCurrentUserPage && currentUser ? (
+          {isCurrentUserPage && currentUser && isProfileEditModalOpen ? (
             <ProfileEditModal
               isOpen={isProfileEditModalOpen}
               user={currentUser}

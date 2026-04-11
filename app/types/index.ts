@@ -131,7 +131,7 @@ export interface CreateAttachmentPresignedUrlRequest {
   fileName: string;
   contentType: string;
   fileSize: number;
-  referenceType: "POST" | "PROFILE";
+  referenceType: "POST" | "USER";
 }
 
 export interface CreateAttachmentPresignedUrlResponse {

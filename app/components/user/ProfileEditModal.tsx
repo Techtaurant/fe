@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Camera, LoaderCircle, PencilLine, X } from "lucide-react";
@@ -24,35 +24,23 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [name, setName] = useState(user.name);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(user.profileImageUrl || "");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [nameErrorMessage, setNameErrorMessage] = useState<string | null>(null);
+  const [generalErrorMessage, setGeneralErrorMessage] = useState<string | null>(null);
+
+  const previewUrl = useMemo(
+    () => (selectedFile ? URL.createObjectURL(selectedFile) : user.profileImageUrl || ""),
+    [selectedFile, user.profileImageUrl],
+  );
 
   useEffect(() => {
-    if (!isOpen) {
-      setName(user.name);
-      setSelectedFile(null);
-      setPreviewUrl(user.profileImageUrl || "");
-      setErrorMessage(null);
+    if (!selectedFile || !previewUrl) {
       return;
     }
 
-    setName(user.name);
-    setPreviewUrl(user.profileImageUrl || "");
-    setErrorMessage(null);
-  }, [isOpen, user.name, user.profileImageUrl]);
-
-  useEffect(() => {
-    if (!selectedFile) {
-      setPreviewUrl(user.profileImageUrl || "");
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setPreviewUrl(objectUrl);
     return () => {
-      URL.revokeObjectURL(objectUrl);
+      URL.revokeObjectURL(previewUrl);
     };
-  }, [selectedFile, user.profileImageUrl]);
+  }, [previewUrl, selectedFile]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async () => {
@@ -86,31 +74,36 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
       const message = error instanceof Error ? error.message : "UNKNOWN";
 
       if (message === "EMPTY_NAME") {
-        setErrorMessage(t("errors.emptyName"));
+        setNameErrorMessage(t("errors.emptyName"));
+        return;
+      }
+
+      if (message === "DUPLICATE_NAME") {
+        setNameErrorMessage(t("errors.duplicateName"));
         return;
       }
 
       if (message === "UNAUTHORIZED") {
-        setErrorMessage(t("errors.unauthorized"));
+        setGeneralErrorMessage(t("errors.unauthorized"));
         return;
       }
 
       if (message === "BAD_REQUEST") {
-        setErrorMessage(t("errors.badRequest"));
+        setGeneralErrorMessage(t("errors.badRequest"));
         return;
       }
 
       if (message.startsWith("UPLOAD_")) {
-        setErrorMessage(t("errors.uploadFailed"));
+        setGeneralErrorMessage(t("errors.uploadFailed"));
         return;
       }
 
       if (message.startsWith("HTTP_")) {
-        setErrorMessage(t("errors.http", { code: message.replace("HTTP_", "") }));
+        setGeneralErrorMessage(t("errors.http", { code: message.replace("HTTP_", "") }));
         return;
       }
 
-      setErrorMessage(t("errors.saveFailed"));
+      setGeneralErrorMessage(t("errors.saveFailed"));
     },
   });
 
@@ -123,12 +116,12 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
     }
 
     if (!file.type.startsWith("image/")) {
-      setErrorMessage(t("errors.invalidImageType"));
+      setGeneralErrorMessage(t("errors.invalidImageType"));
       return;
     }
 
     setSelectedFile(file);
-    setErrorMessage(null);
+    setGeneralErrorMessage(null);
   };
 
   return (
@@ -218,41 +211,47 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
               maxLength={20}
               onChange={(event) => {
                 setName(event.target.value);
-                setErrorMessage(null);
+                setNameErrorMessage(null);
+                setGeneralErrorMessage(null);
               }}
               disabled={updateProfileMutation.isPending}
               placeholder={t("namePlaceholder")}
-              className="h-12 w-full rounded-2xl border border-border bg-background px-4 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+              className={`h-12 w-full rounded-2xl border bg-background px-4 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary ${
+                nameErrorMessage ? "border-red-500" : "border-border"
+              }`}
             />
             <div className="mt-2 flex items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">{t("nameHint")}</p>
+              <p className={`text-xs ${nameErrorMessage ? "text-red-600" : "text-muted-foreground"}`}>
+                {nameErrorMessage || t("nameHint")}
+              </p>
               <p className="text-xs font-medium text-muted-foreground">{name.trim().length}/20</p>
             </div>
           </section>
 
-          {errorMessage ? (
+          {generalErrorMessage ? (
             <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600 dark:border-red-500/30 dark:bg-red-500/10">
-              {errorMessage}
+              {generalErrorMessage}
             </p>
           ) : null}
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-border px-5 py-4">
+        <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
           <button
             type="button"
             onClick={onClose}
             disabled={updateProfileMutation.isPending}
-            className="btn-rect btn-neutral-surface min-w-[96px] px-4 text-sm font-semibold text-muted-foreground disabled:opacity-60"
+            className="btn-rect btn-neutral-surface inline-flex h-11 w-full items-center justify-center px-4 text-sm font-semibold text-muted-foreground disabled:opacity-60"
           >
             {t("cancel")}
           </button>
           <PrimaryRectButton
             onClick={() => {
-              setErrorMessage(null);
+              setNameErrorMessage(null);
+              setGeneralErrorMessage(null);
               updateProfileMutation.mutate();
             }}
             disabled={updateProfileMutation.isPending}
-            className="min-w-[112px] px-4 text-sm font-semibold"
+            className="h-11 w-full px-4 text-sm font-semibold"
           >
             {updateProfileMutation.isPending ? (
               <span className="inline-flex items-center gap-2">

@@ -388,6 +388,7 @@
       "saving": "保存中...",
       "errors": {
         "emptyName": "请输入昵称。",
+        "duplicateName": "该昵称已被使用。",
         "invalidImageType": "只能上传图片文件。",
         "uploadFailed": "图片上传失败，请重试。",
         "unauthorized": "登录状态已过期，请重新登录。",

@@ -388,6 +388,7 @@
       "saving": "Saving...",
       "errors": {
         "emptyName": "Please enter your display name.",
+        "duplicateName": "This display name is already in use.",
         "invalidImageType": "Only image files can be uploaded.",
         "uploadFailed": "Failed to upload the image. Please try again.",
         "unauthorized": "Your session has expired. Please sign in again.",
