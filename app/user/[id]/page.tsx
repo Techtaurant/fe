@@ -4,7 +4,7 @@ import { Suspense, type ReactNode, useCallback, useEffect, useMemo, useState } f
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ChevronDown, ChevronUp, FileText, Folder, FolderOpen, UserX } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText, Folder, FolderOpen, PencilLine, UserX } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { redirectToOAuthLogin } from "../../lib/authRedirect";
 import Header from "../../components/Header";
@@ -14,6 +14,7 @@ import PostDetailConfirmDialog, {
   DELETE_CONFIRM_BUTTON_CLASS_NAME,
 } from "../../components/post-detail/PostDetailConfirmDialog";
 import BlockedProfileState from "../../components/user/BlockedProfileState";
+import ProfileEditModal from "../../components/user/ProfileEditModal";
 import UserFollowListModal, {
   FollowListTab,
 } from "../../components/user/UserFollowListModal";
@@ -256,6 +257,7 @@ function UserDetailPageContent() {
   const [period, setPeriod] = useState<PostListPeriod>("ALL");
   const [sort, setSort] = useState<PostListSort>("LATEST");
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
   const [blockedProfileOverride, setBlockedProfileOverride] = useState<boolean | null>(
     isBlockedIntent ? true : null,
   );
@@ -806,7 +808,19 @@ function UserDetailPageContent() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h1 className="text-[20px] font-bold text-foreground truncate">{displayProfileName}</h1>
+                    <div className="flex items-center gap-2">
+                      <h1 className="truncate text-[20px] font-bold text-foreground">{displayProfileName}</h1>
+                      {isCurrentUserPage ? (
+                        <button
+                          type="button"
+                          onClick={() => setIsProfileEditModalOpen(true)}
+                          className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                        >
+                          <PencilLine className="h-4 w-4" />
+                          {t("profileEdit.open")}
+                        </button>
+                      ) : null}
+                    </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] font-medium text-muted-foreground">
                       <span className="truncate">{profileStatsText}</span>
                       <span aria-hidden="true">·</span>
@@ -878,6 +892,14 @@ function UserDetailPageContent() {
             isConfirming={isBlocking}
             confirmButtonClassName={DELETE_CONFIRM_BUTTON_CLASS_NAME}
           />
+
+          {isCurrentUserPage && currentUser ? (
+            <ProfileEditModal
+              isOpen={isProfileEditModalOpen}
+              user={currentUser}
+              onClose={() => setIsProfileEditModalOpen(false)}
+            />
+          ) : null}
 
           <UserFollowListModal
             isOpen={isFollowListModalOpen}

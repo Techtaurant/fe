@@ -143,3 +143,19 @@ export interface CreateAttachmentPresignedUrlResponse {
   };
   message: string;
 }
+
+export interface UpdateMyProfileRequest {
+  name: string;
+  serviceProfileImageAttachmentId?: string;
+}
+
+export interface UpdateMyProfileResponse {
+  status: number;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+    profileImageUrl: string | null;
+  };
+  message: string;
+}

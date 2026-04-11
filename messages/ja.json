@@ -371,6 +371,31 @@
       "emptyFollowers": "フォロワーがいません。",
       "emptyFollowings": "フォロー中のユーザーがいません。"
     },
+    "profileEdit": {
+      "open": "編集",
+      "title": "プロフィール編集",
+      "description": "表示名とプロフィール画像を変更できます。",
+      "closeAria": "プロフィール編集を閉じる",
+      "imageTitle": "プロフィール画像",
+      "imageDescription": "正方形の画像が最も見やすいです。",
+      "imageAction": "プロフィール画像を選択",
+      "changeImage": "画像を変更",
+      "nameLabel": "表示名",
+      "namePlaceholder": "表示名を入力してください",
+      "nameHint": "他のユーザーに表示される名前です。",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "saving": "保存中...",
+      "errors": {
+        "emptyName": "表示名を入力してください。",
+        "invalidImageType": "画像ファイルのみアップロードできます。",
+        "uploadFailed": "画像のアップロードに失敗しました。もう一度お試しください。",
+        "unauthorized": "セッションの有効期限が切れました。再度ログインしてください。",
+        "badRequest": "入力内容を確認してください。",
+        "http": "リクエストに失敗しました。({code})",
+        "saveFailed": "プロフィールの保存に失敗しました。もう一度お試しください。"
+      }
+    },
     "categories": {
       "title": "カテゴリ",
       "all": "すべての投稿",

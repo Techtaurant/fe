@@ -63,14 +63,17 @@ async function uploadFileToPresignedUrl(
   }
 }
 
-export async function uploadPostImages(files: File[]): Promise<UploadedAttachment[]> {
+async function uploadFilesByReferenceType(
+  files: File[],
+  referenceType: CreateAttachmentPresignedUrlRequest["referenceType"],
+): Promise<UploadedAttachment[]> {
   return Promise.all(
     files.map(async (file) => {
       const presigned = await createAttachmentPresignedUrl({
         fileName: file.name,
         contentType: file.type || "application/octet-stream",
         fileSize: file.size,
-        referenceType: "POST",
+        referenceType,
       });
 
       await uploadFileToPresignedUrl(presigned.presignedUrl, file);
@@ -87,6 +90,14 @@ export async function uploadPostImages(files: File[]): Promise<UploadedAttachmen
       };
     }),
   );
+}
+
+export async function uploadPostImages(files: File[]): Promise<UploadedAttachment[]> {
+  return uploadFilesByReferenceType(files, "POST");
+}
+
+export async function uploadProfileImages(files: File[]): Promise<UploadedAttachment[]> {
+  return uploadFilesByReferenceType(files, "PROFILE");
 }
 
 export async function fetchAttachmentPreviewUrl(attachmentId: string): Promise<string> {

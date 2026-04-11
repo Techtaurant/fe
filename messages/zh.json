@@ -371,6 +371,31 @@
       "emptyFollowers": "暂无粉丝。",
       "emptyFollowings": "暂无关注。"
     },
+    "profileEdit": {
+      "open": "编辑",
+      "title": "编辑个人资料",
+      "description": "你可以修改昵称和头像图片。",
+      "closeAria": "关闭个人资料编辑",
+      "imageTitle": "头像图片",
+      "imageDescription": "方形图片会显示得更自然。",
+      "imageAction": "选择头像图片",
+      "changeImage": "更换图片",
+      "nameLabel": "昵称",
+      "namePlaceholder": "请输入昵称",
+      "nameHint": "这是其他用户看到的名字。",
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中...",
+      "errors": {
+        "emptyName": "请输入昵称。",
+        "invalidImageType": "只能上传图片文件。",
+        "uploadFailed": "图片上传失败，请重试。",
+        "unauthorized": "登录状态已过期，请重新登录。",
+        "badRequest": "请检查输入内容。",
+        "http": "请求失败。({code})",
+        "saveFailed": "保存个人资料失败，请重试。"
+      }
+    },
     "categories": {
       "title": "分类",
       "all": "全部",
