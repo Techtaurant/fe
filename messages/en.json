@@ -371,6 +371,32 @@
       "emptyFollowers": "No followers yet.",
       "emptyFollowings": "No followings yet."
     },
+    "profileEdit": {
+      "open": "Edit",
+      "title": "Edit profile",
+      "description": "Update your display name and profile image.",
+      "closeAria": "Close profile editor",
+      "imageTitle": "Profile image",
+      "imageDescription": "A square image works best here.",
+      "imageAction": "Choose profile image",
+      "changeImage": "Change image",
+      "nameLabel": "Display name",
+      "namePlaceholder": "Enter your display name",
+      "nameHint": "This name is shown to other users.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "errors": {
+        "emptyName": "Please enter your display name.",
+        "duplicateName": "This display name is already in use.",
+        "invalidImageType": "Only image files can be uploaded.",
+        "uploadFailed": "Failed to upload the image. Please try again.",
+        "unauthorized": "Your session has expired. Please sign in again.",
+        "badRequest": "Please review your input and try again.",
+        "http": "Request failed. ({code})",
+        "saveFailed": "Failed to save your profile. Please try again."
+      }
+    },
     "categories": {
       "title": "Categories",
       "all": "All posts",

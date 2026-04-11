@@ -371,6 +371,32 @@
       "emptyFollowers": "팔로워가 없습니다.",
       "emptyFollowings": "팔로잉이 없습니다."
     },
+    "profileEdit": {
+      "open": "수정",
+      "title": "프로필 수정",
+      "description": "닉네임과 프로필 이미지를 변경할 수 있어요.",
+      "closeAria": "프로필 수정 닫기",
+      "imageTitle": "프로필 이미지",
+      "imageDescription": "정사각형 이미지가 가장 잘 어울려요.",
+      "imageAction": "프로필 이미지 선택",
+      "changeImage": "이미지 변경",
+      "nameLabel": "닉네임",
+      "namePlaceholder": "닉네임을 입력해주세요",
+      "nameHint": "다른 사용자에게 보이는 이름이에요.",
+      "cancel": "취소",
+      "save": "저장",
+      "saving": "저장 중...",
+      "errors": {
+        "emptyName": "닉네임을 입력해주세요.",
+        "duplicateName": "이미 사용 중인 닉네임입니다.",
+        "invalidImageType": "이미지 파일만 업로드할 수 있어요.",
+        "uploadFailed": "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+        "unauthorized": "세션이 만료되었습니다. 다시 로그인해주세요.",
+        "badRequest": "입력값을 확인해주세요.",
+        "http": "요청에 실패했습니다. ({code})",
+        "saveFailed": "프로필 저장에 실패했습니다. 다시 시도해주세요."
+      }
+    },
     "categories": {
       "title": "카테고리",
       "all": "전체 글",
