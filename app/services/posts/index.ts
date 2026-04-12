@@ -83,11 +83,13 @@ export async function fetchUserCategories(
 
 export async function fetchPostDetailWithMeta(postId: string): Promise<{
   post: Post;
+  thumbnailAttachmentId?: string;
 }> {
   const result = await fetchPostDetail(postId);
 
   return {
     post: mapDetailToPost(result.data),
+    thumbnailAttachmentId: result.data.thumbnailAttachmentId,
   };
 }
 
@@ -107,6 +109,7 @@ export async function fetchDraftPostList(params?: {
 export async function fetchDraftPostDetail(postId: string): Promise<{
   post: Post;
   categoryPath: string;
+  thumbnailAttachmentId?: string;
 }> {
   const result = await fetchDraftDetail(postId);
   const mappedPost = mapDetailToPost(result.data);
@@ -117,6 +120,7 @@ export async function fetchDraftPostDetail(postId: string): Promise<{
       viewCount: 0,
     },
     categoryPath: result.data.category?.path || "",
+    thumbnailAttachmentId: result.data.thumbnailAttachmentId,
   };
 }
 

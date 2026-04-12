@@ -39,4 +39,5 @@ export interface LocalDraftSnapshot {
   content: string;
   categoryPath: string;
   tags: string[];
+  thumbnailAttachmentId: string | null;
 }

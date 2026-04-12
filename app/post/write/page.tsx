@@ -16,6 +16,7 @@ import WriteFormFields from "./components/WriteFormFields";
 import { useAutoSave } from "./hooks/useAutoSave";
 import { useDraftBootstrap } from "./hooks/useDraftBootstrap";
 import { usePostImageUpload } from "./hooks/usePostImageUpload";
+import { usePostThumbnail } from "./hooks/usePostThumbnail";
 import { usePublishFlow } from "./hooks/usePublishFlow";
 import { useSessionPrecheck } from "./hooks/useSessionPrecheck";
 import { useWriteFormState } from "./hooks/useWriteFormState";
@@ -42,6 +43,12 @@ function WritePostPageContent() {
   const form = useWriteFormState();
   const imageUpload = usePostImageUpload();
   const { setError, setSuccess } = form;
+  const thumbnail = usePostThumbnail({
+    thumbnailAttachmentId: form.thumbnailAttachmentId,
+    thumbnailPreviewUrl: form.thumbnailPreviewUrl,
+    setThumbnailAttachmentId: form.setThumbnailAttachmentId,
+    setThumbnailPreviewUrl: form.setThumbnailPreviewUrl,
+  });
 
   const draftBootstrap = useDraftBootstrap({
     draftId,
@@ -51,6 +58,8 @@ function WritePostPageContent() {
     setContent: form.setContent,
     setCategoryPath: form.setCategoryPath,
     setTags: form.setTags,
+    setThumbnail: form.setThumbnailAttachmentId,
+    clearThumbnailPreview: thumbnail.clearThumbnailPreview,
   });
 
   useEffect(() => {
@@ -72,6 +81,7 @@ function WritePostPageContent() {
       content: form.content,
       categoryPath: form.categoryPath,
       tags: form.tags,
+      thumbnailAttachmentId: form.thumbnailAttachmentId,
     });
   };
 
@@ -94,6 +104,7 @@ function WritePostPageContent() {
     content: form.content,
     categoryPath: form.categoryPath,
     tags: form.tags,
+    thumbnailAttachmentId: form.thumbnailAttachmentId,
     contentFingerprint: form.contentFingerprint,
     buildPostPayload: form.buildPostPayload,
     writeLocalDraftSnapshot: writeLocalSnapshot,
@@ -138,6 +149,7 @@ function WritePostPageContent() {
   const isPublishActionDisabled =
     publishFlow.isSubmitting ||
     imageUpload.isUploading ||
+    thumbnail.isThumbnailUploading ||
     draftBootstrap.isDraftLoading ||
     Boolean(draftBootstrap.draftErrorMessage) ||
     form.isAuthExpiredModalOpen;
@@ -157,7 +169,7 @@ function WritePostPageContent() {
     <div className="min-h-screen bg-background px-3 py-4 pb-28 md:px-4 md:py-6 md:pb-32">
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {draftId || postId ? t("mode.edit") : t("mode.create")}
           </p>
         </div>
@@ -194,6 +206,10 @@ function WritePostPageContent() {
             categoryPath={form.categoryPath}
             tagInput={form.tagInput}
             tags={form.tags}
+            thumbnailAttachmentId={form.thumbnailAttachmentId}
+            thumbnailPreviewUrl={form.thumbnailPreviewUrl}
+            isThumbnailUploading={thumbnail.isThumbnailUploading}
+            thumbnailUploadError={thumbnail.thumbnailUploadError}
             fieldErrors={form.fieldErrors}
             setTitle={form.setTitle}
             setCategoryPath={form.setCategoryPath}
@@ -201,6 +217,8 @@ function WritePostPageContent() {
             setFieldErrors={form.setFieldErrors}
             handleTagKeyPress={handleTagKeyPress}
             handleRemoveTag={form.handleRemoveTag}
+            handleUploadThumbnail={thumbnail.handleUploadThumbnail}
+            handleRemoveThumbnail={thumbnail.handleRemoveThumbnail}
           />
 
           {form.error && !(form.fieldErrors.title || form.fieldErrors.content || form.fieldErrors.category) && (

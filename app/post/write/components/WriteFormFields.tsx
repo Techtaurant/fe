@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { Dispatch, KeyboardEvent, SetStateAction } from "react";
 import { useTranslations } from "next-intl";
 import { FieldErrors } from "../lib/types";
@@ -7,6 +8,10 @@ interface WriteFormFieldsProps {
   categoryPath: string;
   tagInput: string;
   tags: string[];
+  thumbnailAttachmentId: string | null;
+  thumbnailPreviewUrl: string | null;
+  isThumbnailUploading: boolean;
+  thumbnailUploadError: string | null;
   fieldErrors: FieldErrors;
   setTitle: (value: string) => void;
   setCategoryPath: (value: string) => void;
@@ -14,6 +19,8 @@ interface WriteFormFieldsProps {
   setFieldErrors: Dispatch<SetStateAction<FieldErrors>>;
   handleTagKeyPress: (e: KeyboardEvent<HTMLInputElement>) => void;
   handleRemoveTag: (tag: string) => void;
+  handleUploadThumbnail: (file: File) => Promise<void>;
+  handleRemoveThumbnail: () => void;
 }
 
 export default function WriteFormFields({
@@ -21,6 +28,10 @@ export default function WriteFormFields({
   categoryPath,
   tagInput,
   tags,
+  thumbnailAttachmentId,
+  thumbnailPreviewUrl,
+  isThumbnailUploading,
+  thumbnailUploadError,
   fieldErrors,
   setTitle,
   setCategoryPath,
@@ -28,8 +39,11 @@ export default function WriteFormFields({
   setFieldErrors,
   handleTagKeyPress,
   handleRemoveTag,
+  handleUploadThumbnail,
+  handleRemoveThumbnail,
 }: WriteFormFieldsProps) {
   const t = useTranslations("WritePage.form");
+  const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <>
@@ -83,6 +97,88 @@ export default function WriteFormFields({
         {fieldErrors.category && (
           <p className="mt-2 text-sm font-medium text-red-600">{t("categoryRequired")}</p>
         )}
+      </div>
+
+      <div className="mb-4 md:mb-6">
+        <label htmlFor="thumbnail" className="mb-2 block text-sm font-semibold text-foreground">
+          {t("thumbnail")}
+        </label>
+        <p className="mb-3 text-sm text-muted-foreground">{t("thumbnailHint")}</p>
+        <input
+          ref={thumbnailInputRef}
+          id="thumbnail"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (event) => {
+            const file = event.target.files?.[0];
+
+            try {
+              if (file) {
+                await handleUploadThumbnail(file);
+              }
+            } finally {
+              event.target.value = "";
+            }
+          }}
+        />
+        <div className="rounded-lg border border-dashed border-border bg-background p-4">
+          {thumbnailPreviewUrl ? (
+            <div className="flex flex-col gap-3">
+              <img
+                src={thumbnailPreviewUrl}
+                alt={t("thumbnailPreviewAlt")}
+                className="h-40 w-full rounded-lg object-cover md:h-48"
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => thumbnailInputRef.current?.click()}
+                  disabled={isThumbnailUploading}
+                  className="rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isThumbnailUploading ? t("thumbnailUploading") : t("thumbnailChange")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveThumbnail}
+                  disabled={isThumbnailUploading}
+                  className="rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {t("thumbnailRemove")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => thumbnailInputRef.current?.click()}
+                disabled={isThumbnailUploading}
+                className="w-fit rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isThumbnailUploading ? t("thumbnailUploading") : t("thumbnailAction")}
+              </button>
+              {thumbnailAttachmentId && (
+                <>
+                  <p className="text-xs text-muted-foreground">{t("thumbnailSelected")}</p>
+                  <button
+                    type="button"
+                    onClick={handleRemoveThumbnail}
+                    disabled={isThumbnailUploading}
+                    className="w-fit rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {t("thumbnailRemove")}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {thumbnailUploadError && (
+            <p className="mt-3 text-sm font-medium text-red-600">{thumbnailUploadError}</p>
+          )}
+        </div>
       </div>
 
       <div className="mb-4 md:mb-6">

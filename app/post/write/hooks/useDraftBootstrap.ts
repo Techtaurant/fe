@@ -16,6 +16,8 @@ interface UseDraftBootstrapParams {
   setContent: (value: string) => void;
   setCategoryPath: (value: string) => void;
   setTags: (value: string[]) => void;
+  setThumbnail: (value: string | null) => void;
+  clearThumbnailPreview: () => void;
 }
 
 export function useDraftBootstrap({
@@ -26,6 +28,8 @@ export function useDraftBootstrap({
   setContent,
   setCategoryPath,
   setTags,
+  setThumbnail,
+  clearThumbnailPreview,
 }: UseDraftBootstrapParams) {
   const t = useTranslations("WritePage.draft");
   const hydratedDraftIdRef = useRef<string | null>(null);
@@ -98,6 +102,8 @@ export function useDraftBootstrap({
       setContent(draftDetailQuery.data.post.content || "");
       setCategoryPath(draftDetailQuery.data.categoryPath || "");
       setTags(draftDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
+      clearThumbnailPreview();
+      setThumbnail(draftDetailQuery.data.thumbnailAttachmentId ?? null);
       hydratedDraftIdRef.current = activeId;
       return;
     }
@@ -107,6 +113,8 @@ export function useDraftBootstrap({
       setContent(postDetailQuery.data.post.content || "");
       setCategoryPath(postDetailQuery.data.post.categoryPath || "");
       setTags(postDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
+      clearThumbnailPreview();
+      setThumbnail(postDetailQuery.data.thumbnailAttachmentId ?? null);
       hydratedDraftIdRef.current = activeId;
     }
   }, [
@@ -115,7 +123,9 @@ export function useDraftBootstrap({
     draftDetailQuery.data,
     postDetailQuery.data,
     setCategoryPath,
+    clearThumbnailPreview,
     setContent,
+    setThumbnail,
     setTags,
     setTitle,
   ]);
