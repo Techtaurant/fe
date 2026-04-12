@@ -97,6 +97,7 @@ export interface CreatePostRequest {
   categoryPath?: string;
   tags?: string[];
   attachmentIds?: string[];
+  thumbnailAttachmentId?: string;
   status?: PostStatus;
 }
 
@@ -107,6 +108,7 @@ export interface UpdatePostRequest {
   categoryPath?: string;
   tags?: string[];
   attachmentIds?: string[];
+  thumbnailAttachmentId?: string;
   status?: PostStatus;
 }
 

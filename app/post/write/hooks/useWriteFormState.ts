@@ -9,6 +9,8 @@ export function useWriteFormState() {
   const [categoryPath, setCategoryPath] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [thumbnailAttachmentId, setThumbnailAttachmentId] = useState<string | null>(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -27,15 +29,17 @@ export function useWriteFormState() {
         content,
         categoryPath,
         tags,
+        thumbnailAttachmentId,
       }),
-    [categoryPath, content, tags, title],
+    [categoryPath, content, tags, thumbnailAttachmentId, title],
   );
 
   const hasEditableContent =
     title.trim().length > 0 ||
     content.trim().length > 0 ||
     categoryPath.trim().length > 0 ||
-    tags.length > 0;
+    tags.length > 0 ||
+    Boolean(thumbnailAttachmentId);
 
   const handleAddTag = () => {
     const trimmedTag = tagInput.trim();
@@ -79,6 +83,7 @@ export function useWriteFormState() {
       ...(trimmedContent
         ? { attachmentIds: extractAttachmentIdsFromContent(trimmedContent) }
         : {}),
+      ...(thumbnailAttachmentId ? { thumbnailAttachmentId } : {}),
       status,
     };
   };
@@ -89,6 +94,8 @@ export function useWriteFormState() {
     setCategoryPath("");
     setTagInput("");
     setTags([]);
+    setThumbnailAttachmentId(null);
+    setThumbnailPreviewUrl(null);
     setFieldErrors({ title: false, content: false, category: false });
   };
 
@@ -103,6 +110,10 @@ export function useWriteFormState() {
     setTagInput,
     tags,
     setTags,
+    thumbnailAttachmentId,
+    setThumbnailAttachmentId,
+    thumbnailPreviewUrl,
+    setThumbnailPreviewUrl,
     error,
     setError,
     success,

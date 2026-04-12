@@ -16,6 +16,7 @@ export function writeLocalDraftSnapshot(
     content: string;
     categoryPath: string;
     tags: string[];
+    thumbnailAttachmentId: string | null;
   },
 ) {
   if (typeof window === "undefined") return;
@@ -28,6 +29,7 @@ export function writeLocalDraftSnapshot(
     content: values.content,
     categoryPath: values.categoryPath,
     tags: values.tags,
+    thumbnailAttachmentId: values.thumbnailAttachmentId,
   };
 
   window.localStorage.setItem(localDraftStorageKey, JSON.stringify(snapshot));

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useRef } from "react";
 import type { KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { redirectToOAuthLogin } from "@/app/lib/authRedirect";
 import { useUser } from "@/app/hooks/useUser";
 import { queryKeys } from "@/app/lib/queryKeys";
+import { fetchAttachmentPreviewUrl } from "@/app/services/attachments";
 import AuthExpiredModal from "./components/AuthExpiredModal";
 import PublishScopeModal from "./components/PublishScopeModal";
 import WriteActions from "./components/WriteActions";
@@ -16,6 +17,7 @@ import WriteFormFields from "./components/WriteFormFields";
 import { useAutoSave } from "./hooks/useAutoSave";
 import { useDraftBootstrap } from "./hooks/useDraftBootstrap";
 import { usePostImageUpload } from "./hooks/usePostImageUpload";
+import { usePostThumbnailUpload } from "./hooks/usePostThumbnailUpload";
 import { usePublishFlow } from "./hooks/usePublishFlow";
 import { useSessionPrecheck } from "./hooks/useSessionPrecheck";
 import { useWriteFormState } from "./hooks/useWriteFormState";
@@ -38,10 +40,28 @@ function WritePostPageContent() {
   const isPostEditMode = Boolean(postId);
   const localDraftStorageKey = getLocalDraftStorageKey(draftId);
   const draftCountQueryKey = [...queryKeys.posts.all, "drafts-count"] as const;
+  const thumbnailObjectUrlRef = useRef<string | null>(null);
 
   const form = useWriteFormState();
   const imageUpload = usePostImageUpload();
+  const thumbnailUpload = usePostThumbnailUpload();
   const { setError, setSuccess } = form;
+
+  const replaceThumbnailPreviewUrl = useCallback(
+    (nextPreviewUrl: string | null) => {
+      if (
+        thumbnailObjectUrlRef.current &&
+        thumbnailObjectUrlRef.current !== nextPreviewUrl &&
+        thumbnailObjectUrlRef.current.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+      }
+
+      thumbnailObjectUrlRef.current = nextPreviewUrl?.startsWith("blob:") ? nextPreviewUrl : null;
+      form.setThumbnailPreviewUrl(nextPreviewUrl);
+    },
+    [form.setThumbnailPreviewUrl],
+  );
 
   const draftBootstrap = useDraftBootstrap({
     draftId,
@@ -51,7 +71,47 @@ function WritePostPageContent() {
     setContent: form.setContent,
     setCategoryPath: form.setCategoryPath,
     setTags: form.setTags,
+    setThumbnailAttachmentId: form.setThumbnailAttachmentId,
+    setThumbnailPreviewUrl: replaceThumbnailPreviewUrl,
   });
+
+  useEffect(
+    () => () => {
+      if (thumbnailObjectUrlRef.current?.startsWith("blob:")) {
+        URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!form.thumbnailAttachmentId) {
+      replaceThumbnailPreviewUrl(null);
+      return;
+    }
+
+    if (form.thumbnailPreviewUrl) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void fetchAttachmentPreviewUrl(form.thumbnailAttachmentId)
+      .then((previewUrl) => {
+        if (!isCancelled) {
+          replaceThumbnailPreviewUrl(previewUrl);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          replaceThumbnailPreviewUrl(null);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [form.thumbnailAttachmentId, form.thumbnailPreviewUrl, replaceThumbnailPreviewUrl]);
 
   useEffect(() => {
     setError(null);
@@ -72,6 +132,7 @@ function WritePostPageContent() {
       content: form.content,
       categoryPath: form.categoryPath,
       tags: form.tags,
+      thumbnailAttachmentId: form.thumbnailAttachmentId,
     });
   };
 
@@ -94,6 +155,7 @@ function WritePostPageContent() {
     content: form.content,
     categoryPath: form.categoryPath,
     tags: form.tags,
+    thumbnailAttachmentId: form.thumbnailAttachmentId,
     contentFingerprint: form.contentFingerprint,
     buildPostPayload: form.buildPostPayload,
     writeLocalDraftSnapshot: writeLocalSnapshot,
@@ -138,9 +200,23 @@ function WritePostPageContent() {
   const isPublishActionDisabled =
     publishFlow.isSubmitting ||
     imageUpload.isUploading ||
+    thumbnailUpload.isThumbnailUploading ||
     draftBootstrap.isDraftLoading ||
     Boolean(draftBootstrap.draftErrorMessage) ||
     form.isAuthExpiredModalOpen;
+
+  const handleUploadThumbnail = async (file: File) => {
+    thumbnailUpload.clearThumbnailUploadError();
+    const uploadedThumbnail = await thumbnailUpload.uploadThumbnail(file);
+    form.setThumbnailAttachmentId(uploadedThumbnail.attachmentId);
+    replaceThumbnailPreviewUrl(uploadedThumbnail.previewUrl ?? null);
+  };
+
+  const handleRemoveThumbnail = () => {
+    thumbnailUpload.clearThumbnailUploadError();
+    form.setThumbnailAttachmentId(null);
+    replaceThumbnailPreviewUrl(null);
+  };
 
   const handleTagKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -157,7 +233,7 @@ function WritePostPageContent() {
     <div className="min-h-screen bg-background px-3 py-4 pb-28 md:px-4 md:py-6 md:pb-32">
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {draftId || postId ? t("mode.edit") : t("mode.create")}
           </p>
         </div>
@@ -194,6 +270,10 @@ function WritePostPageContent() {
             categoryPath={form.categoryPath}
             tagInput={form.tagInput}
             tags={form.tags}
+            thumbnailAttachmentId={form.thumbnailAttachmentId}
+            thumbnailPreviewUrl={form.thumbnailPreviewUrl}
+            isThumbnailUploading={thumbnailUpload.isThumbnailUploading}
+            thumbnailUploadError={thumbnailUpload.thumbnailUploadError}
             fieldErrors={form.fieldErrors}
             setTitle={form.setTitle}
             setCategoryPath={form.setCategoryPath}
@@ -201,6 +281,8 @@ function WritePostPageContent() {
             setFieldErrors={form.setFieldErrors}
             handleTagKeyPress={handleTagKeyPress}
             handleRemoveTag={form.handleRemoveTag}
+            handleUploadThumbnail={handleUploadThumbnail}
+            handleRemoveThumbnail={handleRemoveThumbnail}
           />
 
           {form.error && !(form.fieldErrors.title || form.fieldErrors.content || form.fieldErrors.category) && (

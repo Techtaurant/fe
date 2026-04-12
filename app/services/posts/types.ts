@@ -96,6 +96,8 @@ export interface PostDetailResponse {
       attachmentId: string;
       presignedUrl: string;
     }[];
+    thumbnailAttachmentId?: string;
+    thumbnailUrl?: string;
     createdAt: string;
     updatedAt: string;
   };

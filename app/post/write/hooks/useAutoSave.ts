@@ -21,6 +21,7 @@ interface UseAutoSaveParams {
   content: string;
   categoryPath: string;
   tags: string[];
+  thumbnailAttachmentId: string | null;
   contentFingerprint: string;
   buildPostPayload: (status: "DRAFT") => CreatePostRequest;
   writeLocalDraftSnapshot: () => void;
@@ -40,6 +41,7 @@ export function useAutoSave({
   content,
   categoryPath,
   tags,
+  thumbnailAttachmentId,
   contentFingerprint,
   buildPostPayload,
   writeLocalDraftSnapshot,
@@ -68,7 +70,15 @@ export function useAutoSave({
     if (!enabled) return;
     if (!user) return;
     if (draftId && draftDetailError) return;
-    if (!title.trim() && !content.trim() && !categoryPath.trim() && tags.length === 0) return;
+    if (
+      !title.trim() &&
+      !content.trim() &&
+      !categoryPath.trim() &&
+      tags.length === 0 &&
+      !thumbnailAttachmentId
+    ) {
+      return;
+    }
 
     if (autoSaveAbortControllerRef.current) {
       autoSaveAbortControllerRef.current.abort();
@@ -144,6 +154,7 @@ export function useAutoSave({
     setAutoSaveNotice,
     tags.length,
     t,
+    thumbnailAttachmentId,
     title,
     enabled,
     user,
@@ -155,7 +166,7 @@ export function useAutoSave({
 
   useEffect(() => {
     if (!enabled) return;
-    if (!title && !content && !categoryPath && tags.length === 0) return;
+    if (!title && !content && !categoryPath && tags.length === 0 && !thumbnailAttachmentId) return;
 
     if (localSaveDebounceTimerRef.current) {
       clearTimeout(localSaveDebounceTimerRef.current);
@@ -187,6 +198,7 @@ export function useAutoSave({
     setAutoSaveNotice,
     tags.length,
     t,
+    thumbnailAttachmentId,
     title,
     writeLocalDraftSnapshot,
     runAutoSave,
