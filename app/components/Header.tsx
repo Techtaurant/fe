@@ -140,7 +140,10 @@ export default function Header({
   };
 
   return (
-    <header data-app-header="true" className="sticky top-0 z-[300] bg-background border-b border-border">
+    <header
+      data-app-header="true"
+      className="sticky top-0 z-[300] bg-background border-b border-border"
+    >
       <div className="h-16 max-w-[1400px] mx-auto px-4 md:px-6 flex items-center justify-between">
         {/* 햄버거 메뉴 버튼 (모바일만) */}
         <button
@@ -238,13 +241,15 @@ export default function Header({
                         hover:opacity-80"
               >
                 {user.profileImageUrl ? (
-                  <Image
-                    src={user.profileImageUrl}
-                    alt={user.name || t("profile")}
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                  />
+                  <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted">
+                    <Image
+                      src={user.profileImageUrl}
+                      alt={user.name || t("profile")}
+                      fill
+                      sizes="32px"
+                      className="object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-muted/80 flex items-center justify-center">
                     <span className="text-xs font-medium text-muted-foreground">
@@ -258,7 +263,7 @@ export default function Header({
               </button>
 
               {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-popover text-popover-foreground rounded-md shadow-lg border border-border py-1 z-[400]">
+                <div className="absolute right-0 mt-2 w-52 bg-popover text-popover-foreground rounded-md shadow-lg border border-border py-1 z-[400]">
                   <div className="px-3 py-2 border-b border-border">
                     <p className="text-sm font-semibold text-foreground truncate">
                       {user.name}
@@ -321,7 +326,6 @@ export default function Header({
               <span className="hidden md:inline">{t("login")}</span>
             </button>
           )}
-
         </div>
       </div>
 
