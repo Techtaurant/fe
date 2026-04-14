@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import type { Dispatch, KeyboardEvent, SetStateAction } from "react";
 import { useTranslations } from "next-intl";
+import { Image as ImageIcon } from "lucide-react";
 import { FieldErrors } from "../lib/types";
 
 interface WriteFormFieldsProps {
@@ -8,8 +9,7 @@ interface WriteFormFieldsProps {
   categoryPath: string;
   tagInput: string;
   tags: string[];
-  thumbnailAttachmentId: string | null;
-  thumbnailPreviewUrl: string | null;
+  hasThumbnail: boolean;
   isThumbnailUploading: boolean;
   thumbnailUploadError: string | null;
   fieldErrors: FieldErrors;
@@ -20,7 +20,6 @@ interface WriteFormFieldsProps {
   handleTagKeyPress: (e: KeyboardEvent<HTMLInputElement>) => void;
   handleRemoveTag: (tag: string) => void;
   handleUploadThumbnail: (file: File) => Promise<void>;
-  handleRemoveThumbnail: () => void;
 }
 
 export default function WriteFormFields({
@@ -28,8 +27,7 @@ export default function WriteFormFields({
   categoryPath,
   tagInput,
   tags,
-  thumbnailAttachmentId,
-  thumbnailPreviewUrl,
+  hasThumbnail,
   isThumbnailUploading,
   thumbnailUploadError,
   fieldErrors,
@@ -40,165 +38,105 @@ export default function WriteFormFields({
   handleTagKeyPress,
   handleRemoveTag,
   handleUploadThumbnail,
-  handleRemoveThumbnail,
 }: WriteFormFieldsProps) {
   const t = useTranslations("WritePage.form");
+  const tagInputRef = useRef<HTMLInputElement | null>(null);
   const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <>
       <div className="mb-4 md:mb-6">
-        <label htmlFor="title" className="mb-2 block text-sm font-semibold text-foreground">
-          {t("title")} <span className="text-red-600">*</span>
-        </label>
-        <input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            if (fieldErrors.title) {
-              setFieldErrors((prev) => ({ ...prev, title: false }));
-            }
-          }}
-          placeholder={t("titlePlaceholder")}
-          className={`w-full rounded-lg border bg-background px-4 py-3 text-base font-semibold text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
-            fieldErrors.title
-              ? "border-red-500 focus:border-red-500"
-              : "border-border focus:border-primary"
-          }`}
-        />
+        <div className="relative pr-12">
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (fieldErrors.title) {
+                setFieldErrors((prev) => ({ ...prev, title: false }));
+              }
+            }}
+            placeholder={t("titlePlaceholder")}
+            className={`w-full border-0 bg-transparent px-0 py-0 text-2xl font-semibold tracking-[-0.04em] text-foreground transition-colors duration-200 placeholder:text-muted-foreground/80 focus:outline-none md:text-3xl xl:text-4xl ${
+              fieldErrors.title
+                ? "text-red-600 placeholder:text-red-300"
+                : ""
+            }`}
+          />
+          <>
+            <input
+              ref={thumbnailInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+
+                try {
+                  if (file) {
+                    await handleUploadThumbnail(file);
+                  }
+                } finally {
+                  event.target.value = "";
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => thumbnailInputRef.current?.click()}
+              disabled={isThumbnailUploading}
+              className={`absolute right-1 top-0 inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                hasThumbnail
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-foreground hover:bg-muted/80"
+              }`}
+              aria-label="썸네일 이미지 추가"
+            >
+              <ImageIcon className="h-4 w-4" />
+            </button>
+          </>
+        </div>
+        <div className="mt-4 h-1.5 w-16 bg-foreground/80" />
         {fieldErrors.title && (
           <p className="mt-2 text-sm font-medium text-red-600">{t("titleRequired")}</p>
         )}
       </div>
 
-      <div className="mb-4 md:mb-6">
-        <label htmlFor="category" className="mb-2 block text-sm font-semibold text-foreground">
-          {t("category")} <span className="text-red-600">*</span>
-        </label>
-        <input
-          id="category"
-          type="text"
-          value={categoryPath}
-          onChange={(e) => {
-            setCategoryPath(e.target.value);
-            if (fieldErrors.category) {
-              setFieldErrors((prev) => ({ ...prev, category: false }));
-            }
-          }}
-          placeholder={t("categoryPlaceholder")}
-          className={`w-full rounded-lg border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:bg-card focus:outline-none ${
-            fieldErrors.category
-              ? "border-red-500 focus:border-red-500"
-              : "border-border focus:border-primary"
-          }`}
-        />
-        {fieldErrors.category && (
-          <p className="mt-2 text-sm font-medium text-red-600">{t("categoryRequired")}</p>
-        )}
-      </div>
-
-      <div className="mb-4 md:mb-6">
-        <label htmlFor="thumbnail" className="mb-2 block text-sm font-semibold text-foreground">
-          {t("thumbnail")}
-        </label>
-        <p className="mb-3 text-sm text-muted-foreground">{t("thumbnailHint")}</p>
-        <input
-          ref={thumbnailInputRef}
-          id="thumbnail"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={async (event) => {
-            const file = event.target.files?.[0];
-
-            try {
-              if (file) {
-                await handleUploadThumbnail(file);
-              }
-            } finally {
-              event.target.value = "";
-            }
-          }}
-        />
-        <div className="rounded-lg border border-dashed border-border bg-background p-4">
-          {thumbnailPreviewUrl ? (
-            <div className="flex flex-col gap-3">
-              <img
-                src={thumbnailPreviewUrl}
-                alt={t("thumbnailPreviewAlt")}
-                className="h-40 w-full rounded-lg object-cover md:h-48"
-              />
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => thumbnailInputRef.current?.click()}
-                  disabled={isThumbnailUploading}
-                  className="rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isThumbnailUploading ? t("thumbnailUploading") : t("thumbnailChange")}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRemoveThumbnail}
-                  disabled={isThumbnailUploading}
-                  className="rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {t("thumbnailRemove")}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => thumbnailInputRef.current?.click()}
-                disabled={isThumbnailUploading}
-                className="w-fit rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isThumbnailUploading ? t("thumbnailUploading") : t("thumbnailAction")}
-              </button>
-              {thumbnailAttachmentId && (
-                <>
-                  <p className="text-xs text-muted-foreground">{t("thumbnailSelected")}</p>
-                  <button
-                    type="button"
-                    onClick={handleRemoveThumbnail}
-                    disabled={isThumbnailUploading}
-                    className="w-fit rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {t("thumbnailRemove")}
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-
-          {thumbnailUploadError && (
-            <p className="mt-3 text-sm font-medium text-red-600">{thumbnailUploadError}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-4 md:mb-6">
-        <label htmlFor="tags" className="mb-2 block text-sm font-semibold text-foreground">
-          {t("tags")}
-        </label>
-        <div className="flex flex-col gap-2 md:flex-row">
+      <div className="mb-5 space-y-4 md:mb-6">
+        <div>
+          <label htmlFor="category" className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {t("category")} <span className="text-red-600">*</span>
+          </label>
           <input
-            id="tags"
+            id="category"
             type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyPress={handleTagKeyPress}
-            placeholder={t("tagsPlaceholder")}
-            className="w-full flex-1 rounded-lg border border-border bg-background px-4 py-3 text-base text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none"
+            autoComplete="off"
+            value={categoryPath}
+            onChange={(e) => {
+              setCategoryPath(e.target.value);
+              if (fieldErrors.category) {
+                setFieldErrors((prev) => ({ ...prev, category: false }));
+              }
+            }}
+            placeholder={t("categoryPlaceholder")}
+            className={`w-full bg-transparent px-0 py-0 text-base text-muted-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent] [&:-webkit-autofill]:[-webkit-text-fill-color:currentColor] ${
+              fieldErrors.category ? "text-red-600 placeholder:text-red-300" : ""
+            }`}
           />
+          {fieldErrors.category && (
+            <p className="mt-2 text-sm font-medium text-red-600">{t("categoryRequired")}</p>
+          )}
         </div>
 
-        {tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+        <div>
+          <label htmlFor="tags" className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {t("tags")}
+          </label>
+          <div
+            className="flex cursor-text flex-wrap items-center gap-x-2 gap-y-2"
+            onClick={() => tagInputRef.current?.focus()}
+          >
             {tags.map((tag) => (
               <span
                 key={tag}
@@ -215,9 +153,23 @@ export default function WriteFormFields({
                 </button>
               </span>
             ))}
+            <input
+              ref={tagInputRef}
+              id="tags"
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyPress={handleTagKeyPress}
+              placeholder={tags.length === 0 ? t("tagsPlaceholder") : ""}
+              className="min-w-[180px] flex-1 bg-transparent px-0 py-0 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
           </div>
-        )}
+        </div>
       </div>
+
+      {thumbnailUploadError && (
+        <p className="mt-3 text-sm font-medium text-red-600">{thumbnailUploadError}</p>
+      )}
     </>
   );
 }

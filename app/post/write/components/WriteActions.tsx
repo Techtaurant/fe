@@ -24,7 +24,7 @@ export default function WriteActions({
   const t = useTranslations("WritePage.actions");
 
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-3">
       <button
         type="button"
         onClick={onGoBack}
@@ -33,7 +33,7 @@ export default function WriteActions({
         {t("exit")}
       </button>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap justify-end gap-3">
         {showDraftActions && (
           <div className="inline-flex overflow-hidden rounded-lg bg-close-button">
             <button

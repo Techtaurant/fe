@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent, Dispatch, DragEvent, SetStateAction } from "react";
+import type {
+  ChangeEvent,
+  Dispatch,
+  DragEvent,
+  SetStateAction,
+} from "react";
 import { useTranslations } from "next-intl";
+import { ImagePlus } from "lucide-react";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
 import { FieldErrors } from "../lib/types";
 import type { UploadedAttachment } from "@/app/services/attachments";
@@ -14,6 +20,7 @@ const HTML_IMAGE_PATTERN = /(<img[^>]+src=["'])([^"']+)(["'][^>]*>)/gi;
 interface WriteEditorPreviewProps {
   content: string;
   fieldErrors: FieldErrors;
+  editorHeader?: React.ReactNode;
   setContent: (value: string) => void;
   setFieldErrors: Dispatch<SetStateAction<FieldErrors>>;
   isUploading: boolean;
@@ -51,6 +58,7 @@ function extractAttachmentIds(content: string): string[] {
 export default function WriteEditorPreview({
   content,
   fieldErrors,
+  editorHeader,
   setContent,
   setFieldErrors,
   isUploading,
@@ -260,7 +268,7 @@ export default function WriteEditorPreview({
   };
 
   return (
-    <div className="mb-6 grid grid-cols-1 gap-0 lg:mb-8 lg:min-h-[500px] lg:grid-cols-2 lg:gap-6">
+    <div className="mb-8 grid grid-cols-1 gap-10 xl:mb-0 xl:min-h-screen xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-stretch xl:gap-0">
       <div
         onDragEnter={(event) => {
           event.preventDefault();
@@ -280,80 +288,69 @@ export default function WriteEditorPreview({
         onDrop={(event) => {
           void handleDrop(event);
         }}
-        className={`flex min-h-[400px] flex-col overflow-hidden rounded-lg border bg-background transition-colors lg:min-h-0 ${
-          isDragActive ? "border-primary bg-primary/5" : "border-border"
+        className={`flex min-h-[420px] flex-col bg-background px-4 transition-colors md:px-5 xl:min-h-screen xl:px-6 ${
+          isDragActive ? "bg-primary/5" : ""
         }`}
       >
-        <div className="border-b border-border bg-muted p-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h2 className="text-base font-semibold text-foreground">
-              {t("markdownEdit")} <span className="text-red-600">*</span>
-            </h2>
-            <div className="flex items-center gap-3">
-              <p className="text-xs text-muted-foreground">{t("imageHint")}</p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(event) => {
-                  void handleFileChange(event);
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="inline-flex items-center justify-center rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-card disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isUploading ? t("uploading") : t("addImage")}
-              </button>
-            </div>
+        {editorHeader && <div className="mb-6">{editorHeader}</div>}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(event) => {
+            void handleFileChange(event);
+          }}
+        />
+        <div className="flex-1 overflow-hidden bg-background">
+          <div className="relative h-full">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="absolute right-1 top-6 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-foreground text-background transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60 md:right-1 md:top-8"
+              aria-label={isUploading ? t("uploading") : t("addImage")}
+            >
+              <ImagePlus className="h-4 w-4" />
+            </button>
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => {
+                setContent(e.target.value);
+                onClearUploadError();
+                if (fieldErrors.content) {
+                  setFieldErrors((prev) => ({ ...prev, content: false }));
+                }
+              }}
+              placeholder={t("contentPlaceholder")}
+              className={`h-full min-h-[420px] w-full resize-none border-0 bg-transparent px-0 py-6 pr-12 font-mono text-base leading-8 text-foreground placeholder:text-muted-foreground placeholder:whitespace-pre focus:outline-none md:py-8 md:pr-12 md:text-[15px] ${
+                fieldErrors.content ? "outline outline-1 outline-red-500 outline-offset-[-1px]" : ""
+              }`}
+            />
           </div>
         </div>
-        <textarea
-          ref={textareaRef}
-          value={content}
-          onChange={(e) => {
-            setContent(e.target.value);
-            onClearUploadError();
-            if (fieldErrors.content) {
-              setFieldErrors((prev) => ({ ...prev, content: false }));
-            }
-          }}
-          placeholder={t("contentPlaceholder")}
-          className={`flex-1 resize-none border-0 bg-card p-4 font-mono text-base leading-relaxed text-foreground placeholder:text-muted-foreground placeholder:whitespace-pre focus:outline-none md:text-sm ${
-            fieldErrors.content ? "outline outline-1 outline-red-500" : ""
-          }`}
-        />
         {uploadError && (
-          <p className="border-t border-border bg-background px-4 py-2 text-sm font-medium text-red-600">
-            {uploadError}
-          </p>
+          <p className="mt-4 text-sm font-medium text-red-600">{uploadError}</p>
         )}
         {fieldErrors.content && (
-          <p className="border-t border-border bg-background px-4 py-2 text-sm font-medium text-red-600">
-            {t("contentRequired")}
-          </p>
+          <p className="mt-2 text-sm font-medium text-red-600">{t("contentRequired")}</p>
         )}
       </div>
 
-      <div className="flex min-h-[400px] flex-col overflow-hidden rounded-lg border border-border border-t-0 bg-background lg:min-h-0 lg:border-t">
-        <div className="border-b border-border bg-muted p-4">
-          <h2 className="text-base font-semibold text-foreground">{t("preview")}</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          {content ? (
-            <MarkdownRenderer
-              content={content}
-              resolveImageSrc={resolvePreviewImageSrc}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-center text-muted-foreground">
-              <p>{t("previewEmpty")}</p>
-            </div>
-          )}
+      <div className="min-h-[100dvh] bg-[#F4F7F4] dark:bg-zinc-800/40 xl:min-h-screen">
+        <div className="min-h-[100dvh] overflow-hidden bg-transparent xl:min-h-screen">
+          <div className="min-h-[100dvh] px-5 py-6 md:px-8 xl:h-full xl:min-h-screen xl:overflow-y-auto xl:px-12 xl:py-8">
+              {content ? (
+                <MarkdownRenderer
+                  content={content}
+                  resolveImageSrc={resolvePreviewImageSrc}
+                />
+              ) : (
+                <div className="min-h-[240px]" />
+              )}
+          </div>
         </div>
       </div>
     </div>

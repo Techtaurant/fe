@@ -95,26 +95,6 @@ function WritePostPageContent() {
     form.setIsAuthExpiredModalOpen(true);
   };
 
-  useAutoSave({
-    enabled: !isPostEditMode,
-    user,
-    draftId,
-    draftDetailError: draftBootstrap.detailHasError,
-    title: form.title,
-    content: form.content,
-    categoryPath: form.categoryPath,
-    tags: form.tags,
-    thumbnailAttachmentId: form.thumbnailAttachmentId,
-    contentFingerprint: form.contentFingerprint,
-    buildPostPayload: form.buildPostPayload,
-    writeLocalDraftSnapshot: writeLocalSnapshot,
-    clearLocalDraftSnapshot: clearLocalSnapshot,
-    setAutoSaveNotice: form.setAutoSaveNotice,
-    queryClient,
-    draftCountQueryKey,
-    router,
-  });
-
   useSessionPrecheck({
     user,
     hasEditableContent: form.hasEditableContent,
@@ -146,6 +126,26 @@ function WritePostPageContent() {
     setIsPublishModalOpen: form.setIsPublishModalOpen,
   });
 
+  useAutoSave({
+    enabled: !isPostEditMode,
+    user,
+    draftId,
+    draftDetailError: draftBootstrap.detailHasError,
+    title: form.title,
+    content: form.content,
+    categoryPath: form.categoryPath,
+    tags: form.tags,
+    thumbnailAttachmentId: form.thumbnailAttachmentId,
+    contentFingerprint: form.contentFingerprint,
+    buildPostPayload: form.buildPostPayload,
+    writeLocalDraftSnapshot: writeLocalSnapshot,
+    clearLocalDraftSnapshot: clearLocalSnapshot,
+    setAutoSaveNotice: form.setAutoSaveNotice,
+    queryClient,
+    draftCountQueryKey,
+    router,
+  });
+
   const isPublishActionDisabled =
     publishFlow.isSubmitting ||
     imageUpload.isUploading ||
@@ -166,32 +166,8 @@ function WritePostPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-3 py-4 pb-28 md:px-4 md:py-6 md:pb-32">
-      <div className="mx-auto max-w-[1400px]">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {draftId || postId ? t("mode.edit") : t("mode.create")}
-          </p>
-        </div>
-
-        {draftBootstrap.isDraftLoading && (
-          <div className="mb-4 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-            {t("loadingDraft")}
-          </div>
-        )}
-
-        {draftBootstrap.draftErrorMessage && (
-          <div className="mb-4 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
-            {draftBootstrap.draftErrorMessage}
-          </div>
-        )}
-
-        {form.autoSaveNotice && (
-          <div className="mb-4 rounded-lg border border-border bg-card p-3 text-sm text-muted-foreground">
-            {form.autoSaveNotice}
-          </div>
-        )}
-
+    <div className="min-h-screen bg-background px-4 py-5 pb-28 md:px-5 md:py-6 md:pb-32 xl:px-0 xl:py-0">
+      <div className="mx-auto max-w-[1880px] xl:max-w-none">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -199,42 +175,49 @@ function WritePostPageContent() {
               publishFlow.openPublishModal();
             }
           }}
-          className="rounded-lg bg-card p-4 shadow-sm md:rounded-xl md:p-6 lg:p-8"
+          className="pb-8 xl:pb-0"
         >
-          <WriteFormFields
-            title={form.title}
-            categoryPath={form.categoryPath}
-            tagInput={form.tagInput}
-            tags={form.tags}
-            thumbnailAttachmentId={form.thumbnailAttachmentId}
-            thumbnailPreviewUrl={form.thumbnailPreviewUrl}
-            isThumbnailUploading={thumbnail.isThumbnailUploading}
-            thumbnailUploadError={thumbnail.thumbnailUploadError}
-            fieldErrors={form.fieldErrors}
-            setTitle={form.setTitle}
-            setCategoryPath={form.setCategoryPath}
-            setTagInput={form.setTagInput}
-            setFieldErrors={form.setFieldErrors}
-            handleTagKeyPress={handleTagKeyPress}
-            handleRemoveTag={form.handleRemoveTag}
-            handleUploadThumbnail={thumbnail.handleUploadThumbnail}
-            handleRemoveThumbnail={thumbnail.handleRemoveThumbnail}
-          />
-
-          {form.error && !(form.fieldErrors.title || form.fieldErrors.content || form.fieldErrors.category) && (
-            <div className="mb-6 rounded-lg border border-[#fcc] bg-[#fee] p-4 text-sm font-medium text-[#c33]">
-              {form.error}
-            </div>
-          )}
-          {form.success && (
-            <div className="mb-6 rounded-lg border border-[#cfc] bg-[#efe] p-4 text-sm font-medium text-[#3c3]">
-              {form.success}
-            </div>
-          )}
-
           <WriteEditorPreview
             content={form.content}
             fieldErrors={form.fieldErrors}
+            editorHeader={
+              <div className="space-y-5 pt-0 xl:pt-5">
+                <WriteFormFields
+                  title={form.title}
+                  categoryPath={form.categoryPath}
+                  tagInput={form.tagInput}
+                  tags={form.tags}
+                  hasThumbnail={Boolean(form.thumbnailPreviewUrl || form.thumbnailAttachmentId)}
+                  isThumbnailUploading={thumbnail.isThumbnailUploading}
+                  thumbnailUploadError={thumbnail.thumbnailUploadError}
+                  fieldErrors={form.fieldErrors}
+                  setTitle={form.setTitle}
+                  setCategoryPath={form.setCategoryPath}
+                  setTagInput={form.setTagInput}
+                  setFieldErrors={form.setFieldErrors}
+                  handleTagKeyPress={handleTagKeyPress}
+                  handleRemoveTag={form.handleRemoveTag}
+                  handleUploadThumbnail={thumbnail.handleUploadThumbnail}
+                />
+
+                {draftBootstrap.draftErrorMessage && (
+                  <div className="rounded-2xl bg-[#fee] p-4 text-sm font-medium text-[#c33] ring-1 ring-[#fcc]">
+                    {draftBootstrap.draftErrorMessage}
+                  </div>
+                )}
+                {form.error &&
+                  !(form.fieldErrors.title || form.fieldErrors.content || form.fieldErrors.category) && (
+                    <div className="rounded-2xl bg-[#fee] p-4 text-sm font-medium text-[#c33] ring-1 ring-[#fcc]">
+                      {form.error}
+                    </div>
+                  )}
+                {form.success && (
+                  <div className="rounded-2xl bg-[#efe] p-4 text-sm font-medium text-[#3c3] ring-1 ring-[#cfc]">
+                    {form.success}
+                  </div>
+                )}
+              </div>
+            }
             setContent={form.setContent}
             setFieldErrors={form.setFieldErrors}
             isUploading={imageUpload.isUploading}
@@ -245,8 +228,8 @@ function WritePostPageContent() {
 
         </form>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm">
-          <div className="mx-auto max-w-[1400px] px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:px-4">
+        <div className="fixed inset-x-0 bottom-0 z-40 bg-background/96 shadow-[0_-8px_18px_rgba(15,23,42,0.06)] backdrop-blur-sm xl:right-auto xl:w-1/2 dark:shadow-[0_-8px_18px_rgba(0,0,0,0.22)]">
+          <div className="px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:px-6 xl:px-8">
             <WriteActions
               isSubmitting={publishFlow.isSubmitting}
               isPublishActionDisabled={isPublishActionDisabled}
