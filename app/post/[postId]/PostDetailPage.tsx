@@ -17,7 +17,7 @@ export default function PostDetailPage() {
   const locale = useLocale();
   const params = useParams();
   const router = useRouter();
-  const routePostId = typeof params.id === "string" ? params.id : null;
+  const routePostId = typeof params.postId === "string" ? params.postId : null;
   const routeSlug = params.slug;
   const slugPostId = Array.isArray(routeSlug) && routeSlug.length > 0
     ? routeSlug[routeSlug.length - 1]

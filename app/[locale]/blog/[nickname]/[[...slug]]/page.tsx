@@ -1,1 +1,1 @@
-export { default } from "@/app/post/[id]/PostDetailPage";
+export { default } from "@/app/post/[postId]/PostDetailPage";
