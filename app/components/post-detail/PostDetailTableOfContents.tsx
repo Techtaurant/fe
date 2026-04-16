@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TableOfContentsHeading } from "@/app/components/MarkdownRenderer";
 import { scrollToElementBelowHeader } from "@/app/lib/scrollToElementBelowHeader";
 
@@ -20,6 +20,9 @@ export default function PostDetailTableOfContents({
   headings,
 }: PostDetailTableOfContentsProps) {
   const [activeHeadingId, setActiveHeadingId] = useState("");
+  const tocContainerRef = useRef<HTMLDivElement | null>(null);
+  const isProgrammaticScrollRef = useRef(false);
+  const scrollUnlockTimeoutRef = useRef<number | null>(null);
   const headingIds = useMemo(() => headings.map((heading) => heading.id), [headings]);
 
   useEffect(() => {
@@ -28,6 +31,16 @@ export default function PostDetailTableOfContents({
     }
 
     const syncActiveHeadingFromHash = () => {
+      const hash = getDecodedHash();
+      if (!hash) {
+        setActiveHeadingId(headings[0]?.id ?? "");
+        return;
+      }
+
+      setActiveHeadingId(hash);
+    };
+
+    const handleHashChange = () => {
       const hash = getDecodedHash();
       if (!hash) {
         setActiveHeadingId(headings[0]?.id ?? "");
@@ -43,11 +56,11 @@ export default function PostDetailTableOfContents({
     };
 
     const frameId = window.requestAnimationFrame(syncActiveHeadingFromHash);
-    window.addEventListener("hashchange", syncActiveHeadingFromHash);
+    window.addEventListener("hashchange", handleHashChange);
 
     return () => {
       window.cancelAnimationFrame(frameId);
-      window.removeEventListener("hashchange", syncActiveHeadingFromHash);
+      window.removeEventListener("hashchange", handleHashChange);
     };
   }, [headings]);
 
@@ -56,41 +69,80 @@ export default function PostDetailTableOfContents({
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
-
-        if (visibleEntries.length > 0) {
-          setActiveHeadingId(visibleEntries[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-96px 0px -60% 0px",
-        threshold: [0, 1],
-      },
-    );
-
-    headingIds.forEach((headingId) => {
-      const element = document.getElementById(headingId);
-      if (element) {
-        observer.observe(element);
+    const syncActiveHeadingFromScroll = () => {
+      if (isProgrammaticScrollRef.current) {
+        return;
       }
-    });
+
+      const headerBottom =
+        document
+          .querySelector<HTMLElement>("[data-app-header='true']")
+          ?.getBoundingClientRect().bottom ?? 0;
+      const activationLine = headerBottom + 24;
+
+      const currentHeading = headingIds.reduce<string>((activeId, headingId) => {
+        const element = document.getElementById(headingId);
+        if (!(element instanceof HTMLElement)) {
+          return activeId;
+        }
+
+        return element.getBoundingClientRect().top <= activationLine ? headingId : activeId;
+      }, headingIds[0] ?? "");
+
+      setActiveHeadingId(currentHeading);
+    };
+
+    const frameId = window.requestAnimationFrame(syncActiveHeadingFromScroll);
+    window.addEventListener("scroll", syncActiveHeadingFromScroll, { passive: true });
+    window.addEventListener("resize", syncActiveHeadingFromScroll);
 
     return () => {
-      observer.disconnect();
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", syncActiveHeadingFromScroll);
+      window.removeEventListener("resize", syncActiveHeadingFromScroll);
     };
   }, [headingIds]);
+
+  useEffect(() => {
+    if (!activeHeadingId) {
+      return;
+    }
+
+    const container = tocContainerRef.current;
+    const activeLink = container?.querySelector<HTMLElement>(`[data-toc-heading-id="${CSS.escape(activeHeadingId)}"]`);
+    if (!container || !activeLink) {
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const activeLinkRect = activeLink.getBoundingClientRect();
+    const isOutOfView =
+      activeLinkRect.top < containerRect.top + 24 ||
+      activeLinkRect.bottom > containerRect.bottom - 24;
+
+    if (isOutOfView) {
+      activeLink.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [activeHeadingId]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollUnlockTimeoutRef.current !== null) {
+        window.clearTimeout(scrollUnlockTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (headings.length === 0) {
     return null;
   }
 
   return (
-    <aside className="hidden xl:block xl:w-60 xl:shrink-0">
-      <div className="sticky top-28 border-l border-border/80 pl-6">
+    <aside className="hidden xl:block xl:w-[336px] xl:shrink-0">
+      <div
+        ref={tocContainerRef}
+        className="toc-scrollbar sticky top-28 max-h-[calc(100dvh-7rem)] overflow-y-auto border-l border-border/80 pl-8 pr-10"
+      >
         <nav aria-label="게시물 목차">
           <ul className="space-y-3 py-2">
             {headings.map((heading) => {
@@ -101,6 +153,7 @@ export default function PostDetailTableOfContents({
               return (
                 <li key={heading.id}>
                   <a
+                    data-toc-heading-id={heading.id}
                     href={`#${encodeURIComponent(heading.id)}`}
                     onClick={(event) => {
                       event.preventDefault();
@@ -110,13 +163,22 @@ export default function PostDetailTableOfContents({
                         return;
                       }
 
+                      if (scrollUnlockTimeoutRef.current !== null) {
+                        window.clearTimeout(scrollUnlockTimeoutRef.current);
+                      }
+
+                      isProgrammaticScrollRef.current = true;
                       window.history.replaceState(null, "", `#${encodeURIComponent(heading.id)}`);
-                      scrollToElementBelowHeader(targetElement, "smooth");
+                      scrollToElementBelowHeader(targetElement, "auto");
                       setActiveHeadingId(heading.id);
+
+                      scrollUnlockTimeoutRef.current = window.setTimeout(() => {
+                        isProgrammaticScrollRef.current = false;
+                      }, 500);
                     }}
-                    className={`block w-full text-left text-[15px] leading-8 tracking-[-0.01em] transition-colors ${paddingClass} ${
+                    className={`block w-full cursor-pointer text-left text-[15px] leading-8 tracking-[-0.01em] transition-colors ${paddingClass} ${
                       isActive
-                        ? "font-semibold text-foreground"
+                        ? "font-semibold text-foreground dark:text-white"
                         : "font-medium text-muted-foreground/90 hover:text-foreground"
                     }`}
                   >
