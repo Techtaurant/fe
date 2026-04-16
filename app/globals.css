@@ -268,6 +268,25 @@
 }
 
 @layer utilities {
+  .toc-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: transparent transparent;
+  }
+
+  .toc-scrollbar::-webkit-scrollbar {
+    width: auto;
+    height: auto;
+  }
+
+  .toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 0;
+  }
+
+  .toc-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   .font-kr-sans {
     font-family: var(--font-kr-sans);
   }

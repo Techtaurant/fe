@@ -166,7 +166,7 @@ export default function PostDetail({
         <div
           className={
             hasTableOfContents
-              ? "mx-auto max-w-[1048px] xl:grid xl:grid-cols-[minmax(0,728px)_240px] xl:gap-12"
+              ? "mx-auto max-w-[1272px] xl:grid xl:grid-cols-[minmax(0,728px)_336px] xl:gap-40"
               : "mx-auto max-w-[728px]"
           }
         >
