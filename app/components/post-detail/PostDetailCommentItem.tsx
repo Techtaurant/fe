@@ -2,9 +2,11 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { MoreVertical, Pencil, ThumbsDown, ThumbsUp, Trash2, UserX } from "lucide-react";
 import { Comment } from "@/app/types";
+import { buildLocalizedUserPath } from "@/app/lib/userRoute";
 import { formatDisplayTime } from "@/app/utils";
 import PostDetailConfirmDialog, {
   CANCEL_CONFIRM_BUTTON_CLASS_NAME,
@@ -49,6 +51,7 @@ export default function PostDetailCommentItem({
 }: PostDetailCommentItemProps) {
   const t = useTranslations("PostDetail");
   const locale = useLocale();
+  const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const editingTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [activeMenu, setActiveMenu] = useState(false);
@@ -66,6 +69,12 @@ export default function PostDetailCommentItem({
     comment.likeStatus === "LIKE" ? "like" : comment.likeStatus === "DISLIKE" ? "dislike" : "none";
   const isReactionDisabled = comment.isDeleted || isBannedComment;
   const shouldShowInteractionRow = !comment.isDeleted && !isBannedComment;
+  const hasAuthorPage = !isBannedComment && Boolean(comment.author.id);
+
+  const handleAuthorClick = () => {
+    if (!hasAuthorPage) return;
+    void router.push(buildLocalizedUserPath(locale, comment.author.id));
+  };
 
   const resizeEditingTextarea = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = "auto";
@@ -139,33 +148,68 @@ export default function PostDetailCommentItem({
 
   return (
     <div className={compact ? "flex gap-2.5" : "flex gap-3"}>
-      <div
-        className={`relative rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center ${
-          compact ? "w-7 h-7" : "w-[30px] h-[30px]"
-        }`}
-      >
-        {isBannedComment ? (
-          <UserX className={compact ? "h-3.5 w-3.5 text-muted-foreground" : "h-4 w-4 text-muted-foreground"} />
-        ) : comment.author.profileImageUrl ? (
-          <Image
-            src={comment.author.profileImageUrl}
-            alt={comment.author.name}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <span className={`${compact ? "text-xs" : "text-sm"} font-bold text-muted-foreground`}>
-            {comment.author.name.charAt(0)}
-          </span>
-        )}
-      </div>
+      {hasAuthorPage ? (
+        <button
+          type="button"
+          onClick={handleAuthorClick}
+          className={`relative rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center transition-all duration-150 hover:bg-muted/25 hover:brightness-95 ${
+            compact ? "w-7 h-7" : "w-[30px] h-[30px]"
+          }`}
+          aria-label={`Go to ${comment.author.name || "author"} page`}
+        >
+          {comment.author.profileImageUrl ? (
+            <Image
+              src={comment.author.profileImageUrl}
+              alt={comment.author.name}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <span className={`${compact ? "text-xs" : "text-sm"} font-bold text-muted-foreground`}>
+              {comment.author.name.charAt(0)}
+            </span>
+          )}
+        </button>
+      ) : (
+        <div
+          className={`relative rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center ${
+            compact ? "w-7 h-7" : "w-[30px] h-[30px]"
+          }`}
+        >
+          {isBannedComment ? (
+            <UserX className={compact ? "h-3.5 w-3.5 text-muted-foreground" : "h-4 w-4 text-muted-foreground"} />
+          ) : comment.author.profileImageUrl ? (
+            <Image
+              src={comment.author.profileImageUrl}
+              alt={comment.author.name}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <span className={`${compact ? "text-xs" : "text-sm"} font-bold text-muted-foreground`}>
+              {comment.author.name.charAt(0)}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="flex-1 min-w-0">
         <div className={`flex items-center justify-between gap-2 ${compact ? "mb-0.5" : "mb-1"}`}>
           <div className="flex items-center gap-1.5">
-            <span className={`font-semibold ${compact ? "text-xs" : "text-sm"} text-foreground`}>
-              {isBannedComment ? t("commentBannedAuthor") : comment.author.name}
-            </span>
+            {hasAuthorPage ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className={`font-semibold text-foreground hover:underline underline-offset-4 ${compact ? "text-xs" : "text-sm"}`}
+                aria-label={`Go to ${comment.author.name || "author"} page`}
+              >
+                {comment.author.name}
+              </button>
+            ) : (
+              <span className={`font-semibold ${compact ? "text-xs" : "text-sm"} text-foreground`}>
+                {isBannedComment ? t("commentBannedAuthor") : comment.author.name}
+              </span>
+            )}
             {isPostAuthor ? <span className="comment-author-badge">{t("commentAuthorBadge")}</span> : null}
             <span className={`${compact ? "text-[11px]" : "text-xs"} text-muted-foreground`}>
               {formatDisplayTime(comment.createdAt, locale)}

@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Post } from "../types";
 import { formatDisplayTime } from "@/app/utils";
 import { buildLocalizedCommunityPostPath } from "@/app/lib/communityPostRoute";
+import { buildLocalizedUserPath } from "@/app/lib/userRoute";
 
 interface PostCardProps {
   post: Post;
@@ -88,7 +89,7 @@ export default function PostCard({
     if (!hasAuthorPage || !post.author?.id) return;
 
     event.stopPropagation();
-    void router.push(`/${locale}/user/${post.author.id}`);
+    void router.push(buildLocalizedUserPath(locale, post.author.id));
   };
 
   const handleCardClick = () => {
