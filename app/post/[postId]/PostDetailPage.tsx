@@ -10,6 +10,7 @@ import { useActionSnackbar } from "../../hooks/useActionSnackbar";
 import { useComments } from "../../hooks/useComments";
 import { usePostDetail } from "../../hooks/usePostDetail";
 import { useUser } from "../../hooks/useUser";
+import { buildLocalizedUserPath } from "../../lib/userRoute";
 
 export default function PostDetailPage() {
   const t = useTranslations("PostDetailPage");
@@ -132,6 +133,8 @@ export default function PostDetailPage() {
     );
   }
 
+  const authorId = post.author?.id;
+
   return (
     <>
       <ActionSnackbar
@@ -165,9 +168,9 @@ export default function PostDetailPage() {
         onBack={() => router.back()}
         onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
         onAuthorClick={
-          post.author?.id
+          authorId
             ? () => {
-                router.push(`/${locale}/user/${post.author?.id}`);
+                router.push(buildLocalizedUserPath(locale, authorId));
               }
             : undefined
         }
