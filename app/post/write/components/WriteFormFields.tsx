@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Dispatch, KeyboardEvent, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useTranslations } from "next-intl";
 import { Image as ImageIcon } from "lucide-react";
 import { normalizeCategoryPath } from "@/app/hooks/useUserCategories";
@@ -10,6 +10,7 @@ interface WriteFormFieldsProps {
   categoryPath: string;
   categorySuggestions: string[];
   tagInput: string;
+  tagSuggestions: string[];
   tags: string[];
   hasThumbnail: boolean;
   isThumbnailUploading: boolean;
@@ -19,7 +20,7 @@ interface WriteFormFieldsProps {
   setCategoryPath: (value: string) => void;
   setTagInput: (value: string) => void;
   setFieldErrors: Dispatch<SetStateAction<FieldErrors>>;
-  handleTagKeyPress: (e: KeyboardEvent<HTMLInputElement>) => void;
+  handleAddTag: (nextTag?: string) => void;
   handleRemoveTag: (tag: string) => void;
   handleUploadThumbnail: (file: File) => Promise<void>;
 }
@@ -29,6 +30,7 @@ export default function WriteFormFields({
   categoryPath,
   categorySuggestions,
   tagInput,
+  tagSuggestions,
   tags,
   hasThumbnail,
   isThumbnailUploading,
@@ -38,7 +40,7 @@ export default function WriteFormFields({
   setCategoryPath,
   setTagInput,
   setFieldErrors,
-  handleTagKeyPress,
+  handleAddTag,
   handleRemoveTag,
   handleUploadThumbnail,
 }: WriteFormFieldsProps) {
@@ -47,8 +49,11 @@ export default function WriteFormFields({
   const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
   const categoryInputRef = useRef<HTMLInputElement | null>(null);
   const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
+  const tagDropdownRef = useRef<HTMLDivElement | null>(null);
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
-  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const [activeCategorySuggestionIndex, setActiveCategorySuggestionIndex] = useState(-1);
+  const [isTagMenuOpen, setIsTagMenuOpen] = useState(false);
+  const [activeTagSuggestionIndex, setActiveTagSuggestionIndex] = useState(-1);
 
   const filteredCategorySuggestions = useMemo(() => {
     const normalizedInput = normalizeCategoryPath(categoryPath).toLowerCase();
@@ -71,8 +76,35 @@ export default function WriteFormFields({
   }, [categoryPath, categorySuggestions]);
 
   useEffect(() => {
-    setActiveSuggestionIndex(filteredCategorySuggestions.length > 0 ? 0 : -1);
+    setActiveCategorySuggestionIndex(filteredCategorySuggestions.length > 0 ? 0 : -1);
   }, [filteredCategorySuggestions]);
+
+  const filteredTagSuggestions = useMemo(() => {
+    const normalizedInput = tagInput.trim().toLowerCase();
+    const selectedTags = new Set(tags.map((tag) => tag.toLowerCase()));
+    const dedupedSuggestions = Array.from(new Set(tagSuggestions)).filter(
+      (suggestion) => !selectedTags.has(suggestion.toLowerCase()),
+    );
+
+    if (!normalizedInput) {
+      return dedupedSuggestions.slice(0, 8);
+    }
+
+    const startsWithMatches = dedupedSuggestions.filter((suggestion) =>
+      suggestion.toLowerCase().startsWith(normalizedInput),
+    );
+    const containsMatches = dedupedSuggestions.filter(
+      (suggestion) =>
+        !suggestion.toLowerCase().startsWith(normalizedInput)
+        && suggestion.toLowerCase().includes(normalizedInput),
+    );
+
+    return [...startsWithMatches, ...containsMatches].slice(0, 8);
+  }, [tagInput, tagSuggestions, tags]);
+
+  useEffect(() => {
+    setActiveTagSuggestionIndex(filteredTagSuggestions.length > 0 ? 0 : -1);
+  }, [filteredTagSuggestions]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -84,11 +116,14 @@ export default function WriteFormFields({
       if (
         categoryInputRef.current?.contains(target)
         || categoryDropdownRef.current?.contains(target)
+        || tagInputRef.current?.contains(target)
+        || tagDropdownRef.current?.contains(target)
       ) {
         return;
       }
 
       setIsCategoryMenuOpen(false);
+      setIsTagMenuOpen(false);
     };
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -100,10 +135,17 @@ export default function WriteFormFields({
   const applyCategorySuggestion = (suggestion: string) => {
     setCategoryPath(suggestion);
     setIsCategoryMenuOpen(false);
-    setActiveSuggestionIndex(-1);
+    setActiveCategorySuggestionIndex(-1);
     if (fieldErrors.category) {
       setFieldErrors((prev) => ({ ...prev, category: false }));
     }
+  };
+
+  const applyTagSuggestion = (suggestion: string) => {
+    setIsTagMenuOpen(false);
+    setActiveTagSuggestionIndex(-1);
+    handleAddTag(suggestion);
+    tagInputRef.current?.focus();
   };
 
   return (
@@ -210,7 +252,7 @@ export default function WriteFormFields({
 
               if (event.key === "ArrowDown") {
                 event.preventDefault();
-                setActiveSuggestionIndex((prev) =>
+                setActiveCategorySuggestionIndex((prev) =>
                   prev < filteredCategorySuggestions.length - 1 ? prev + 1 : 0,
                 );
                 return;
@@ -218,19 +260,19 @@ export default function WriteFormFields({
 
               if (event.key === "ArrowUp") {
                 event.preventDefault();
-                setActiveSuggestionIndex((prev) =>
+                setActiveCategorySuggestionIndex((prev) =>
                   prev > 0 ? prev - 1 : filteredCategorySuggestions.length - 1,
                 );
                 return;
               }
 
               if (event.key === "Enter") {
-                if (activeSuggestionIndex < 0) {
+                if (activeCategorySuggestionIndex < 0) {
                   return;
                 }
 
                 event.preventDefault();
-                applyCategorySuggestion(filteredCategorySuggestions[activeSuggestionIndex]);
+                applyCategorySuggestion(filteredCategorySuggestions[activeCategorySuggestionIndex]);
                 return;
               }
 
@@ -250,7 +292,7 @@ export default function WriteFormFields({
             >
               <ul className="py-2">
                 {filteredCategorySuggestions.map((suggestion, index) => {
-                  const isActive = index === activeSuggestionIndex;
+                  const isActive = index === activeCategorySuggestionIndex;
 
                   return (
                     <li key={suggestion}>
@@ -260,7 +302,7 @@ export default function WriteFormFields({
                           event.preventDefault();
                           applyCategorySuggestion(suggestion);
                         }}
-                        onMouseEnter={() => setActiveSuggestionIndex(index)}
+                        onMouseEnter={() => setActiveCategorySuggestionIndex(index)}
                         className={`flex w-full cursor-pointer items-center px-4 py-2.5 text-left text-sm transition-colors ${
                           isActive
                             ? "bg-muted font-semibold text-[#3182F6]"
@@ -280,7 +322,7 @@ export default function WriteFormFields({
           )}
         </div>
 
-        <div>
+        <div className="relative">
           <label htmlFor="tags" className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {t("tags")}
           </label>
@@ -309,12 +351,101 @@ export default function WriteFormFields({
               id="tags"
               type="text"
               value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyPress={handleTagKeyPress}
+              onFocus={() => {
+                if (filteredTagSuggestions.length > 0) {
+                  setIsTagMenuOpen(true);
+                }
+              }}
+              onBlur={() => {
+                window.setTimeout(() => {
+                  const activeElement = document.activeElement;
+                  if (
+                    activeElement instanceof Node
+                    && (tagInputRef.current?.contains(activeElement)
+                      || tagDropdownRef.current?.contains(activeElement))
+                  ) {
+                    return;
+                  }
+
+                  setIsTagMenuOpen(false);
+                }, 0);
+              }}
+              onChange={(e) => {
+                setTagInput(e.target.value);
+                setIsTagMenuOpen(true);
+              }}
+              onKeyDown={(event) => {
+                if (isTagMenuOpen && filteredTagSuggestions.length > 0) {
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    setActiveTagSuggestionIndex((prev) =>
+                      prev < filteredTagSuggestions.length - 1 ? prev + 1 : 0,
+                    );
+                    return;
+                  }
+
+                  if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setActiveTagSuggestionIndex((prev) =>
+                      prev > 0 ? prev - 1 : filteredTagSuggestions.length - 1,
+                    );
+                    return;
+                  }
+
+                  if (event.key === "Enter" && activeTagSuggestionIndex >= 0) {
+                    event.preventDefault();
+                    applyTagSuggestion(filteredTagSuggestions[activeTagSuggestionIndex]);
+                    return;
+                  }
+                }
+
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  handleAddTag();
+                  setIsTagMenuOpen(false);
+                  return;
+                }
+
+                if (event.key === "Escape") {
+                  setIsTagMenuOpen(false);
+                }
+              }}
               placeholder={tags.length === 0 ? t("tagsPlaceholder") : ""}
               className="min-w-[180px] flex-1 bg-transparent px-0 py-0 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
+          {isTagMenuOpen && filteredTagSuggestions.length > 0 ? (
+            <div
+              ref={tagDropdownRef}
+              className="absolute top-full left-0 z-20 mt-3 w-full max-w-[26rem] overflow-hidden rounded-2xl border border-border bg-background/95 shadow-[0_16px_36px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
+            >
+              <ul className="py-2">
+                {filteredTagSuggestions.map((suggestion, index) => {
+                  const isActive = index === activeTagSuggestionIndex;
+
+                  return (
+                    <li key={suggestion}>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          applyTagSuggestion(suggestion);
+                        }}
+                        onMouseEnter={() => setActiveTagSuggestionIndex(index)}
+                        className={`flex w-full cursor-pointer items-center px-4 py-2.5 text-left text-sm transition-colors ${
+                          isActive
+                            ? "bg-muted font-semibold text-[#3182F6]"
+                            : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                        }`}
+                      >
+                        <span className="truncate">{suggestion}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
 
