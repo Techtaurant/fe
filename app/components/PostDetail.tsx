@@ -35,6 +35,7 @@ interface PostDetailProps {
   currentUserId?: string | null;
   onBack: () => void;
   onEdit: () => void;
+  onCategoryClick?: () => void;
   onToggleVisibility: () => Promise<void> | void;
   onDelete: () => Promise<boolean | void> | boolean | void;
   onReport: () => Promise<void> | void;
@@ -78,6 +79,7 @@ export default function PostDetail({
   currentUserId,
   onBack,
   onEdit,
+  onCategoryClick,
   onToggleVisibility,
   onDelete,
   onReport,
@@ -176,6 +178,7 @@ export default function PostDetail({
               isOwner={isOwner}
               onBack={onBack}
               onEdit={onEdit}
+              onCategoryClick={onCategoryClick}
               onAuthorClick={onAuthorClick}
               onToggleVisibility={() => setIsVisibilityConfirmOpen(true)}
               onRequestDelete={() => setIsDeleteConfirmOpen(true)}

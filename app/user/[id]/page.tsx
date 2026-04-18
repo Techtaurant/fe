@@ -111,7 +111,11 @@ function renderCategoryList(params: {
   const renderList = (children: CategoryTreeNode[]): ReactNode[] =>
     children.flatMap((node) => {
       const hasChildren = node.children.length > 0;
-      const shouldAutoExpand = false;
+      const shouldAutoExpand = Boolean(
+        hasChildren
+          && selectedCategoryPath
+          && (selectedCategoryPath === node.path || selectedCategoryPath.startsWith(`${node.path}/`)),
+      );
       const isExpanded = expandedCategoryIds[node.id] ?? shouldAutoExpand;
       const isSelected = selectedCategoryPath === node.path;
 
@@ -252,6 +256,7 @@ function UserDetailPageContent() {
   const searchParams = useSearchParams();
   const userId = typeof params.id === "string" ? params.id : "";
   const isBlockedIntent = searchParams.get("blocked") === "1";
+  const requestedCategoryPath = searchParams.get("categoryPath")?.trim() || null;
   const [currentMode, setCurrentMode] = useState<FeedMode>(FEED_MODES.USER);
 
   const [period, setPeriod] = useState<PostListPeriod>("ALL");
@@ -263,7 +268,7 @@ function UserDetailPageContent() {
   );
   const [isFollowListModalOpen, setIsFollowListModalOpen] = useState(false);
   const [followListTab, setFollowListTab] = useState<FollowListTab>("followers");
-  const [selectedCategoryPath, setSelectedCategoryPath] = useState<string | null>(null);
+  const [selectedCategoryPath, setSelectedCategoryPath] = useState<string | null>(requestedCategoryPath);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Record<string, boolean>>({});
   const [isMobileCategorySidebarOpen, setIsMobileCategorySidebarOpen] = useState(false);
 
@@ -347,6 +352,35 @@ function UserDetailPageContent() {
   const handleMobileActionCategorySelect = useCallback((path: string | null) => {
     setSelectedCategoryPath(path);
   }, []);
+
+  useEffect(() => {
+    setSelectedCategoryPath(requestedCategoryPath);
+  }, [requestedCategoryPath]);
+
+  useEffect(() => {
+    if (!requestedCategoryPath) {
+      return;
+    }
+
+    setExpandedCategoryIds((current) => {
+      let changed = false;
+      const next = { ...current };
+
+      for (const category of categoryFilters) {
+        if (
+          requestedCategoryPath === category.path
+          || requestedCategoryPath.startsWith(`${category.path}/`)
+        ) {
+          if (!next[category.id]) {
+            next[category.id] = true;
+            changed = true;
+          }
+        }
+      }
+
+      return changed ? next : current;
+    });
+  }, [categoryFilters, requestedCategoryPath]);
 
   const activeCategoryPath = useMemo(() => {
     if (selectedCategoryPath === null) {
