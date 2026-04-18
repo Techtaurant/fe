@@ -98,12 +98,12 @@ export default function PostDetailHeader({
           <button
             type="button"
             onClick={handleCategoryClick}
-            className="mb-3 inline-flex max-w-full rounded-full bg-muted/85 px-3 py-1 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/40 hover:text-foreground"
+            className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/90 hover:text-foreground"
           >
             <span className="truncate">{categoryLabel}</span>
           </button>
         ) : (
-          <div className="mb-3 inline-flex max-w-full rounded-full bg-muted/85 px-3 py-1 text-sm font-medium text-muted-foreground">
+          <div className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
             <span className="truncate">{categoryLabel}</span>
           </div>
         )
