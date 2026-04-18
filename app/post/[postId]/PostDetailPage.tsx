@@ -10,6 +10,7 @@ import { useActionSnackbar } from "../../hooks/useActionSnackbar";
 import { useComments } from "../../hooks/useComments";
 import { usePostDetail } from "../../hooks/usePostDetail";
 import { useUser } from "../../hooks/useUser";
+import { buildLocalizedUserPath } from "../../lib/userRoute";
 
 export default function PostDetailPage() {
   const t = useTranslations("PostDetailPage");
@@ -171,7 +172,7 @@ export default function PostDetailPage() {
           authorId && authorCategoryPath
             ? () => {
                 router.push(
-                  `/${locale}/user/${authorId}?categoryPath=${encodeURIComponent(authorCategoryPath)}`,
+                  `${buildLocalizedUserPath(locale, authorId)}?categoryPath=${encodeURIComponent(authorCategoryPath)}`,
                 );
               }
             : undefined
@@ -179,7 +180,7 @@ export default function PostDetailPage() {
         onAuthorClick={
           authorId
             ? () => {
-                router.push(`/${locale}/user/${authorId}`);
+                router.push(buildLocalizedUserPath(locale, authorId));
               }
             : undefined
         }

@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
-import type { KeyboardEvent } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
+import { useUserCategories } from "@/app/hooks/useUserCategories";
+import { useTags } from "@/app/hooks/useTags";
 import { redirectToOAuthLogin } from "@/app/lib/authRedirect";
 import { useUser } from "@/app/hooks/useUser";
 import { queryKeys } from "@/app/lib/queryKeys";
@@ -103,6 +104,36 @@ function WritePostPageContent() {
     onAuthExpired: openAuthExpiredModal,
   });
 
+  const categorySuggestionsQuery = useUserCategories({
+    enabled: Boolean(user?.id),
+    userId: user?.id ?? "",
+  });
+
+  const categorySuggestions = useMemo(() => {
+    const ranked = [...categorySuggestionsQuery.categories].sort((left, right) => {
+      const countDiff = (right.postCount ?? 0) - (left.postCount ?? 0);
+      if (countDiff !== 0) {
+        return countDiff;
+      }
+
+      const depthDiff = left.depth - right.depth;
+      if (depthDiff !== 0) {
+        return depthDiff;
+      }
+
+      return left.path.localeCompare(right.path);
+    });
+
+    return ranked.map((category) => category.path);
+  }, [categorySuggestionsQuery.categories]);
+
+  const allTagsQuery = useTags([], { fetchAll: true });
+
+  const tagSuggestions = useMemo(
+    () => allTagsQuery.tags.map((tag) => tag.name),
+    [allTagsQuery.tags],
+  );
+
   const publishFlow = usePublishFlow({
     user,
     draftId,
@@ -154,13 +185,6 @@ function WritePostPageContent() {
     Boolean(draftBootstrap.draftErrorMessage) ||
     form.isAuthExpiredModalOpen;
 
-  const handleTagKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      form.handleAddTag();
-    }
-  };
-
   if (!user && !isUserLoading) {
     return null;
   }
@@ -185,7 +209,9 @@ function WritePostPageContent() {
                 <WriteFormFields
                   title={form.title}
                   categoryPath={form.categoryPath}
+                  categorySuggestions={categorySuggestions}
                   tagInput={form.tagInput}
+                  tagSuggestions={tagSuggestions}
                   tags={form.tags}
                   hasThumbnail={Boolean(form.thumbnailPreviewUrl || form.thumbnailAttachmentId)}
                   isThumbnailUploading={thumbnail.isThumbnailUploading}
@@ -195,7 +221,7 @@ function WritePostPageContent() {
                   setCategoryPath={form.setCategoryPath}
                   setTagInput={form.setTagInput}
                   setFieldErrors={form.setFieldErrors}
-                  handleTagKeyPress={handleTagKeyPress}
+                  handleAddTag={form.handleAddTag}
                   handleRemoveTag={form.handleRemoveTag}
                   handleUploadThumbnail={thumbnail.handleUploadThumbnail}
                 />

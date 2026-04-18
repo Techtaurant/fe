@@ -9,6 +9,7 @@ import { FileText, LogOut, PenLine, Settings } from "lucide-react";
 import { useUser } from "../hooks/useUser";
 import { buildLogoutUrl, redirectToOAuthLogin } from "../lib/authRedirect";
 import { queryKeys } from "../lib/queryKeys";
+import { buildLocalizedUserPath } from "../lib/userRoute";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 import MobileBottomNav from "./BottomNav";
@@ -100,7 +101,7 @@ export default function Header({
       return;
     }
 
-    router.push(`/${locale}/user/${user.id}`);
+    router.push(buildLocalizedUserPath(locale, user.id));
     setIsDropdownOpen(false);
   };
 
@@ -136,7 +137,7 @@ export default function Header({
     }
 
     onModeChange?.(FEED_MODES.USER);
-    router.push(`/${locale}/user/${user.id}`);
+    router.push(buildLocalizedUserPath(locale, user.id));
   };
 
   return (
