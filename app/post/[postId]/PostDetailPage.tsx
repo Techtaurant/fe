@@ -134,6 +134,7 @@ export default function PostDetailPage() {
   }
 
   const authorId = post.author?.id;
+  const authorCategoryPath = post.categoryPath?.trim();
 
   return (
     <>
@@ -167,6 +168,15 @@ export default function PostDetailPage() {
         currentUserId={user?.id ?? null}
         onBack={() => router.back()}
         onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
+        onCategoryClick={
+          authorId && authorCategoryPath
+            ? () => {
+                router.push(
+                  `${buildLocalizedUserPath(locale, authorId)}?categoryPath=${encodeURIComponent(authorCategoryPath)}`,
+                );
+              }
+            : undefined
+        }
         onAuthorClick={
           authorId
             ? () => {
@@ -186,8 +196,8 @@ export default function PostDetailPage() {
         onReport={async () => {
           setIsRedirectingAfterBlock(true);
           const result = await handleReport();
-          if (result.ok && post.author?.id) {
-            router.replace(`/${locale}/user/${post.author.id}?blocked=1`);
+          if (result.ok && authorId) {
+            router.replace(`/${locale}/user/${authorId}?blocked=1`);
             return;
           }
 

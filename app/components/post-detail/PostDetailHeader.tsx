@@ -19,6 +19,7 @@ interface PostDetailHeaderProps {
   isOwner: boolean;
   onBack: () => void;
   onEdit: () => void;
+  onCategoryClick?: () => void;
   onToggleVisibility: () => Promise<void> | void;
   onRequestDelete: () => void;
   onRequestReport: () => void;
@@ -34,6 +35,7 @@ export default function PostDetailHeader({
   isOwner,
   onBack,
   onEdit,
+  onCategoryClick,
   onToggleVisibility,
   onRequestDelete,
   onRequestReport,
@@ -65,12 +67,20 @@ export default function PostDetailHeader({
 
   const menuButtonClassName =
     "p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200";
+  const categoryLabel = post.categoryPath?.trim();
   const hasAuthorClick = Boolean(onAuthorClick && post.author?.id);
+  const hasCategoryClick = Boolean(onCategoryClick && categoryLabel);
 
   const handleAuthorClick = () => {
     if (!hasAuthorClick || !onAuthorClick) return;
 
     onAuthorClick();
+  };
+
+  const handleCategoryClick = () => {
+    if (!hasCategoryClick || !onCategoryClick) return;
+
+    onCategoryClick();
   };
 
   return (
@@ -82,6 +92,22 @@ export default function PostDetailHeader({
         <ArrowLeft className="w-5 h-5" />
         <span className="text-sm font-medium">{t("back")}</span>
       </button>
+
+      {categoryLabel ? (
+        hasCategoryClick ? (
+          <button
+            type="button"
+            onClick={handleCategoryClick}
+            className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/90 hover:text-foreground"
+          >
+            <span className="truncate">{categoryLabel}</span>
+          </button>
+        ) : (
+          <div className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+            <span className="truncate">{categoryLabel}</span>
+          </div>
+        )
+      ) : null}
 
       <h1 className="text-2xl md:text-4xl font-bold text-foreground leading-tight mb-6">
         {post.title}
