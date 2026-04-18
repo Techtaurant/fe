@@ -4,7 +4,7 @@ import { Suspense, type ReactNode, useCallback, useEffect, useMemo, useState } f
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ChevronDown, ChevronUp, FileText, Folder, FolderOpen, PencilLine, UserX } from "lucide-react";
+import { ChevronDown, ChevronUp, Folder, FolderOpen, PencilLine, UserX } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { redirectToOAuthLogin } from "../../lib/authRedirect";
 import Header from "../../components/Header";
@@ -158,8 +158,10 @@ function renderCategoryList(params: {
               ) : (
                 <Folder className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               )
+            ) : isSelected ? (
+              <FolderOpen className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             ) : (
-              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <Folder className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             )}
 
             <span className="whitespace-nowrap">{node.label}</span>
