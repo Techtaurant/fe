@@ -41,8 +41,8 @@ export function useWriteFormState() {
     tags.length > 0 ||
     Boolean(thumbnailAttachmentId);
 
-  const handleAddTag = () => {
-    const trimmedTag = tagInput.trim();
+  const handleAddTag = (nextTag?: string) => {
+    const trimmedTag = (nextTag ?? tagInput).trim();
     if (trimmedTag && !tags.includes(trimmedTag)) {
       setTags([...tags, trimmedTag]);
       setTagInput("");
