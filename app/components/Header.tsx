@@ -13,6 +13,7 @@ import { buildLocalizedUserPath } from "../lib/userRoute";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 import MobileBottomNav from "./BottomNav";
+import NotificationDropdown from "./header/NotificationDropdown";
 import PrimaryRectButton from "./ui/PrimaryRectButton";
 import SearchInput from "./SearchInput";
 import SettingsModal from "./settings/SettingsModal";
@@ -229,6 +230,8 @@ export default function Header({
               <span>{t("writePost")}</span>
             </PrimaryRectButton>
           )}
+
+          {isLoggedIn && !isLoading && <NotificationDropdown />}
 
           {/* Auth Button / Profile */}
           {isLoading ? (

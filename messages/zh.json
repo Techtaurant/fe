@@ -9,7 +9,17 @@
     "logout": "退出登录",
     "login": "登录",
     "myPosts": "我的文章",
-    "settings": "设置"
+    "settings": "设置",
+    "notifications": "通知",
+    "notificationsOpen": "打开通知",
+    "notificationsClose": "关闭通知",
+    "notificationsLoadFailed": "无法加载通知。",
+    "notificationsLoginRequired": "登录后可查看通知。",
+    "notificationsEmpty": "暂无新通知。",
+    "notificationsMarkAllRead": "全部已读",
+    "notificationsLoading": "正在加载通知...",
+    "notificationsLoadMore": "加载更多",
+    "notificationsNavigateLabel": "前往通知"
   },
   "BottomNav": {
     "home": "首页",
