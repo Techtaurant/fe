@@ -2,6 +2,7 @@ import { httpClient } from "@/app/utils/httpClient";
 import {
   FetchNotificationsRequest,
   FetchNotificationsResponse,
+  FetchUnreadNotificationCountResponse,
   MarkNotificationsReadRequest,
   MarkNotificationsReadResponse,
 } from "./types";
@@ -53,6 +54,28 @@ export async function fetchNotificationsRequest(
 
   const result = await parseJson(response);
   return result as FetchNotificationsResponse;
+}
+
+export async function fetchUnreadNotificationCountRequest(): Promise<FetchUnreadNotificationCountResponse> {
+  const response = await httpClient("/api/notifications/unread-count", {
+    method: "GET",
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 400) {
+    const body = await parseJson(response).catch(() => null);
+    throw new Error(extractMessage(body) || "BAD_REQUEST");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  const result = await parseJson(response);
+  return result as FetchUnreadNotificationCountResponse;
 }
 
 export async function markNotificationsReadRequest(

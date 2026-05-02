@@ -4,6 +4,7 @@ import {
   InfiniteData,
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
@@ -11,6 +12,7 @@ import { useTranslations } from "next-intl";
 import {
   fetchNotifications,
   FetchNotificationsResponse,
+  fetchUnreadNotificationCount,
   markNotificationsRead,
   NotificationListItem,
 } from "../services/notifications";
@@ -18,6 +20,7 @@ import { queryKeys } from "../lib/queryKeys";
 
 interface UseNotificationsOptions {
   enabled: boolean;
+  listEnabled?: boolean;
   size?: number;
 }
 
@@ -71,15 +74,23 @@ function updateInfiniteNotifications(
 
 export function useNotifications({
   enabled,
+  listEnabled = true,
   size = 20,
 }: UseNotificationsOptions) {
   const t = useTranslations("Header");
   const queryClient = useQueryClient();
   const queryKey = queryKeys.notifications.list({ size });
+  const unreadCountQueryKey = queryKeys.notifications.unreadCount();
+
+  const unreadCountQuery = useQuery({
+    queryKey: unreadCountQueryKey,
+    enabled,
+    queryFn: fetchUnreadNotificationCount,
+  });
 
   const query = useInfiniteQuery({
     queryKey,
-    enabled,
+    enabled: enabled && listEnabled,
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) =>
       fetchNotifications({
@@ -108,6 +119,14 @@ export function useNotifications({
       >(queryKey, (current) =>
         updateInfiniteNotifications(current, updatedNotifications),
       );
+
+      queryClient.setQueryData<number | undefined>(
+        unreadCountQueryKey,
+        (current) =>
+          typeof current === "number"
+            ? Math.max(0, current - updatedNotifications.length)
+            : current,
+      );
     },
   });
 
@@ -125,6 +144,9 @@ export function useNotifications({
     () => unreadNotifications.map((notification) => notification.id),
     [unreadNotifications],
   );
+
+  const unreadCount =
+    unreadCountQuery.data ?? unreadNotifications.length;
 
   const loadMore = useCallback(async () => {
     if (!query.hasNextPage || query.isFetchingNextPage) {
@@ -172,8 +194,8 @@ export function useNotifications({
 
   return {
     notifications,
-    unreadCount: unreadNotifications.length,
-    hasUnreadNotifications: unreadNotifications.length > 0,
+    unreadCount,
+    hasUnreadNotifications: unreadCount > 0,
     errorMessage,
     hasNext: Boolean(query.hasNextPage),
     isLoading: query.isPending,

@@ -15,6 +15,7 @@ export interface NotificationListItem {
   id: string;
   type: NotificationType;
   payloadHtml: string;
+  thumbnailUrl?: string | null;
   isRead: boolean;
   readAt: string | null;
   createdAt: string;
@@ -48,5 +49,16 @@ export interface MarkNotificationsReadResponse {
   data: {
     notifications: NotificationListItem[];
   };
+  message: string;
+}
+
+export interface FetchUnreadNotificationCountResponse {
+  status: number | Record<string, unknown>;
+  data:
+    | number
+    | {
+        unreadCount?: number;
+        count?: number;
+      };
   message: string;
 }
