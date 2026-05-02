@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useRef, useState } from "react";
@@ -29,7 +29,7 @@ const notificationSanitizedSchema = {
 
 function NotificationPayloadPreview({ html }: { html: string }) {
   return (
-    <div className="notification-payload max-h-[76px] overflow-hidden text-[13px] leading-[1.45] text-foreground">
+    <div className="notification-payload max-h-[72px] overflow-hidden text-[12.5px] leading-[1.5] text-foreground">
       <ReactMarkdown
         rehypePlugins={[rehypeRaw, [rehypeSanitize, notificationSanitizedSchema]]}
         components={{
@@ -56,12 +56,17 @@ function NotificationPayloadPreview({ html }: { html: string }) {
         .notification-payload > div:first-child {
           display: flex;
           align-items: flex-start;
-          gap: 12px;
+          gap: 8px;
+        }
+
+        .notification-payload > div:first-child > :not(img) {
+          flex: 1 1 auto;
+          min-width: 0;
         }
 
         .notification-payload img {
-          width: 40px;
-          height: 40px;
+          width: 42px;
+          height: 42px;
           flex-shrink: 0;
           border-radius: 9999px;
           object-fit: cover;
@@ -79,6 +84,10 @@ function NotificationPayloadPreview({ html }: { html: string }) {
         .notification-payload a {
           color: inherit;
           text-decoration: none;
+        }
+
+        .notification-payload strong {
+          font-weight: 600;
         }
       `}</style>
     </div>
@@ -156,27 +165,29 @@ export default function NotificationDropdown() {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className={`relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+          isOpen
+            ? "border-border bg-muted/80 text-foreground"
+            : "border-border/70 bg-background text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground"
+        }`}
         aria-label={isOpen ? t("notificationsClose") : t("notificationsOpen")}
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-[17px] w-[17px]" strokeWidth={2.1} />
         {hasUnreadNotifications ? (
-          <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background" />
+          <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-background" />
         ) : null}
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 mt-2 w-[360px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-[0_20px_60px_rgba(15,23,42,0.18)] z-[420]">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">
+        <div className="absolute right-0 top-[calc(100%+0.625rem)] z-[420] w-[338px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[28px] border border-border/80 bg-background text-foreground shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+          <div className="flex items-center justify-between border-b border-border/70 px-4 pb-3 pt-4">
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="truncate text-[15px] font-semibold tracking-[-0.01em] text-foreground">
                 {t("notifications")}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {hasUnreadNotifications
-                  ? `${unreadCount}`
-                  : "0"}
-              </p>
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[10px] font-semibold text-background">
+                {unreadCount}
+              </span>
             </div>
 
             <button
@@ -185,28 +196,27 @@ export default function NotificationDropdown() {
                 void handleMarkAllAsRead();
               }}
               disabled={!hasUnreadNotifications || isRefreshingReadState}
-              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-full px-2 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <CheckCheck className="h-3.5 w-3.5" />
               {t("notificationsMarkAllRead")}
             </button>
           </div>
 
-          <div className="max-h-[420px] overflow-y-auto">
+          <div className="max-h-[372px] overflow-y-auto px-4 pb-3 pt-2">
             {isLoading ? (
-              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
                 {t("notificationsLoading")}
               </div>
             ) : errorMessage && notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
                 {errorMessage}
               </div>
             ) : notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
                 {t("notificationsEmpty")}
               </div>
             ) : (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border/60">
                 {notifications.map((notification) => {
                   const href = resolveNotificationHref({
                     locale,
@@ -221,25 +231,20 @@ export default function NotificationDropdown() {
                         void handleNotificationClick(notification);
                       }}
                       disabled={!href}
-                      className={`block w-full px-4 py-3 text-left transition-colors hover:bg-muted/70 disabled:cursor-default ${
+                      className={`block w-full px-0 py-3 text-left transition-colors hover:bg-muted/45 disabled:cursor-default ${
                         notification.isRead
-                          ? "bg-popover"
-                          : "bg-sky-50/70 dark:bg-sky-500/10"
+                          ? "bg-transparent"
+                          : "bg-muted/25"
                       }`}
                       aria-label={t("notificationsNavigateLabel")}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1 flex-shrink-0">
-                          <span
-                            className={`block h-2.5 w-2.5 rounded-full ${
-                              notification.isRead ? "bg-transparent" : "bg-sky-500"
-                            }`}
-                          />
-                        </div>
-
-                        <div className="min-w-0 flex-1">
+                      <div className="flex items-start gap-3 px-1">
+                        <div className="relative min-w-0 flex-1 pl-4">
+                          {!notification.isRead ? (
+                            <span className="absolute left-0 top-1.5 block h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                          ) : null}
                           <NotificationPayloadPreview html={notification.payloadHtml} />
-                          <p className="mt-2 text-xs text-muted-foreground">
+                          <p className="mt-2 text-[11px] font-medium text-muted-foreground">
                             {formatDisplayTime(notification.createdAt, locale)}
                           </p>
                         </div>
@@ -252,16 +257,17 @@ export default function NotificationDropdown() {
           </div>
 
           {hasNext ? (
-            <div className="border-t border-border px-4 py-3">
+            <div className="border-t border-border/70 px-4 py-3">
               <button
                 type="button"
                 onClick={() => {
                   void loadMore();
                 }}
                 disabled={isLoadingMore}
-                className="w-full rounded-xl bg-muted px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mx-auto inline-flex min-w-[118px] items-center justify-center gap-1 rounded-full border border-border/80 bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoadingMore ? t("notificationsLoading") : t("notificationsLoadMore")}
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           ) : null}

@@ -231,80 +231,80 @@ export default function Header({
             </PrimaryRectButton>
           )}
 
-          {isLoggedIn && !isLoading && <NotificationDropdown />}
-
           {/* Auth Button / Profile */}
           {isLoading ? (
             <div className="w-8 h-8 rounded-full skeleton-bg animate-pulse" />
           ) : isLoggedIn && user ? (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={handleAuthClick}
-                className="flex items-center gap-2 p-1 rounded-full
-                        transition-opacity duration-200
-                        hover:opacity-80"
-              >
-                {user.profileImageUrl ? (
-                  <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted">
-                    <Image
-                      src={user.profileImageUrl}
-                      alt={user.name || t("profile")}
-                      fill
-                      sizes="32px"
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-muted/80 flex items-center justify-center">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {user.name?.charAt(0) || "?"}
-                    </span>
+            <div className="flex items-center gap-1.5">
+              <NotificationDropdown />
+
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={handleAuthClick}
+                  className="flex items-center gap-2 rounded-full p-1 transition-opacity duration-200 hover:opacity-80"
+                >
+                  {user.profileImageUrl ? (
+                    <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted">
+                      <Image
+                        src={user.profileImageUrl}
+                        alt={user.name || t("profile")}
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/80">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {user.name?.charAt(0) || "?"}
+                      </span>
+                    </div>
+                  )}
+                  <span className="hidden md:inline text-sm font-medium text-foreground">
+                    {user.name}
+                  </span>
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-52 rounded-md border border-border bg-popover py-1 text-popover-foreground shadow-lg z-[400]">
+                    <div className="border-b border-border px-3 py-2">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {user.name}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleMyPostsMenuClick}
+                      className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        {t("myPosts")}
+                      </span>
+                    </button>
+                    <button
+                      onClick={handleSettingsMenuClick}
+                      className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <Settings className="h-4 w-4 text-muted-foreground" />
+                        {t("settings")}
+                      </span>
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <LogOut className="h-4 w-4 text-muted-foreground" />
+                        {t("logout")}
+                      </span>
+                    </button>
                   </div>
                 )}
-                <span className="hidden md:inline text-sm font-medium text-foreground">
-                  {user.name}
-                </span>
-              </button>
-
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-popover text-popover-foreground rounded-md shadow-lg border border-border py-1 z-[400]">
-                  <div className="px-3 py-2 border-b border-border">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleMyPostsMenuClick}
-                    className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      {t("myPosts")}
-                    </span>
-                  </button>
-                  <button
-                    onClick={handleSettingsMenuClick}
-                    className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <Settings className="h-4 w-4 text-muted-foreground" />
-                      {t("settings")}
-                    </span>
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full whitespace-nowrap px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <LogOut className="h-4 w-4 text-muted-foreground" />
-                      {t("logout")}
-                    </span>
-                  </button>
-                </div>
-              )}
+              </div>
             </div>
           ) : (
             <button
