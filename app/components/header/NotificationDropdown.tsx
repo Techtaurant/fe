@@ -27,44 +27,59 @@ const notificationSanitizedSchema = {
   },
 } as const;
 
-function NotificationPayloadPreview({ html }: { html: string }) {
-  return (
-    <div className="notification-payload max-h-[72px] overflow-hidden text-[12.5px] leading-[1.5] text-foreground">
-      <ReactMarkdown
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, notificationSanitizedSchema]]}
-        components={{
-          img: ({ src, alt, ...props }) => {
-            if (typeof src !== "string" || src.trim().length === 0) {
-              return null;
-            }
+function stripNotificationImages(html: string): string {
+  return html.replace(/<img\b[^>]*>/gi, "").trim();
+}
 
-            return (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={src}
-                alt={alt ?? ""}
-                {...props}
-              />
-            );
-          },
-        }}
-      >
-        {html}
-      </ReactMarkdown>
+function NotificationPayloadPreview({
+  html,
+  thumbnailUrl,
+}: {
+  html: string;
+  thumbnailUrl?: string | null;
+}) {
+  const normalizedThumbnailUrl =
+    typeof thumbnailUrl === "string" ? thumbnailUrl.trim() : "";
+  const hasThumbnail = normalizedThumbnailUrl.length > 0;
+  const markdownSource = hasThumbnail ? stripNotificationImages(html) : html;
+
+  return (
+    <div className="notification-payload flex max-h-[72px] items-start gap-2 overflow-hidden text-[12.5px] leading-[1.5] text-foreground">
+      {hasThumbnail ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={normalizedThumbnailUrl}
+          alt=""
+          className="notification-payload-thumbnail"
+        />
+      ) : null}
+
+      <div className="notification-payload-body min-w-0 flex-1">
+        <ReactMarkdown
+          rehypePlugins={[rehypeRaw, [rehypeSanitize, notificationSanitizedSchema]]}
+          components={{
+            img: ({ src, alt, ...props }) => {
+              if (typeof src !== "string" || src.trim().length === 0) {
+                return null;
+              }
+
+              return (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={src}
+                  alt={alt ?? ""}
+                  {...props}
+                />
+              );
+            },
+          }}
+        >
+          {markdownSource}
+        </ReactMarkdown>
+      </div>
 
       <style jsx global>{`
-        .notification-payload > div:first-child {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-        }
-
-        .notification-payload > div:first-child > :not(img) {
-          flex: 1 1 auto;
-          min-width: 0;
-        }
-
-        .notification-payload img {
+        .notification-payload-thumbnail {
           width: 42px;
           height: 42px;
           flex-shrink: 0;
@@ -73,20 +88,40 @@ function NotificationPayloadPreview({ html }: { html: string }) {
           background: var(--muted);
         }
 
-        .notification-payload p,
-        .notification-payload div,
-        .notification-payload span {
+        .notification-payload-body > div:first-child {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .notification-payload-body > div:first-child > :not(img) {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+
+        .notification-payload-body img {
+          width: 42px;
+          height: 42px;
+          flex-shrink: 0;
+          border-radius: 9999px;
+          object-fit: cover;
+          background: var(--muted);
+        }
+
+        .notification-payload-body p,
+        .notification-payload-body div,
+        .notification-payload-body span {
           margin: 0;
           min-width: 0;
           overflow-wrap: anywhere;
         }
 
-        .notification-payload a {
+        .notification-payload-body a {
           color: inherit;
           text-decoration: none;
         }
 
-        .notification-payload strong {
+        .notification-payload-body strong {
           font-weight: 600;
         }
       `}</style>
@@ -114,7 +149,10 @@ export default function NotificationDropdown() {
     markNotificationAsRead,
   } = useNotifications({
     enabled: true,
+    listEnabled: isOpen,
   });
+
+  const unreadBadgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -174,7 +212,9 @@ export default function NotificationDropdown() {
       >
         <Bell className="h-[17px] w-[17px]" strokeWidth={2.1} />
         {hasUnreadNotifications ? (
-          <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-background" />
+          <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
+            {unreadBadgeLabel}
+          </span>
         ) : null}
       </button>
 
@@ -185,7 +225,7 @@ export default function NotificationDropdown() {
               <p className="truncate text-[15px] font-semibold tracking-[-0.01em] text-foreground">
                 {t("notifications")}
               </p>
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[10px] font-semibold text-background">
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
                 {unreadCount}
               </span>
             </div>
@@ -202,7 +242,7 @@ export default function NotificationDropdown() {
             </button>
           </div>
 
-          <div className="max-h-[372px] overflow-y-auto px-4 pb-3 pt-2">
+          <div className="max-h-[372px] overflow-y-auto px-2 pb-3 pt-2">
             {isLoading ? (
               <div className="px-4 py-12 text-center text-sm text-muted-foreground">
                 {t("notificationsLoading")}
@@ -231,19 +271,22 @@ export default function NotificationDropdown() {
                         void handleNotificationClick(notification);
                       }}
                       disabled={!href}
-                      className={`block w-full px-0 py-3 text-left transition-colors hover:bg-muted/45 disabled:cursor-default ${
-                        notification.isRead
-                          ? "bg-transparent"
-                          : "bg-muted/25"
-                      }`}
+                      className="group block w-full rounded-[18px] px-0 py-1 text-left transition-colors focus-visible:outline-none disabled:cursor-default"
                       aria-label={t("notificationsNavigateLabel")}
                     >
-                      <div className="flex items-start gap-3 px-1">
-                        <div className="relative min-w-0 flex-1 pl-4">
+                      <div
+                        className={`flex items-start gap-3 rounded-[16px] px-3 py-2 transition-colors group-hover:bg-muted/50 group-focus-visible:bg-muted/60 ${
+                          notification.isRead ? "bg-transparent" : "bg-muted/25"
+                        }`}
+                      >
+                        <div className="relative min-w-0 flex-1">
                           {!notification.isRead ? (
-                            <span className="absolute left-0 top-1.5 block h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                            <span className="absolute -left-3 top-1.5 block h-2.5 w-2.5 rounded-full bg-emerald-500" />
                           ) : null}
-                          <NotificationPayloadPreview html={notification.payloadHtml} />
+                          <NotificationPayloadPreview
+                            html={notification.payloadHtml}
+                            thumbnailUrl={notification.thumbnailUrl}
+                          />
                           <p className="mt-2 text-[11px] font-medium text-muted-foreground">
                             {formatDisplayTime(notification.createdAt, locale)}
                           </p>
