@@ -59,4 +59,10 @@ export const queryKeys = {
     list: (signature?: string) =>
       [...queryKeys.techBlogs.all, "list", signature ?? "default"] as const,
   },
+  notifications: {
+    all: ["notifications"] as const,
+    list: (params: { size: number }) =>
+      [...queryKeys.notifications.all, "list", params] as const,
+    unreadCount: () => [...queryKeys.notifications.all, "unread-count"] as const,
+  },
 };

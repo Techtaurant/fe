@@ -9,7 +9,17 @@
     "logout": "Log out",
     "login": "Log in",
     "myPosts": "My posts",
-    "settings": "Settings"
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "notificationsOpen": "Open notifications",
+    "notificationsClose": "Close notifications",
+    "notificationsLoadFailed": "Failed to load notifications.",
+    "notificationsLoginRequired": "Sign in to view notifications.",
+    "notificationsEmpty": "No notifications yet.",
+    "notificationsMarkAllRead": "Mark all read",
+    "notificationsLoading": "Loading notifications...",
+    "notificationsLoadMore": "Load more",
+    "notificationsNavigateLabel": "Go to notification"
   },
   "BottomNav": {
     "home": "Home",
