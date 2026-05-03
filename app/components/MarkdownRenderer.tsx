@@ -326,14 +326,31 @@ export default function MarkdownRenderer({
 
         /* 링크 */
         .markdown-content a {
-          color: var(--primary);
-          text-decoration: none;
-          transition: opacity 0.2s ease;
+          color: var(--color-blue-500);
+          font-weight: 500;
+          text-decoration-line: underline;
+          text-decoration-thickness: 0.08em;
+          text-underline-offset: 0.18em;
+          overflow-wrap: anywhere;
+          border-radius: 3px;
+          transition:
+            color 0.2s ease,
+            background-color 0.2s ease;
         }
 
-        .markdown-content a:hover {
-          opacity: 0.8;
-          text-decoration: underline;
+        .markdown-content a:hover,
+        .markdown-content a:focus-visible {
+          color: var(--comment-submit-button-hover);
+          background-color: color-mix(
+            in srgb,
+            var(--color-blue-500) 12%,
+            transparent
+          );
+        }
+
+        .markdown-content a:focus-visible {
+          outline: 2px solid var(--color-blue-500);
+          outline-offset: 2px;
         }
 
         /* 테이블 (GFM) */
