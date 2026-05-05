@@ -31,11 +31,11 @@ export default function PostDetailTableOfContents({
   const wrapperClassName =
     variant === "dialog"
       ? "block w-full"
-      : "hidden xl:col-start-3 xl:row-start-2 xl:block xl:w-full xl:min-w-0";
+      : "hidden xl:col-start-3 xl:row-start-2 xl:block xl:w-full xl:min-w-0 xl:pl-6";
   const containerClassName =
     variant === "dialog"
-      ? "toc-scrollbar max-h-[min(62dvh,520px)] overflow-y-auto pr-2"
-      : "toc-scrollbar sticky top-28 max-h-[calc(100dvh-7rem)] overflow-y-auto border-l border-border/80 pl-8 pr-4";
+      ? "toc-scrollbar max-h-[min(62dvh,520px)] overflow-y-auto overscroll-contain pr-2"
+      : "toc-scrollbar sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-l border-border/80 pl-6 pr-4";
 
   useEffect(() => {
     if (headings.length === 0) {

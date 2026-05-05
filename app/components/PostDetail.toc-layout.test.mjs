@@ -56,6 +56,33 @@ test("table of contents supports desktop and dialog variants", () => {
   assert.match(tableOfContentsSource, /onNavigate\?\.\(\);/);
 });
 
+test("desktop table of contents balances divider spacing without shrinking article", () => {
+  assert.match(
+    postDetailSource,
+    /mx-auto w-full max-w-\[728px\] min-w-0 xl:col-start-2/,
+  );
+  assert.match(tableOfContentsSource, /xl:min-w-0 xl:pl-6/);
+  assert.match(
+    tableOfContentsSource,
+    /border-l border-border\/80 pl-6 pr-4/,
+  );
+  assert.doesNotMatch(
+    tableOfContentsSource,
+    /border-l border-border\/80 pl-8/,
+  );
+});
+
+test("table of contents scrolls independently when content is long", () => {
+  assert.match(
+    tableOfContentsSource,
+    /max-h-\[calc\(100dvh-8rem\)\] overflow-y-auto overscroll-contain/,
+  );
+  assert.match(
+    tableOfContentsSource,
+    /max-h-\[min\(62dvh,520px\)\] overflow-y-auto overscroll-contain/,
+  );
+});
+
 test("post detail header preserves original visual order and alignment", () => {
   const categoryIndex = postDetailHeaderSource.indexOf(
     'className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground',
