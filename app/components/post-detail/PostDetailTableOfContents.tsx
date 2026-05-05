@@ -6,6 +6,8 @@ import { scrollToElementBelowHeader } from "@/app/lib/scrollToElementBelowHeader
 
 interface PostDetailTableOfContentsProps {
   headings: TableOfContentsHeading[];
+  variant?: "desktop" | "dialog";
+  onNavigate?: () => void;
 }
 
 function getDecodedHash(): string {
@@ -18,12 +20,22 @@ function getDecodedHash(): string {
 
 export default function PostDetailTableOfContents({
   headings,
+  variant = "desktop",
+  onNavigate,
 }: PostDetailTableOfContentsProps) {
   const [activeHeadingId, setActiveHeadingId] = useState("");
   const tocContainerRef = useRef<HTMLDivElement | null>(null);
   const isProgrammaticScrollRef = useRef(false);
   const scrollUnlockTimeoutRef = useRef<number | null>(null);
   const headingIds = useMemo(() => headings.map((heading) => heading.id), [headings]);
+  const wrapperClassName =
+    variant === "dialog"
+      ? "block w-full"
+      : "hidden xl:col-start-3 xl:row-start-2 xl:block xl:w-full xl:min-w-0 xl:pl-6";
+  const containerClassName =
+    variant === "dialog"
+      ? "toc-scrollbar max-h-[min(62dvh,520px)] overflow-y-auto overscroll-contain pr-2"
+      : "toc-scrollbar sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-l border-border/80 pl-6 pr-4";
 
   useEffect(() => {
     if (headings.length === 0) {
@@ -138,10 +150,10 @@ export default function PostDetailTableOfContents({
   }
 
   return (
-    <aside className="hidden xl:block xl:w-[336px] xl:shrink-0">
+    <aside className={wrapperClassName}>
       <div
         ref={tocContainerRef}
-        className="toc-scrollbar sticky top-28 max-h-[calc(100dvh-7rem)] overflow-y-auto border-l border-border/80 pl-8 pr-10"
+        className={containerClassName}
       >
         <nav aria-label="게시물 목차">
           <ul className="space-y-3 py-2">
@@ -171,6 +183,7 @@ export default function PostDetailTableOfContents({
                       window.history.replaceState(null, "", `#${encodeURIComponent(heading.id)}`);
                       scrollToElementBelowHeader(targetElement, "auto");
                       setActiveHeadingId(heading.id);
+                      onNavigate?.();
 
                       scrollUnlockTimeoutRef.current = window.setTimeout(() => {
                         isProgrammaticScrollRef.current = false;

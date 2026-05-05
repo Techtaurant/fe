@@ -121,11 +121,11 @@ export default function PostDetailHeader({
             aria-label={
               hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
             }
-              className={`relative h-6 w-6 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
-                hasAuthorClick
-                  ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
-                  : "cursor-default"
-              }`}
+            className={`relative h-6 w-6 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
+              hasAuthorClick
+                ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
+                : "cursor-default"
+            }`}
           >
             {post.author?.profileImageUrl ? (
               <Image
