@@ -56,15 +56,22 @@ test("table of contents supports desktop and dialog variants", () => {
   assert.match(tableOfContentsSource, /onNavigate\?\.\(\);/);
 });
 
-test("post detail header places author metadata centered above post title", () => {
-  const authorBlockIndex = postDetailHeaderSource.indexOf('className="mb-5 flex justify-center"');
-  const titleIndex = postDetailHeaderSource.indexOf('<h1 className="text-center');
-
-  assert.notEqual(authorBlockIndex, -1);
-  assert.notEqual(titleIndex, -1);
-  assert.ok(authorBlockIndex < titleIndex);
-  assert.match(
-    postDetailHeaderSource,
-    /className="flex min-w-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted-foreground"/,
+test("post detail header preserves original visual order and alignment", () => {
+  const categoryIndex = postDetailHeaderSource.indexOf(
+    'className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground',
   );
+  const titleIndex = postDetailHeaderSource.indexOf('<h1 className="text-2xl');
+  const authorBlockIndex = postDetailHeaderSource.indexOf('className="flex items-center gap-3 mb-1"');
+  const tagsIndex = postDetailHeaderSource.indexOf('className="flex flex-wrap gap-2 mt-2.5"');
+
+  assert.notEqual(categoryIndex, -1);
+  assert.notEqual(titleIndex, -1);
+  assert.notEqual(authorBlockIndex, -1);
+  assert.notEqual(tagsIndex, -1);
+  assert.ok(categoryIndex < titleIndex);
+  assert.ok(titleIndex < authorBlockIndex);
+  assert.ok(authorBlockIndex < tagsIndex);
+  assert.match(postDetailHeaderSource, /className="ml-auto relative flex items-center gap-2"/);
+  assert.doesNotMatch(postDetailHeaderSource, /<h1 className="text-center/);
+  assert.doesNotMatch(postDetailHeaderSource, /className="mb-5 flex justify-center"/);
 });
