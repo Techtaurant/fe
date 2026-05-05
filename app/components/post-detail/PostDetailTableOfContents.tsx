@@ -31,7 +31,7 @@ export default function PostDetailTableOfContents({
   const wrapperClassName =
     variant === "dialog"
       ? "block w-full"
-      : "hidden xl:col-start-3 xl:row-start-1 xl:block xl:w-full xl:min-w-0";
+      : "hidden xl:col-start-3 xl:row-start-2 xl:block xl:w-full xl:min-w-0";
   const containerClassName =
     variant === "dialog"
       ? "toc-scrollbar max-h-[min(62dvh,520px)] overflow-y-auto pr-2"

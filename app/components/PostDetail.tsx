@@ -23,6 +23,10 @@ import { ValidationErrors } from "../services/comments/apiError";
 const ATTACHMENT_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const POST_DETAIL_CENTER_COLUMN_CLASS_NAME =
+  "mx-auto w-full max-w-[728px] min-w-0 xl:col-start-2";
+const POST_DETAIL_CENTER_CONTENT_COLUMN_CLASS_NAME = `${POST_DETAIL_CENTER_COLUMN_CLASS_NAME} xl:row-start-2`;
+
 interface PostDetailProps {
   post: Post;
   comments: Comment[];
@@ -140,6 +144,12 @@ export default function PostDetail({
     [post.attachmentPresignedUrls],
   );
   const hasTableOfContents = tableOfContents.length > 0;
+  const postDetailHeaderColumnClassName = hasTableOfContents
+    ? POST_DETAIL_CENTER_COLUMN_CLASS_NAME
+    : "min-w-0";
+  const postDetailContentColumnClassName = hasTableOfContents
+    ? POST_DETAIL_CENTER_CONTENT_COLUMN_CLASS_NAME
+    : "min-w-0";
 
   const resolvePostImageSrc = (src: string): string | null => {
     if (!ATTACHMENT_ID_PATTERN.test(src)) {
@@ -187,13 +197,7 @@ export default function PostDetail({
               : "mx-auto max-w-[728px]"
           }
         >
-          <div
-            className={
-              hasTableOfContents
-                ? "mx-auto w-full max-w-[728px] min-w-0 xl:col-start-2"
-                : "min-w-0"
-            }
-          >
+          <div className={postDetailHeaderColumnClassName}>
             <PostDetailHeader
               post={post}
               isOwner={isOwner}
@@ -209,7 +213,9 @@ export default function PostDetail({
               isFollowingUpdating={isFollowingUpdating}
               isVisibilityUpdating={isVisibilityUpdating}
             />
+          </div>
 
+          <div className={postDetailContentColumnClassName}>
             <article className="mb-12">
               <MarkdownRenderer
                 content={post.content || ""}

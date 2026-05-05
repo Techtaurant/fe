@@ -85,88 +85,17 @@ export default function PostDetailHeader({
 
   return (
     <header className="mb-8">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 mb-6"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">{t("back")}</span>
-      </button>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-medium">{t("back")}</span>
+        </button>
 
-      {categoryLabel ? (
-        hasCategoryClick ? (
-          <button
-            type="button"
-            onClick={handleCategoryClick}
-            className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/90 hover:text-foreground"
-          >
-            <span className="truncate">{categoryLabel}</span>
-          </button>
-        ) : (
-          <div className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-            <span className="truncate">{categoryLabel}</span>
-          </div>
-        )
-      ) : null}
-
-      <h1 className="text-2xl md:text-4xl font-bold text-foreground leading-tight mb-6">
-        {post.title}
-      </h1>
-
-      <div className="flex items-center gap-3 mb-1">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={hasAuthorClick ? handleAuthorClick : undefined}
-            aria-label={
-              hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
-            }
-              className={`relative h-6 w-6 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
-                hasAuthorClick
-                  ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
-                  : "cursor-default"
-              }`}
-          >
-            {post.author?.profileImageUrl ? (
-              <Image
-                src={post.author.profileImageUrl}
-                alt={post.author.name}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <span className="text-sm font-bold text-muted-foreground">
-                {post.author?.name.charAt(0) || "?"}
-              </span>
-            )}
-          </button>
-
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {hasAuthorClick ? (
-              <button
-                type="button"
-                onClick={handleAuthorClick}
-                className="font-medium text-foreground text-left hover:underline underline-offset-4"
-                aria-label={`Go to ${post.author?.name ?? "user"} page`}
-              >
-                {post.author?.name}
-              </button>
-            ) : (
-              <span className="font-medium text-foreground">{post.author?.name}</span>
-            )}
-
-            <span>•</span>
-            <span>{formatDisplayTime(post.publishedAt, locale)}</span>
-
-            {post.status === "PRIVATE" && (
-              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
-                {t("privateBadge")}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="ml-auto relative flex items-center gap-2" ref={menuRef}>
+        <div className="relative flex shrink-0 items-center gap-2" ref={menuRef}>
           <button
             type="button"
             aria-label={t("menuOpen")}
@@ -272,8 +201,84 @@ export default function PostDetailHeader({
         </div>
       </div>
 
+      <div className="mb-5 flex justify-center">
+        <div className="flex min-w-0 items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={hasAuthorClick ? handleAuthorClick : undefined}
+            aria-label={
+              hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
+            }
+            className={`relative inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted transition-all duration-150 ${
+              hasAuthorClick
+                ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
+                : "cursor-default"
+            }`}
+          >
+            {post.author?.profileImageUrl ? (
+              <Image
+                src={post.author.profileImageUrl}
+                alt={post.author.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <span className="text-sm font-bold text-muted-foreground">
+                {post.author?.name.charAt(0) || "?"}
+              </span>
+            )}
+          </button>
+
+          <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            {hasAuthorClick ? (
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="font-medium text-foreground hover:underline underline-offset-4"
+                aria-label={`Go to ${post.author?.name ?? "user"} page`}
+              >
+                {post.author?.name}
+              </button>
+            ) : (
+              <span className="font-medium text-foreground">{post.author?.name}</span>
+            )}
+
+            <span>•</span>
+            <span>{formatDisplayTime(post.publishedAt, locale)}</span>
+
+            {post.status === "PRIVATE" && (
+              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
+                {t("privateBadge")}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {categoryLabel ? (
+        <div className="mb-3 flex justify-center">
+          {hasCategoryClick ? (
+            <button
+              type="button"
+              onClick={handleCategoryClick}
+              className="inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/90 hover:text-foreground"
+            >
+              <span className="truncate">{categoryLabel}</span>
+            </button>
+          ) : (
+            <div className="inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+              <span className="truncate">{categoryLabel}</span>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      <h1 className="text-center text-2xl md:text-4xl font-bold text-foreground leading-tight mb-6">
+        {post.title}
+      </h1>
+
       {post.tags?.length ? (
-        <div className="flex flex-wrap gap-2 mt-2.5">
+        <div className="flex flex-wrap justify-center gap-2 mt-2.5">
           {post.tags?.map((tag) => (
             <button
               type="button"
