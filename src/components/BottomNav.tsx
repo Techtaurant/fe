@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "../i18n/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 
@@ -19,7 +19,6 @@ export default function MobileBottomNav({
   onWritePost,
 }: MobileBottomNavProps) {
   const t = useTranslations("BottomNav");
-  const locale = useLocale();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[350] pb-[env(safe-area-inset-bottom)]">
@@ -102,7 +101,7 @@ export default function MobileBottomNav({
             </button>
 
             <Link
-              href={`/${locale}/search`}
+              href="/search"
               className="flex flex-col items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               aria-label={t("search")}
             >

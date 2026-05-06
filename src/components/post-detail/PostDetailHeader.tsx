@@ -10,8 +10,8 @@ import { formatDisplayTime } from "../../utils";
 import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
 import UnblockActionButton from "../ui/UnblockActionButton";
 
-function buildTagRoute(locale: string, tagId: string): string {
-  return `/${locale}?mode=user&tagIds=${encodeURIComponent(tagId)}`;
+function buildTagRoute(tagId: string): string {
+  return `/?mode=user&tagIds=${encodeURIComponent(tagId)}`;
 }
 
 interface PostDetailHeaderProps {
@@ -280,7 +280,7 @@ export default function PostDetailHeader({
               key={tag.id}
               className="px-2.5 py-1 rounded-full bg-muted/85 text-sm font-semibold text-blue-500 hover:bg-muted/30 hover:text-blue-400 cursor-pointer transition-colors duration-200"
               onClick={() => {
-                router.push(buildTagRoute(locale, tag.id));
+                router.push(buildTagRoute(tag.id));
               }}
             >
               {tag.name}

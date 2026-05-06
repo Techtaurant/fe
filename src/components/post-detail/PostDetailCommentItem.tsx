@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { MoreVertical, Pencil, ThumbsDown, ThumbsUp, Trash2, UserX } from "lucide-react";
 import { useRouter } from "../../i18n/navigation";
 import { Comment } from "../../types";
-import { buildLocalizedUserPath } from "../../lib/userRoute";
+import { buildUserPath } from "../../lib/userRoute";
 import { formatDisplayTime } from "../../utils";
 import PostDetailConfirmDialog, {
   CANCEL_CONFIRM_BUTTON_CLASS_NAME,
@@ -73,7 +73,7 @@ export default function PostDetailCommentItem({
 
   const handleAuthorClick = () => {
     if (!hasAuthorPage) return;
-    void router.push(buildLocalizedUserPath(locale, comment.author.id));
+    void router.push(buildUserPath(comment.author.id));
   };
 
   const resizeEditingTextarea = (textarea: HTMLTextAreaElement) => {

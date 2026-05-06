@@ -1,13 +1,12 @@
 "use client";
 
 import { Suspense } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 
 function OAuthErrorContent() {
   const t = useTranslations("OAuthError");
-  const locale = useLocale();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -37,7 +36,7 @@ function OAuthErrorContent() {
           {getErrorDescription(errorCode)}
         </p>
         <button
-          onClick={() => router.push(`/${locale}`)}
+          onClick={() => router.push("/")}
           className="px-6 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium transition-colors duration-200 hover:bg-primary/90"
         >
           {t("backHome")}

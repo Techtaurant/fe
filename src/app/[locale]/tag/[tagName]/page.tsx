@@ -38,5 +38,8 @@ export default function LocaleTagPage({ params, searchParams }: LocaleTagPagePro
   query.set("mode", "user");
   tagIds.forEach((tagId) => query.append("tagIds", tagId));
 
-  redirect(`/${params.locale}?${query.toString()}`);
+  redirect({
+    href: `/?${query.toString()}`,
+    locale: params.locale,
+  });
 }
