@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "../i18n/navigation";
+import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "../i18n/navigation";
 import { useUserCategories } from "../hooks/useUserCategories";
 import { useTags } from "../hooks/useTags";
 import { redirectToOAuthLogin } from "../lib/authRedirect";
@@ -31,7 +31,7 @@ import {
 
 function WritePostPageContent() {
   const t = useTranslations("WritePage");
-  const locale = useLocale();
+  const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -72,9 +72,9 @@ function WritePostPageContent() {
   useEffect(() => {
     if (isUserLoading || user) return;
     redirectToOAuthLogin({
-      redirectPath: `/${locale}/post/write${window.location.search}`,
+      redirectPath: `${pathname}${window.location.search}`,
     });
-  }, [isUserLoading, locale, user]);
+  }, [isUserLoading, pathname, user]);
 
   const writeLocalSnapshot = () => {
     writeLocalDraftSnapshot(localDraftStorageKey, {
@@ -262,7 +262,10 @@ function WritePostPageContent() {
               isPublishActionDisabled={isPublishActionDisabled}
               draftCountLabel={draftBootstrap.draftCountLabel}
               showDraftActions={!isPostEditMode}
-              onGoBack={() => router.push("/?mode=user")}
+              onGoBack={() => router.push({
+                pathname: "/",
+                query: { mode: "user" },
+              })}
               onSaveDraft={() => void publishFlow.handleSubmit("DRAFT")}
               onOpenPublishModal={publishFlow.openPublishModal}
               onGoDraftList={() => router.push("/post/drafts")}

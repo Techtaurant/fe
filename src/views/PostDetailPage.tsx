@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
@@ -11,12 +11,11 @@ import { useActionSnackbar } from "../hooks/useActionSnackbar";
 import { useComments } from "../hooks/useComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { useUser } from "../hooks/useUser";
-import { buildLocalizedUserPath } from "../lib/userRoute";
+import { buildUserPath } from "../lib/userRoute";
 
 export default function PostDetailPage() {
   const t = useTranslations("PostDetailPage");
   const userPageT = useTranslations("UserPage");
-  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const routePostId = typeof params.postId === "string" ? params.postId : null;
@@ -168,20 +167,24 @@ export default function PostDetailPage() {
         createCommentFieldErrors={createCommentFieldErrors}
         currentUserId={user?.id ?? null}
         onBack={() => router.back()}
-        onEdit={() => router.push(`/${locale}/post/write?postId=${post.id}`)}
+        onEdit={() => router.push({
+          pathname: "/post/write",
+          query: { postId: post.id },
+        })}
         onCategoryClick={
           authorId && authorCategoryPath
             ? () => {
-                router.push(
-                  `${buildLocalizedUserPath(locale, authorId)}?categoryPath=${encodeURIComponent(authorCategoryPath)}`,
-                );
+                router.push({
+                  pathname: buildUserPath(authorId),
+                  query: { categoryPath: authorCategoryPath },
+                });
               }
             : undefined
         }
         onAuthorClick={
           authorId
             ? () => {
-                router.push(buildLocalizedUserPath(locale, authorId));
+                router.push(buildUserPath(authorId));
               }
             : undefined
         }
@@ -189,7 +192,10 @@ export default function PostDetailPage() {
         onDelete={async () => {
           const deleted = await handleDelete();
           if (deleted) {
-            router.replace(`/${locale}?mode=user`);
+            router.replace({
+              pathname: "/",
+              query: { mode: "user" },
+            });
             router.refresh();
           }
           return deleted;
@@ -198,7 +204,10 @@ export default function PostDetailPage() {
           setIsRedirectingAfterBlock(true);
           const result = await handleReport();
           if (result.ok && authorId) {
-            router.replace(`/${locale}/user/${authorId}?blocked=1`);
+            router.replace({
+              pathname: buildUserPath(authorId),
+              query: { blocked: "1" },
+            });
             return;
           }
 

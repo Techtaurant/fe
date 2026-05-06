@@ -170,7 +170,6 @@ export default function NotificationDropdown() {
 
   const handleNotificationClick = async (notification: NotificationListItem) => {
     const href = resolveNotificationHref({
-      locale,
       notification,
     });
 
@@ -259,7 +258,6 @@ export default function NotificationDropdown() {
               <div className="divide-y divide-border/60">
                 {notifications.map((notification) => {
                   const href = resolveNotificationHref({
-                    locale,
                     notification,
                   });
 

@@ -1,7 +1,8 @@
 import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { InfiniteData, QueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useRouter } from "../../i18n/navigation";
+import { usePathname, useRouter } from "../../i18n/navigation";
 import { redirectToOAuthLogin } from "../../lib/authRedirect";
 import { createPost, updatePost } from "../../services/posts";
 import { queryKeys } from "../../lib/queryKeys";
@@ -60,7 +61,9 @@ export function usePublishFlow({
   setIsAuthExpiredModalOpen,
   setIsPublishModalOpen,
 }: UsePublishFlowParams) {
+  const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const tPublish = useTranslations("WritePage.publish");
   const tNotice = useTranslations("WritePage.notice");
   const tError = useTranslations("WritePage.errors");
@@ -178,7 +181,10 @@ export function usePublishFlow({
         setSuccess(tPublish("published"));
       }
 
-      router.push("/?mode=user");
+      router.push({
+        pathname: "/",
+        query: { mode: "user" },
+      });
     },
     onError: (saveError, variables) => {
       const message = saveError instanceof Error ? saveError.message : "UNKNOWN";
@@ -192,19 +198,18 @@ export function usePublishFlow({
           setError(tError("resumeFailed"));
           return;
         }
-        if (typeof window !== "undefined") {
-          const currentPath = `${window.location.pathname}${window.location.search}`;
-          writePendingPublishSnapshot({
-            version: PENDING_PUBLISH_VERSION,
-            createdAt: Date.now(),
-            retried: false,
-            requestId: variables.requestId,
-            path: currentPath,
-            draftId,
-            status: pendingStatus,
-            payload: variables.payload,
-          });
-        }
+        const currentQuery = searchParams.toString();
+        const currentPath = currentQuery ? `${pathname}?${currentQuery}` : pathname;
+        writePendingPublishSnapshot({
+          version: PENDING_PUBLISH_VERSION,
+          createdAt: Date.now(),
+          retried: false,
+          requestId: variables.requestId,
+          path: currentPath,
+          draftId,
+          status: pendingStatus,
+          payload: variables.payload,
+        });
         setIsAuthExpiredModalOpen(true);
         return;
       }
@@ -229,21 +234,27 @@ export function usePublishFlow({
     const pending = readPendingPublishSnapshot();
     if (!pending) return;
 
-    if (typeof window !== "undefined") {
-      const currentPath = `${window.location.pathname}${window.location.search}`;
-      if (pending.path !== currentPath) {
-        return;
-      }
+    const currentQuery = searchParams.toString();
+    const currentPath = currentQuery ? `${pathname}?${currentQuery}` : pathname;
+    if (pending.path !== currentPath) {
+      return;
     }
 
     clearPendingPublishSnapshot();
     setIsAuthExpiredModalOpen(false);
     setAutoSaveNotice(tNotice("signedInContinue"));
-  }, [setAutoSaveNotice, setIsAuthExpiredModalOpen, tNotice, user]);
+  }, [
+    pathname,
+    searchParams,
+    setAutoSaveNotice,
+    setIsAuthExpiredModalOpen,
+    tNotice,
+    user,
+  ]);
 
   const handleGoToLogin = () => {
-    if (typeof window === "undefined") return;
-    const redirectPath = `${window.location.pathname}${window.location.search}`;
+    const query = searchParams.toString();
+    const redirectPath = query ? `${pathname}?${query}` : pathname;
     window.sessionStorage.setItem(AUTH_RETURN_TO_STORAGE_KEY, redirectPath);
     redirectToOAuthLogin({ redirectPath });
   };

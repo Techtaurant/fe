@@ -179,7 +179,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
               <button
                 type="button"
                 onClick={() => {
-                  redirectToOAuthLogin({ redirectPath: `/${locale}?settings=open` });
+                  redirectToOAuthLogin({ redirectPath: `${pathname}?settings=open` });
                 }}
                 className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >

@@ -34,14 +34,3 @@ export function buildCommunityPostPath(params: {
 
   return ["/blog", safeNickname, ...categorySegments, safePostId].join(SEGMENT_SEPARATOR);
 }
-
-export function buildLocalizedCommunityPostPath(params: {
-  locale: string;
-  nickname?: string;
-  fallbackName?: string;
-  categoryPath?: string;
-  postId: string;
-}): string {
-  const { locale, ...rest } = params;
-  return `/${encodePathSegment(locale)}${buildCommunityPostPath(rest)}`;
-}
