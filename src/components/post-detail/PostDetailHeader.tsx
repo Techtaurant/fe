@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft, Globe, Lock, Pencil, Trash2, UserX } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "../../i18n/navigation";
 import { Post } from "../../types";
 import { formatDisplayTime } from "../../utils";
 import PostDetailMenuItemButton from "./PostDetailMenuItemButton";

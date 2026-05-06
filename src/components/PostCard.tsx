@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { type MouseEvent } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "../i18n/navigation";
 import { Post } from "../types";
 import { formatDisplayTime } from "../utils";
 import { buildLocalizedCommunityPostPath } from "../lib/communityPostRoute";

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { FileText, LogOut, PenLine, Settings } from "lucide-react";
+import { usePathname, useRouter } from "../i18n/navigation";
 import { useUser } from "../hooks/useUser";
 import { buildLogoutUrl, redirectToOAuthLogin } from "../lib/authRedirect";
 import { queryKeys } from "../lib/queryKeys";

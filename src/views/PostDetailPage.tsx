@@ -1,8 +1,9 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
 import PostDetail from "../components/PostDetail";
 import ActionSnackbar from "../components/ui/ActionSnackbar";

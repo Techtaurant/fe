@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
 import PostCard from "../components/PostCard";
 import { FEED_MODES } from "../constants/feed";

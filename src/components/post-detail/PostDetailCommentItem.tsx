@@ -2,9 +2,9 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { MoreVertical, Pencil, ThumbsDown, ThumbsUp, Trash2, UserX } from "lucide-react";
+import { useRouter } from "../../i18n/navigation";
 import { Comment } from "../../types";
 import { buildLocalizedUserPath } from "../../lib/userRoute";
 import { formatDisplayTime } from "../../utils";

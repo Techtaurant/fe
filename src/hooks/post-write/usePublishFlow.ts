@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { InfiniteData, QueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "../../i18n/navigation";
 import { redirectToOAuthLogin } from "../../lib/authRedirect";
 import { createPost, updatePost } from "../../services/posts";
 import { queryKeys } from "../../lib/queryKeys";
