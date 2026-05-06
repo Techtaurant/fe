@@ -6,7 +6,7 @@ const noRestrictedImports = {
   files: ["**/*.{js,mjs,cjs,ts,tsx,jsx}"],
   rules: {
     "no-restricted-imports": [
-      "warn",
+      "error",
       {
         paths: [
           {
@@ -14,8 +14,12 @@ const noRestrictedImports = {
             message: "'@/i18n/navigation'의 Link를 사용하세요.",
           },
           {
+            name: "next/router",
+            message: "'@/i18n/navigation'의 내비게이션 유틸을 사용하세요.",
+          },
+          {
             name: "next/navigation",
-            importNames: ["redirect", "usePathname", "useRouter", "getPathname"],
+            importNames: ["redirect", "permanentRedirect", "usePathname", "useRouter", "getPathname"],
             message: "'@/i18n/navigation'의 내비게이션 유틸을 사용하세요.",
           },
         ],
