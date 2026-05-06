@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { type MouseEvent } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "../i18n/navigation";
 import { Post } from "../types";
 import { formatDisplayTime } from "../utils";
-import { buildLocalizedCommunityPostPath } from "../lib/communityPostRoute";
-import { buildLocalizedUserPath } from "../lib/userRoute";
+import { buildCommunityPostPath } from "../lib/communityPostRoute";
+import { buildUserPath } from "../lib/userRoute";
 
 interface PostCardProps {
   post: Post;
@@ -70,8 +70,8 @@ function sanitizePostPreview(rawContent: string): string {
     .trim();
 }
 
-function buildTagRoute(locale: string, tagId: string): string {
-  return `/${locale}?mode=user&tagIds=${encodeURIComponent(tagId)}`;
+function buildTagRoute(tagId: string): string {
+  return `/?mode=user&tagIds=${encodeURIComponent(tagId)}`;
 }
 
 export default function PostCard({
@@ -89,7 +89,7 @@ export default function PostCard({
     if (!hasAuthorPage || !post.author?.id) return;
 
     event.stopPropagation();
-    void router.push(buildLocalizedUserPath(locale, post.author.id));
+    void router.push(buildUserPath(post.author.id));
   };
 
   const handleCardClick = () => {
@@ -100,8 +100,7 @@ export default function PostCard({
 
     // 커뮤니티 글은 상세 페이지로, 기업 글은 외부 링크로 이동
     if (post.type === "community") {
-      router.push(buildLocalizedCommunityPostPath({
-        locale,
+      router.push(buildCommunityPostPath({
         nickname: post.author?.nickname,
         fallbackName: post.author?.name,
         categoryPath: post.categoryPath,
@@ -266,7 +265,7 @@ export default function PostCard({
                     className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/85 text-[10px] md:text-[11px] font-semibold text-blue-500 hover:bg-muted/30 hover:text-blue-400 transition-colors duration-200"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(buildTagRoute(locale, tag.id));
+                      router.push(buildTagRoute(tag.id));
                     }}
                   >
                     #{tag.name}

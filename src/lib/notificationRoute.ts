@@ -1,14 +1,10 @@
-import { buildLocalizedUserPath } from "./userRoute";
+import { buildUserPath } from "./userRoute";
 import {
   NotificationArgument,
   NotificationListItem,
   NotificationTargetType,
   NotificationType,
 } from "../services/notifications";
-
-function encodePathSegment(value: string): string {
-  return encodeURIComponent(value.trim());
-}
 
 function findTargetId(
   argumentsList: NotificationArgument[],
@@ -18,8 +14,8 @@ function findTargetId(
   return target?.targetId ?? null;
 }
 
-function buildLocalizedPostPath(locale: string, postId: string): string {
-  return `/${encodePathSegment(locale)}/post/${encodePathSegment(postId)}`;
+function buildPostPath(postId: string): string {
+  return `/post/${encodeURIComponent(postId.trim())}`;
 }
 
 function shouldRouteToPost(type: NotificationType): boolean {
@@ -27,14 +23,13 @@ function shouldRouteToPost(type: NotificationType): boolean {
 }
 
 export function resolveNotificationHref(params: {
-  locale: string;
   notification: Pick<NotificationListItem, "type" | "arguments">;
 }): string | null {
-  const { locale, notification } = params;
+  const { notification } = params;
 
   if (notification.type === "FOLLOW") {
     const userId = findTargetId(notification.arguments, "USER");
-    return userId ? buildLocalizedUserPath(locale, userId) : null;
+    return userId ? buildUserPath(userId) : null;
   }
 
   if (shouldRouteToPost(notification.type)) {
@@ -44,7 +39,7 @@ export function resolveNotificationHref(params: {
     }
 
     const commentId = findTargetId(notification.arguments, "COMMENT");
-    const basePath = buildLocalizedPostPath(locale, postId);
+    const basePath = buildPostPath(postId);
 
     if (!commentId) {
       return basePath;

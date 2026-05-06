@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 const AUTH_RETURN_TO_STORAGE_KEY = "auth:returnTo";
 const PENDING_PUBLISH_STORAGE_KEY = "post:write:pendingPublish";
@@ -14,7 +15,6 @@ function isSafeInternalPath(path: string | null): path is string {
 
 function OAuthCallbackContent() {
   const t = useTranslations("OAuthCallback");
-  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -54,8 +54,8 @@ function OAuthCallbackContent() {
       }
     }
 
-    router.replace(`/${locale}`);
-  }, [locale, router, searchParams]);
+    router.replace("/");
+  }, [router, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

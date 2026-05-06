@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Providers from "@/providers";
-import { loadMessages } from "@/i18n/loadMessages";
-import { routing } from "@/i18n/routing";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -23,18 +21,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const messages = await loadMessages(routing.defaultLocale);
+  const locale = await getLocale();
 
   return (
-    <html lang={routing.defaultLocale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${montserrat.variable} antialiased`}>
         <Providers>
-          <NextIntlClientProvider
-            locale={routing.defaultLocale}
-            messages={messages}
-          >
-            <ThemeProvider>{children}</ThemeProvider>
-          </NextIntlClientProvider>
+          <ThemeProvider>{children}</ThemeProvider>
         </Providers>
       </body>
     </html>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
 import { FEED_MODES } from "../constants/feed";
 import { useDraftPosts } from "../hooks/useDraftPosts";
@@ -22,7 +22,6 @@ function formatDateTime(value: string) {
 
 export default function DraftPostsPage() {
   const t = useTranslations("DraftsPage");
-  const locale = useLocale();
   const router = useRouter();
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
   const { user, isLoading: isUserLoading } = useUser();
@@ -73,7 +72,7 @@ export default function DraftPostsPage() {
           </div>
           <button
             type="button"
-            onClick={() => router.push(`/${locale}/post/write`)}
+            onClick={() => router.push("/post/write")}
             className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             {t("newPost")}
@@ -108,7 +107,10 @@ export default function DraftPostsPage() {
               <li key={draft.id}>
                 <button
                    type="button"
-                   onClick={() => router.push(`/${locale}/post/write?draftId=${draft.id}`)}
+                   onClick={() => router.push({
+                     pathname: "/post/write",
+                     query: { draftId: draft.id },
+                   })}
                    className="w-full rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-muted/50"
                  >
                   <h2 className="line-clamp-1 text-base font-semibold text-foreground">
