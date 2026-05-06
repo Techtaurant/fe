@@ -411,10 +411,7 @@ pnpm start
 ### 개요
 
 이 프로젝트는 프론트엔드(`localhost:3000`)와 백엔드(`localhost:8080`)가 분리된 구조입니다.
-API 통신을 위한 두 가지 방식을 지원합니다:
-
-1. **직접 백엔드 서버 연결** (현재 구현) - CORS 설정 필요
-2. **Next.js Proxy 사용** (대안) - CORS 설정 불필요
+API 통신은 `NEXT_PUBLIC_API_BASE_URL` 기반의 직접 백엔드 연결 방식을 사용합니다.
 
 ---
 
@@ -422,7 +419,7 @@ API 통신을 위한 두 가지 방식을 지원합니다:
 
 #### 특징
 
-- 브라우저에서 백엔드 서버(`http://localhost:3000`)로 직접 요청
+- 브라우저에서 백엔드 서버(`http://localhost:8080`)로 직접 요청
 - 백엔드에 CORS 설정 필수
 - 브라우저 개발자 도구에서 실제 백엔드 URL 확인 가능 (디버깅 용이)
 - `httpClient.ts`가 절대 경로로 요청
@@ -431,7 +428,7 @@ API 통신을 위한 두 가지 방식을 지원합니다:
 
 **.env.local**:
 ```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ```
 
 #### 백엔드 CORS 설정 (필수)
@@ -476,7 +473,7 @@ app.use(cors({
 
 ```javascript
 // 브라우저 콘솔 (F12)
-fetch('http://localhost:3000/api/users/me', {
+fetch('http://localhost:8080/api/users/me', {
   credentials: 'include'
 })
   .then(res => res.json())
@@ -494,7 +491,7 @@ Access-Control-Allow-Credentials: true
 
 **CORS policy 에러**:
 ```
-Access to fetch at 'http://localhost:3000/api/users/me' from origin 
+Access to fetch at 'http://localhost:8080/api/users/me' from origin 
 'http://localhost:3000' has been blocked by CORS policy
 ```
 
@@ -511,125 +508,6 @@ Access to fetch at 'http://localhost:3000/api/users/me' from origin
 1. 프론트엔드: `credentials: 'include'` 확인
 2. 백엔드: `allowCredentials(true)` 확인
 3. `allowedOrigins("*")`를 구체적인 URL로 변경
-
----
-
-### 방식 2: Next.js Proxy 사용 (대안)
-
-#### 특징
-
-- Next.js 개발 서버가 백엔드로 요청을 프록시
-- 백엔드 CORS 설정 불필요 (Same-Origin으로 인식)
-- 브라우저에는 `localhost:3000`으로 표시 (실제로는 백그라운드에서 `localhost:8080`으로 프록시)
-
-#### 설정 방법
-
-**next.config.ts**:
-```typescript
-const nextConfig: NextConfig = {
-  async rewrites() {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${apiBaseUrl}/api/:path*`,
-      },
-      {
-        source: "/open-api/:path*",
-        destination: `${apiBaseUrl}/open-api/:path*`,
-      },
-    ];
-  },
-};
-```
-
-**httpClient.ts 수정** (프록시 사용 시):
-```typescript
-// AS-IS (직접 연결)
-const fullUrl = `${API_BASE_URL}${url}`;  // http://localhost:3000/api/...
-
-// TO-BE (프록시 사용)
-const fullUrl = url;  // /api/... (상대 경로)
-```
-
-#### 동작 원리
-
-```
-1. 브라우저 (localhost:3000)
-   ↓ fetch('/api/users/me')
-   
-2. Next.js 개발 서버 (localhost:3000)
-   ↓ rewrites 규칙 적용
-   
-3. 백엔드 서버 (localhost:8080)
-   ↓ 요청 처리
-   
-4. Next.js 개발 서버 (localhost:3000)
-   ↓ 응답 프록시
-   
-5. 브라우저에 응답 전달
-```
-
-**중요**: 브라우저 개발자 도구에서는 `localhost:3000/api/users/me`로 표시되지만,
-실제로는 Next.js 서버가 백그라운드에서 `localhost:8080/api/users/me`로 프록시합니다.
-
-#### 테스트 방법
-
-1. **개발 서버 재시작** (필수):
-```bash
-npm run dev
-```
-
-2. **브라우저 콘솔에서 확인**:
-```javascript
-fetch('/api/users/me', {
-  credentials: 'include'
-})
-  .then(res => res.json())
-  .then(data => console.log('응답:', data))
-  .catch(err => console.error('에러:', err));
-```
-
-3. **백엔드 서버 로그 확인**:
-```
-GET /api/users/me 200 OK
-```
-로그가 표시되면 프록시가 정상 동작하는 것입니다.
-
-#### 올바른 요청 방식
-
-✅ **올바른 방식** (Next.js 프록시 사용):
-```typescript
-// 상대 경로로 요청
-const response = await fetch('/api/users/me', {
-  credentials: 'include'
-});
-```
-
-❌ **잘못된 방식** (직접 백엔드 호출):
-```typescript
-// CORS 에러 발생!
-const response = await fetch('http://localhost:3000/api/users/me', {
-  credentials: 'include'
-});
-```
-
----
-
-### 두 방식 비교
-
-| 항목 | 직접 연결 (현재) | Proxy (대안) |
-|------|-----------------|--------------|
-| **CORS 설정** | 백엔드에 필수 | 불필요 |
-| **설정 위치** | 백엔드 | 프론트엔드 (next.config.ts) |
-| **디버깅** | 쉬움 (실제 URL 표시) | 어려움 (프록시 URL 표시) |
-| **개발 서버** | 재시작 불필요 | 설정 변경 시 재시작 필수 |
-| **프로덕션** | 별도 CORS 설정 | 별도 프록시 설정 필요 |
-| **보안** | CORS 정책 관리 | Next.js 서버 의존 |
-
-**권장사항**:
-- 개발 환경: **직접 연결** (현재 구현) - 디버깅 용이
-- 프로덕션: 도메인이 같으면 **직접 연결**, 다르면 **CORS 설정** 또는 **API Gateway** 사용
 
 ---
 
@@ -686,7 +564,7 @@ import { httpClient, httpGet } from '@/app/utils/httpClient';
 
 // 기본 사용 (상대 경로만 전달)
 const response = await httpClient('/api/users/me');
-// 실제 요청: http://localhost:3000/api/users/me
+// 실제 요청: http://localhost:8080/api/users/me
 
 // 편의 함수 사용
 const user = await httpGet<User>('/api/users/me');
@@ -696,23 +574,23 @@ const user = await httpGet<User>('/api/users/me');
 
 1. **정상 요청**
    ```
-   Client → http://localhost:3000/api/users/me → 200 OK → Response
+   Client → http://localhost:8080/api/users/me → 200 OK → Response
    ```
 
 2. **토큰 만료 시 (Custom Status 3003)**
    ```
-   Client → http://localhost:3000/api/users/me → 401 (status: 3003)
+   Client → http://localhost:8080/api/users/me → 401 (status: 3003)
          ↓
    Check Custom Status (3003 확인)
          ↓
-   Refresh API (http://localhost:3000/open-api/auth/refresh)
+   Refresh API (http://localhost:8080/open-api/auth/refresh)
          ↓
    Success → Retry Original Request → Response
    ```
 
 3. **인증 필요 (Custom Status 3008)**
    ```
-   Client → http://localhost:3000/api/users/me → 401 (status: 3008)
+   Client → http://localhost:8080/api/users/me → 401 (status: 3008)
          ↓
    Check Custom Status (3008 확인)
          ↓
@@ -721,7 +599,7 @@ const user = await httpGet<User>('/api/users/me');
 
 4. **토큰 갱신 실패 시**
    ```
-   Client → http://localhost:3000/api/users/me → 401 (status: 3003)
+   Client → http://localhost:8080/api/users/me → 401 (status: 3003)
          ↓
    Refresh API → Failed
          ↓
