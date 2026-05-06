@@ -2,12 +2,11 @@ interface OAuthRedirectOptions {
   redirectPath?: string;
 }
 
-export function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-}
+// TODO: SSOT
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export function buildOAuthLoginUrl(origin: string, options: OAuthRedirectOptions = {}): string {
-  const url = new URL("/oauth2/authorization/google", getApiBaseUrl());
+  const url = new URL("/oauth2/authorization/google", API_BASE_URL);
   url.searchParams.set("origin", origin);
 
   if (options.redirectPath) {
@@ -18,7 +17,7 @@ export function buildOAuthLoginUrl(origin: string, options: OAuthRedirectOptions
 }
 
 export function buildApiUrl(path: string): string {
-  return new URL(path, getApiBaseUrl()).toString();
+  return new URL(path, API_BASE_URL).toString();
 }
 
 export function buildLogoutUrl(): string {
