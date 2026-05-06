@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { QueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { createPost, updatePost } from "../../services/posts";
+import { useRouter } from "../../i18n/navigation";
 import { queryKeys } from "../../lib/queryKeys";
 import { CreatePostRequest } from "../../types";
 import {

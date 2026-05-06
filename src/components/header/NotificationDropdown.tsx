@@ -2,11 +2,11 @@
 
 import { Bell, ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import { useRouter } from "../../i18n/navigation";
 import { useNotifications } from "../../hooks/useNotifications";
 import { resolveNotificationHref } from "../../lib/notificationRoute";
 import { ALLOWED_HTML_TAGS } from "../../constants/markdownAllowedHtml";

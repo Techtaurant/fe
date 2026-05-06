@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
 import { FEED_MODES } from "../constants/feed";
 import { useDraftPosts } from "../hooks/useDraftPosts";

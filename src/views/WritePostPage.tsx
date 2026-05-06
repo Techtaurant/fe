@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "../i18n/navigation";
 import { useUserCategories } from "../hooks/useUserCategories";
 import { useTags } from "../hooks/useTags";
 import { redirectToOAuthLogin } from "../lib/authRedirect";
