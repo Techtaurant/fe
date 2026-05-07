@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
 import PostCard from "../components/PostCard";
 import { FEED_MODES } from "../constants/feed";
@@ -63,7 +64,6 @@ function filterPosts(posts: Post[], query: string) {
 
 function SearchPageContent() {
   const t = useTranslations("SearchPage");
-  const locale = useLocale();
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get("q") || "";
@@ -97,10 +97,13 @@ function SearchPageContent() {
     e.preventDefault();
     const trimmed = inputValue.trim();
     if (!trimmed) {
-      router.push(`/${locale}/search`);
+      router.push("/search");
       return;
     }
-    router.push(`/${locale}/search?q=${encodeURIComponent(trimmed)}`);
+    router.push({
+      pathname: "/search",
+      query: { q: trimmed },
+    });
   };
 
   return (

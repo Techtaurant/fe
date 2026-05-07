@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { FileText, LogOut, PenLine, Settings } from "lucide-react";
+import { usePathname, useRouter } from "../i18n/navigation";
 import { useUser } from "../hooks/useUser";
 import { buildLogoutUrl, redirectToOAuthLogin } from "../lib/authRedirect";
 import { queryKeys } from "../lib/queryKeys";
-import { buildLocalizedUserPath } from "../lib/userRoute";
+import { buildUserPath } from "../lib/userRoute";
 import { FEED_MODES } from "../constants/feed";
 import { FeedMode } from "../types";
 import MobileBottomNav from "./BottomNav";
@@ -30,7 +31,6 @@ export default function Header({
   onModeChange,
 }: HeaderProps) {
   const t = useTranslations("Header");
-  const locale = useLocale();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,17 +72,23 @@ export default function Header({
     e.preventDefault();
     const trimmedQuery = searchQuery.trim();
     if (!trimmedQuery) return;
-    router.push(`/${locale}/search?q=${encodeURIComponent(trimmedQuery)}`);
+    router.push({
+      pathname: "/search",
+      query: { q: trimmedQuery },
+    });
   };
 
   const handleModeNavigate = (mode: FeedMode) => {
     onModeChange?.(mode);
-    router.push(`/${locale}?mode=${mode}`);
+    router.push({
+      pathname: "/",
+      query: { mode },
+    });
   };
 
   const handleAuthClick = () => {
     if (!isLoggedIn) {
-      redirectToOAuthLogin({ redirectPath: `/${locale}` });
+      redirectToOAuthLogin({ redirectPath: "/" });
     } else {
       setIsDropdownOpen(!isDropdownOpen);
     }
@@ -90,19 +96,19 @@ export default function Header({
 
   const handleWritePostClick = () => {
     if (isLoggedIn) {
-      router.push(`/${locale}/post/write`);
+      router.push("/post/write");
       return;
     }
-    redirectToOAuthLogin({ redirectPath: `/${locale}/post/write` });
+    redirectToOAuthLogin({ redirectPath: "/post/write" });
   };
 
   const handleMyPostsMenuClick = () => {
     if (!user) {
-      redirectToOAuthLogin({ redirectPath: `/${locale}` });
+      redirectToOAuthLogin({ redirectPath: "/" });
       return;
     }
 
-    router.push(buildLocalizedUserPath(locale, user.id));
+    router.push(buildUserPath(user.id));
     setIsDropdownOpen(false);
   };
 
@@ -128,17 +134,17 @@ export default function Header({
   };
 
   const handleLogoClick = () => {
-    window.location.href = `/${locale}`;
+    router.push("/");
   };
 
   const handleMyPostsClick = () => {
     if (!user) {
-      redirectToOAuthLogin({ redirectPath: `/${locale}` });
+      redirectToOAuthLogin({ redirectPath: "/" });
       return;
     }
 
     onModeChange?.(FEED_MODES.USER);
-    router.push(buildLocalizedUserPath(locale, user.id));
+    router.push(buildUserPath(user.id));
   };
 
   return (
