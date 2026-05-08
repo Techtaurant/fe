@@ -1,13 +1,14 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { type MouseEvent } from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "../i18n/navigation";
-import { Post } from "../types";
-import { formatDisplayTime } from "../utils";
-import { buildCommunityPostPath } from "../lib/communityPostRoute";
-import { buildUserPath } from "../lib/userRoute";
+import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
+import { type MouseEvent } from 'react';
+
+import { useRouter } from '../i18n/navigation';
+import { buildCommunityPostPath } from '../lib/communityPostRoute';
+import { buildUserPath } from '../lib/userRoute';
+import { Post } from '../types';
+import { formatDisplayTime } from '../utils';
 
 interface PostCardProps {
   post: Post;
@@ -18,55 +19,52 @@ interface PostCardProps {
 const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|apos|nbsp);/g;
 
 function decodeHtmlEntities(value: string): string {
-  return value.replace(
-    HTML_ENTITY_PATTERN,
-    (match: string, entity: string): string => {
-      if (entity === "amp") return "&";
-      if (entity === "lt") return "<";
-      if (entity === "gt") return ">";
-      if (entity === "quot") return '"';
-      if (entity === "apos") return "'";
-      return match;
-    },
-  );
+  return value.replace(HTML_ENTITY_PATTERN, (match: string, entity: string): string => {
+    if (entity === 'amp') return '&';
+    if (entity === 'lt') return '<';
+    if (entity === 'gt') return '>';
+    if (entity === 'quot') return '"';
+    if (entity === 'apos') return "'";
+    return match;
+  });
 }
 
 function sanitizePostPreview(rawContent: string): string {
-  const removeFrontMatter = rawContent.replace(/^---[\s\S]*?---\n?/m, "");
-  const removeCodeBlocks = removeFrontMatter.replace(/```[\s\S]*?```/g, "");
-  const removeComments = removeCodeBlocks.replace(/<!--([\s\S]*?)-->/g, "");
-  const removeHtmlTags = removeComments.replace(/<[^>]*>/g, "");
+  const removeFrontMatter = rawContent.replace(/^---[\s\S]*?---\n?/m, '');
+  const removeCodeBlocks = removeFrontMatter.replace(/```[\s\S]*?```/g, '');
+  const removeComments = removeCodeBlocks.replace(/<!--([\s\S]*?)-->/g, '');
+  const removeHtmlTags = removeComments.replace(/<[^>]*>/g, '');
 
-  const removeHeadings = removeHtmlTags.replace(/^\s*#{1,6}\s+/gm, "");
-  const removeTaskList = removeHeadings.replace(/^\s*[-*+]\s+\[[\sxX]\]\s+/gm, "");
+  const removeHeadings = removeHtmlTags.replace(/^\s*#{1,6}\s+/gm, '');
+  const removeTaskList = removeHeadings.replace(/^\s*[-*+]\s+\[[\sxX]\]\s+/gm, '');
   const removeListPrefix = removeTaskList
-    .replace(/^\s*[-*+\u2212]\s+/gm, "")
-    .replace(/^\s*\d+\.\s+/gm, "");
-  const removeBlockquote = removeListPrefix.replace(/^\s*>\s?/gm, "");
-  const removeImages = removeBlockquote.replace(/!\[[^\]]*\]\([^)]*\)/g, "");
-  const removeAutoLinks = removeImages.replace(/<([^>\s]+)>/g, "$1");
-  const removeLinks = removeAutoLinks.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
-  const removeReferenceLinks = removeLinks.replace(/^\[[^\]]+\]:\s*.+$/gm, "");
+    .replace(/^\s*[-*+\u2212]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '');
+  const removeBlockquote = removeListPrefix.replace(/^\s*>\s?/gm, '');
+  const removeImages = removeBlockquote.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+  const removeAutoLinks = removeImages.replace(/<([^>\s]+)>/g, '$1');
+  const removeLinks = removeAutoLinks.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
+  const removeReferenceLinks = removeLinks.replace(/^\[[^\]]+\]:\s*.+$/gm, '');
 
-  const removeCode = removeReferenceLinks.replace(/`{1,2}([^`\n]+)`{1,2}/g, "$1");
+  const removeCode = removeReferenceLinks.replace(/`{1,2}([^`\n]+)`{1,2}/g, '$1');
   const removeEmphasis = removeCode
-    .replace(/~~([\s\S]*?)~~/g, "$1")
-    .replace(/\*\*([\s\S]*?)\*\*/g, "$1")
-    .replace(/__([\s\S]*?)__/g, "$1")
-    .replace(/\*([^*\n]+)\*/g, "$1")
-    .replace(/_([^_\n]+)_/g, "$1");
+    .replace(/~~([\s\S]*?)~~/g, '$1')
+    .replace(/\*\*([\s\S]*?)\*\*/g, '$1')
+    .replace(/__([\s\S]*?)__/g, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/_([^_\n]+)_/g, '$1');
 
-  const removeEscapedChars = removeEmphasis.replace(/\\([`*_{}\[\]()#+.!-])/g, "$1");
-  const removeTableChars = removeEscapedChars.replace(/\|/g, " ");
+  const removeEscapedChars = removeEmphasis.replace(/\\([`*_{}\[\]()#+.!-])/g, '$1');
+  const removeTableChars = removeEscapedChars.replace(/\|/g, ' ');
   const removeHr = removeTableChars
-    .replace(/^\s*-{3,}\s*$/gm, "")
-    .replace(/^\s*\*{3,}\s*$/gm, "")
-    .replace(/^\s*_{3,}\s*$/gm, "");
+    .replace(/^\s*-{3,}\s*$/gm, '')
+    .replace(/^\s*\*{3,}\s*$/gm, '')
+    .replace(/^\s*_{3,}\s*$/gm, '');
 
   return decodeHtmlEntities(removeHr)
-    .replace(/\r\n?/g, "\n")
-    .replace(/\n/g, " ")
-    .replace(/\s{2,}/g, " ")
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n/g, ' ')
+    .replace(/\s{2,}/g, ' ')
     .trim();
 }
 
@@ -74,16 +72,12 @@ function buildTagRoute(tagId: string): string {
   return `/?mode=user&tagIds=${encodeURIComponent(tagId)}`;
 }
 
-export default function PostCard({
-  post,
-  onReadStatusChange,
-  currentUserId,
-}: PostCardProps) {
+export default function PostCard({ post, onReadStatusChange, currentUserId }: PostCardProps) {
   const router = useRouter();
-  const t = useTranslations("PostCard");
+  const t = useTranslations('PostCard');
   const locale = useLocale();
 
-  const hasAuthorPage = post.type === "community" && Boolean(post.author?.id);
+  const hasAuthorPage = post.type === 'community' && Boolean(post.author?.id);
 
   const handleAuthorClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (!hasAuthorPage || !post.author?.id) return;
@@ -94,25 +88,27 @@ export default function PostCard({
 
   const handleCardClick = () => {
     // 커뮤니티 게시물은 상세 페이지에서 수동으로 읽음 처리
-    if (onReadStatusChange && post.type === "company" && !post.isRead) {
+    if (onReadStatusChange && post.type === 'company' && !post.isRead) {
       onReadStatusChange(post.id, true);
     }
 
     // 커뮤니티 글은 상세 페이지로, 기업 글은 외부 링크로 이동
-    if (post.type === "community") {
-      router.push(buildCommunityPostPath({
-        nickname: post.author?.nickname,
-        fallbackName: post.author?.name,
-        categoryPath: post.categoryPath,
-        postId: post.id,
-      }));
+    if (post.type === 'community') {
+      router.push(
+        buildCommunityPostPath({
+          nickname: post.author?.nickname,
+          fallbackName: post.author?.name,
+          categoryPath: post.categoryPath,
+          postId: post.id,
+        }),
+      );
     } else {
-      window.open(post.url, "_blank");
+      window.open(post.url, '_blank');
     }
   };
 
   const formatCount = (count: number): string => {
-    if (locale === "ko") {
+    if (locale === 'ko') {
       if (count >= 10000) {
         return `${(count / 10000).toFixed(1)}만`;
       }
@@ -131,18 +127,15 @@ export default function PostCard({
   };
 
   // 작성자 정보 (기업 또는 사용자)
-  const authorName =
-    post.type === "company" ? post.techBlog?.name : post.author?.name;
+  const authorName = post.type === 'company' ? post.techBlog?.name : post.author?.name;
   const authorImage =
-    post.type === "company"
-      ? post.techBlog?.iconUrl
-      : post.author?.profileImageUrl;
-  const previewContent = post.content ? sanitizePostPreview(post.content) : "";
+    post.type === 'company' ? post.techBlog?.iconUrl : post.author?.profileImageUrl;
+  const previewContent = post.content ? sanitizePostPreview(post.content) : '';
   const previewTags = (post.tags ?? []).slice(0, 3);
   const hiddenTagCount = Math.max((post.tags?.length ?? 0) - previewTags.length, 0);
 
   const isOwnCommunityPost =
-    post.type === "community" &&
+    post.type === 'community' &&
     Boolean(currentUserId) &&
     Boolean(post.author?.id) &&
     post.author?.id === currentUserId;
@@ -150,47 +143,47 @@ export default function PostCard({
   return (
     <article
       onClick={handleCardClick}
-      className="group cursor-pointer py-4 md:py-6 border-b border-border"
+      className="group border-border cursor-pointer border-b py-4 md:py-6"
     >
-      <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-6">
+      <div className="flex flex-col-reverse gap-3 md:flex-row md:gap-6">
         {/* Content */}
         <div className="flex-1">
           {/* Header Info: Author/Blog + Date */}
-          <div className="flex items-center gap-2 mb-2 md:mb-3">
+          <div className="mb-2 flex items-center gap-2 md:mb-3">
             {hasAuthorPage ? (
               <button
                 type="button"
                 onClick={handleAuthorClick}
-                className="rounded-full cursor-pointer transition-all duration-150 hover:bg-muted/25 hover:brightness-95"
-                aria-label={`Go to ${authorName || "author"} page`}
+                className="hover:bg-muted/25 cursor-pointer rounded-full transition-all duration-150 hover:brightness-95"
+                aria-label={`Go to ${authorName || 'author'} page`}
               >
-                <div className="relative w-5 h-5 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                <div className="bg-muted relative flex h-5 w-5 items-center justify-center overflow-hidden rounded-full">
                   {authorImage ? (
                     <Image
                       src={authorImage}
-                      alt={authorName || "Profile"}
+                      alt={authorName || 'Profile'}
                       fill
                       className="object-cover"
                     />
                   ) : (
-                    <span className="text-[10px] font-bold text-muted-foreground">
-                      {(authorName || "?").charAt(0)}
+                    <span className="text-muted-foreground text-[10px] font-bold">
+                      {(authorName || '?').charAt(0)}
                     </span>
                   )}
                 </div>
               </button>
             ) : (
-              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+              <div className="bg-muted relative flex h-5 w-5 items-center justify-center overflow-hidden rounded-full">
                 {authorImage ? (
                   <Image
                     src={authorImage}
-                    alt={authorName || "Profile"}
+                    alt={authorName || 'Profile'}
                     fill
                     className="object-cover"
                   />
                 ) : (
-                  <span className="text-[10px] font-bold text-muted-foreground">
-                    {(authorName || "?").charAt(0)}
+                  <span className="text-muted-foreground text-[10px] font-bold">
+                    {(authorName || '?').charAt(0)}
                   </span>
                 )}
               </div>
@@ -200,69 +193,59 @@ export default function PostCard({
               <button
                 type="button"
                 onClick={handleAuthorClick}
-                className="text-sm font-medium text-foreground hover:underline underline-offset-4"
-                aria-label={`Go to ${authorName || "author"} page`}
+                className="text-foreground text-sm font-medium underline-offset-4 hover:underline"
+                aria-label={`Go to ${authorName || 'author'} page`}
               >
                 {authorName}
               </button>
             ) : (
-              <span className="text-sm font-medium text-foreground">
-                {authorName}
-              </span>
+              <span className="text-foreground text-sm font-medium">{authorName}</span>
             )}
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">•</span>
+            <span className="text-muted-foreground text-xs">
               {formatDisplayTime(post.publishedAt, locale)}
             </span>
-            {post.type === "community" && post.status === "PRIVATE" && (
-              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
-                {t("private")}
+            {post.type === 'community' && post.status === 'PRIVATE' && (
+              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] leading-none font-semibold text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
+                {t('private')}
               </span>
             )}
 
             {post.isRead && !isOwnCommunityPost && (
-              <span
-                className="ml-auto md:ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-muted text-xs font-medium text-muted-foreground"
-              >
-                <svg
-                  className="w-3 h-3"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
+              <span className="bg-muted text-muted-foreground ml-auto inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium md:ml-2">
+                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                     clipRule="evenodd"
                   />
                 </svg>
-                {t("read")}
+                {t('read')}
               </span>
             )}
           </div>
 
           {/* Title */}
-          <h2
-            className="text-lg md:text-xl font-bold text-foreground mb-2 md:mb-3 line-clamp-2 font-kr-serif group-hover:text-foreground"
-          >
+          <h2 className="text-foreground font-kr-serif group-hover:text-foreground mb-2 line-clamp-2 text-lg font-bold md:mb-3 md:text-xl">
             {post.title}
           </h2>
 
           {previewContent ? (
-            <p className="text-sm md:text-base text-muted-foreground mb-3 leading-relaxed whitespace-normal line-clamp-2 md:line-clamp-3">
+            <p className="text-muted-foreground mb-3 line-clamp-2 text-sm leading-relaxed whitespace-normal md:line-clamp-3 md:text-base">
               {previewContent}
             </p>
           ) : null}
 
           {/* Metadata & Tags */}
-          <div className="flex items-center gap-3 md:gap-4 flex-wrap">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
             {/* Tags */}
             {previewTags.length > 0 && (
-              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                 {previewTags.map((tag) => (
                   <button
                     type="button"
                     key={tag.id}
-                    className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/85 text-[10px] md:text-[11px] font-semibold text-blue-500 hover:bg-muted/30 hover:text-blue-400 transition-colors duration-200"
+                    className="bg-muted/85 hover:bg-muted/30 rounded-sm px-1 py-0.5 text-[10px] font-semibold text-blue-500 transition-colors duration-200 hover:text-blue-400 md:px-1.5 md:text-[11px]"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(buildTagRoute(tag.id));
@@ -272,7 +255,7 @@ export default function PostCard({
                   </button>
                 ))}
                 {hiddenTagCount > 0 && (
-                  <span className="px-1 md:px-1.5 py-0.5 rounded-sm bg-muted/70 text-[10px] md:text-[11px] text-muted-foreground">
+                  <span className="bg-muted/70 text-muted-foreground rounded-sm px-1 py-0.5 text-[10px] md:px-1.5 md:text-[11px]">
                     +{hiddenTagCount}
                   </span>
                 )}
@@ -280,18 +263,13 @@ export default function PostCard({
             )}
 
             {/* Metrics (Community Mode often shows likes/comments) */}
-            <div className="flex items-center gap-3 ml-auto md:ml-0">
+            <div className="ml-auto flex items-center gap-3 md:ml-0">
               {/* View Count */}
               <div
-                className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
-                title={t("views")}
+                className="text-muted-foreground flex items-center gap-1 text-xs md:text-sm"
+                title={t('views')}
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -311,15 +289,10 @@ export default function PostCard({
               {/* Likes (Optional) */}
               {post.likeCount !== undefined && (
                 <div
-                  className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
-                  title={t("likes")}
+                  className="text-muted-foreground flex items-center gap-1 text-xs md:text-sm"
+                  title={t('likes')}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -334,15 +307,10 @@ export default function PostCard({
               {/* Comments (Optional) */}
               {post.commentCount !== undefined && (
                 <div
-                  className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground"
-                  title={t("comments")}
+                  className="text-muted-foreground flex items-center gap-1 text-xs md:text-sm"
+                  title={t('comments')}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -359,13 +327,8 @@ export default function PostCard({
 
         {/* Thumbnail */}
         {post.thumbnailUrl && (
-          <div className="relative w-full md:w-[200px] h-[160px] md:h-[134px] flex-shrink-0 rounded-md overflow-hidden">
-            <Image
-              src={post.thumbnailUrl}
-              alt={post.title}
-              fill
-              className="object-cover"
-            />
+          <div className="relative h-[160px] w-full flex-shrink-0 overflow-hidden rounded-md md:h-[134px] md:w-[200px]">
+            <Image src={post.thumbnailUrl} alt={post.title} fill className="object-cover" />
           </div>
         )}
       </div>

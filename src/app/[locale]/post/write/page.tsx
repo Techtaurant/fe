@@ -1,1 +1,1 @@
-export { default } from "@/views/WritePostPage";
+export { default } from '@/views/WritePostPage';

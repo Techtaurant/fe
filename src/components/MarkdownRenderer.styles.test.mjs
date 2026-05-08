@@ -1,19 +1,19 @@
-import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { test } from "node:test";
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { test } from 'node:test';
 
 const markdownRendererSource = readFileSync(
-  new URL("./MarkdownRenderer.tsx", import.meta.url),
-  "utf8",
+  new URL('./MarkdownRenderer.tsx', import.meta.url),
+  'utf8',
 );
 
 function escapeRegExp(pattern) {
-  return pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function getCssRuleBody(selector) {
   const ruleMatch = markdownRendererSource.match(
-    new RegExp(`${escapeRegExp(selector)}\\s*\\{(?<body>[\\s\\S]*?)\\n\\s*\\}`, "m"),
+    new RegExp(`${escapeRegExp(selector)}\\s*\\{(?<body>[\\s\\S]*?)\\n\\s*\\}`, 'm'),
   );
 
   assert.ok(ruleMatch?.groups?.body, `${selector} CSS rule should exist`);
@@ -21,8 +21,8 @@ function getCssRuleBody(selector) {
   return ruleMatch.groups.body;
 }
 
-test("markdown links have a visible link affordance", () => {
-  const linkRuleBody = getCssRuleBody(".markdown-content a");
+test('markdown links have a visible link affordance', () => {
+  const linkRuleBody = getCssRuleBody('.markdown-content a');
 
   assert.match(linkRuleBody, /color:\s*var\(--color-blue-500\);/);
   assert.match(linkRuleBody, /text-decoration-line:\s*underline;/);
@@ -31,15 +31,12 @@ test("markdown links have a visible link affordance", () => {
   assert.doesNotMatch(linkRuleBody, /text-decoration:\s*none;/);
 });
 
-test("markdown links show hover and keyboard focus states", () => {
+test('markdown links show hover and keyboard focus states', () => {
   const interactiveRuleMatch = markdownRendererSource.match(
     /\.markdown-content a:hover,\s*\.markdown-content a:focus-visible\s*\{(?<body>[\s\S]*?)\n\s*\}/m,
   );
 
-  assert.ok(
-    interactiveRuleMatch?.groups?.body,
-    "hover and focus-visible CSS rule should exist",
-  );
+  assert.ok(interactiveRuleMatch?.groups?.body, 'hover and focus-visible CSS rule should exist');
   assert.match(interactiveRuleMatch.groups.body, /color:\s*var\(--comment-submit-button-hover\);/);
   assert.match(interactiveRuleMatch.groups.body, /background-color:/);
 

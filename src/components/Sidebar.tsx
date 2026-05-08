@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { FilterState, Tag, TechBlog, FeedMode, SortOption } from '../types';
-import SearchInput from './SearchInput';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
 import { useTags } from '../hooks/useTags';
 import { useTechBlogsTags } from '../hooks/useTechBlogsTags';
+import { FeedMode, FilterState, SortOption, Tag, TechBlog } from '../types';
+import SearchInput from './SearchInput';
 import FilterCheckboxListSkeleton from './skeleton/FilterCheckboxListSkeleton';
 
 interface SidebarProps {
@@ -55,7 +56,8 @@ export default function Sidebar({
   const { tags: fetchedTags, isLoading: isTagsLoading } = useTags(availableTags, {
     fetchAll: shouldFetchAllTags,
   });
-  const { techBlogs: fetchedTechBlogs, isLoading: isTechBlogsLoading } = useTechBlogsTags(availableTechBlogs);
+  const { techBlogs: fetchedTechBlogs, isLoading: isTechBlogsLoading } =
+    useTechBlogsTags(availableTechBlogs);
   const latestFilterStateRef = useRef(filterState);
   const shouldShowTechBlogSkeleton = isTechBlogsLoading || isTagsLoading;
   const tagItemRefs = useRef<Map<string, HTMLLabelElement>>(new Map());
@@ -91,13 +93,9 @@ export default function Sidebar({
 
   const toggleTag = (tagId: string) => {
     const normalizedTagId = tagId.toLowerCase();
-    const isSelected = filterState.selectedTags.some(
-      (id) => id.toLowerCase() === normalizedTagId,
-    );
+    const isSelected = filterState.selectedTags.some((id) => id.toLowerCase() === normalizedTagId);
     const newSelectedTags = isSelected
-      ? filterState.selectedTags.filter(
-          (id) => id.toLowerCase() !== normalizedTagId,
-        )
+      ? filterState.selectedTags.filter((id) => id.toLowerCase() !== normalizedTagId)
       : [...filterState.selectedTags, tagId];
     onFilterChange({ ...filterState, selectedTags: newSelectedTags });
   };
@@ -126,9 +124,7 @@ export default function Sidebar({
   const filteredTags = fetchedTags.filter((tag: Tag) =>
     tag.name.toLowerCase().includes(tagSearchQuery.trim().toLowerCase()),
   );
-  const selectedTagIdSet = new Set(
-    filterState.selectedTags.map((id) => id.toLowerCase()),
-  );
+  const selectedTagIdSet = new Set(filterState.selectedTags.map((id) => id.toLowerCase()));
   const orderedTags = [
     ...filteredTags.filter((tag) => selectedTagIdSet.has(tag.id.toLowerCase())),
     ...filteredTags.filter((tag) => !selectedTagIdSet.has(tag.id.toLowerCase())),
@@ -139,8 +135,7 @@ export default function Sidebar({
 
   const selectTopTag = () => {
     const topTag =
-      orderedTags.find((tag) => !selectedTagIdSet.has(tag.id.toLowerCase())) ||
-      orderedTags[0];
+      orderedTags.find((tag) => !selectedTagIdSet.has(tag.id.toLowerCase())) || orderedTags[0];
     if (!topTag) return;
     if (!selectedTagIdSet.has(topTag.id.toLowerCase())) {
       onFilterChange({
@@ -161,9 +156,7 @@ export default function Sidebar({
     }
   };
 
-  const visibleTags = showAllTags
-    ? orderedTags
-    : orderedTags.slice(0, MAX_VISIBLE_ITEMS);
+  const visibleTags = showAllTags ? orderedTags : orderedTags.slice(0, MAX_VISIBLE_ITEMS);
   const visibleTagOrderKey = visibleTags.map((tag) => tag.id).join('|');
   const visibleTechBlogs = showAllTechBlogs
     ? filteredTechBlogs
@@ -246,7 +239,7 @@ export default function Sidebar({
       {/* Backdrop (모바일만) */}
       {isOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-[350]"
+          className="fixed inset-0 z-[350] bg-black/50 md:hidden"
           onClick={onClose}
           onPointerDown={onClose}
           onTouchStart={onClose}
@@ -255,24 +248,16 @@ export default function Sidebar({
 
       {/* Sidebar / Drawer */}
       <aside
-        className={`
-          fixed md:static top-0 left-0 h-full md:h-auto
-          w-[280px] p-6 bg-sidebar
-          border-r border-border
-          overflow-y-auto
-          z-[400] md:z-auto
-          transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        `}
+        className={`bg-sidebar border-border fixed top-0 left-0 z-[400] h-full w-[280px] overflow-y-auto border-r p-6 transition-transform duration-300 ease-in-out md:static md:z-auto md:h-auto ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} `}
       >
         {/* 닫기 버튼 (모바일만) */}
         <button
           onClick={onClose}
-          className="md:hidden absolute top-4 right-4 p-2 rounded-md hover:bg-muted transition-colors duration-200"
+          className="hover:bg-muted absolute top-4 right-4 rounded-md p-2 transition-colors duration-200 md:hidden"
           aria-label={t('closeFilter')}
         >
           <svg
-            className="w-6 h-6 text-muted-foreground"
+            className="text-muted-foreground h-6 w-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -293,27 +278,25 @@ export default function Sidebar({
           <div className="mt-12 md:mt-0">
             {/* 정렬 */}
             <div className="mb-8">
-              <h3 className="text-sm font-bold mb-3 text-foreground">{t('sort.title')}</h3>
+              <h3 className="text-foreground mb-3 text-sm font-bold">{t('sort.title')}</h3>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => handleSortChange('latest')}
-                  className={`px-4 py-2 rounded-md text-sm text-left transition-colors duration-200
-                    ${
-                      filterState.sortBy === 'latest'
-                        ? 'bg-primary text-primary-foreground font-bold'
-                        : 'bg-transparent text-muted-foreground hover:bg-muted'
-                    }`}
+                  className={`rounded-md px-4 py-2 text-left text-sm transition-colors duration-200 ${
+                    filterState.sortBy === 'latest'
+                      ? 'bg-primary text-primary-foreground font-bold'
+                      : 'text-muted-foreground hover:bg-muted bg-transparent'
+                  }`}
                 >
                   {t('sort.latest')}
                 </button>
                 <button
                   onClick={() => handleSortChange('popular')}
-                  className={`px-4 py-2 rounded-md text-sm text-left transition-colors duration-200
-                    ${
-                      filterState.sortBy === 'popular'
-                        ? 'bg-primary text-primary-foreground font-bold'
-                        : 'bg-transparent text-muted-foreground hover:bg-muted'
-                    }`}
+                  className={`rounded-md px-4 py-2 text-left text-sm transition-colors duration-200 ${
+                    filterState.sortBy === 'popular'
+                      ? 'bg-primary text-primary-foreground font-bold'
+                      : 'text-muted-foreground hover:bg-muted bg-transparent'
+                  }`}
                 >
                   {t('sort.popular')}
                 </button>
@@ -322,29 +305,27 @@ export default function Sidebar({
 
             {/* 읽은 게시물 제외 */}
             <div className="mb-8">
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex cursor-pointer items-center gap-3">
                 <input
                   type="checkbox"
                   checked={filterState.hideReadPosts}
                   onChange={toggleHideReadPosts}
-                  className="w-5 h-5 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                  className="border-border text-foreground focus:ring-ring h-5 w-5 rounded focus:ring-2 focus:ring-offset-0"
                 />
-                <span className="text-sm text-muted-foreground">
-                  {t('hideReadPosts')}
-                </span>
+                <span className="text-muted-foreground text-sm">{t('hideReadPosts')}</span>
               </label>
             </div>
 
-             {/* 기술 블로그 필터 */}
-             <div className="mb-8">
-               <h3 className="text-sm font-bold mb-3 text-foreground">{t('techBlog.title')}</h3>
-               <div className="mb-3">
-                 <SearchInput
-                    placeholder={t('techBlog.searchPlaceholder')}
-                    value={techBlogSearchQuery}
-                    onChange={setTechBlogSearchQuery}
-                    onEnter={selectTopTechBlog}
-                 />
+            {/* 기술 블로그 필터 */}
+            <div className="mb-8">
+              <h3 className="text-foreground mb-3 text-sm font-bold">{t('techBlog.title')}</h3>
+              <div className="mb-3">
+                <SearchInput
+                  placeholder={t('techBlog.searchPlaceholder')}
+                  value={techBlogSearchQuery}
+                  onChange={setTechBlogSearchQuery}
+                  onEnter={selectTopTechBlog}
+                />
               </div>
               <div className="flex flex-col gap-2">
                 {shouldShowTechBlogSkeleton ? (
@@ -353,26 +334,24 @@ export default function Sidebar({
                   visibleTechBlogs.map((blog: TechBlog) => (
                     <label
                       key={blog.id}
-                      className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
+                      className="hover:bg-muted flex cursor-pointer items-center gap-3 rounded px-2 py-1 transition-colors duration-200"
                     >
                       <input
                         type="checkbox"
                         checked={filterState.selectedTechBlogs.includes(blog.id)}
                         onChange={() => toggleTechBlog(blog.id)}
-                        className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                        className="border-border text-foreground focus:ring-ring h-4 w-4 rounded focus:ring-2 focus:ring-offset-0"
                       />
-                      <span className="text-sm text-muted-foreground">
-                        {blog.name}
-                      </span>
+                      <span className="text-muted-foreground text-sm">{blog.name}</span>
                     </label>
                   ))
                 )}
                 {!shouldShowTechBlogSkeleton && filteredTechBlogs.length > MAX_VISIBLE_ITEMS && (
                   <button
                     onClick={() => setShowAllTechBlogs((prev) => !prev)}
-                    className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
+                    className="text-muted-foreground hover:bg-muted mt-2 rounded-md bg-transparent px-4 py-2 text-sm transition-colors duration-200"
                   >
-                     {showAllTechBlogs
+                    {showAllTechBlogs
                       ? t('collapse')
                       : t('showMoreCount', { count: filteredTechBlogs.length - MAX_VISIBLE_ITEMS })}
                   </button>
@@ -382,20 +361,19 @@ export default function Sidebar({
           </div>
         )}
 
-
         {/* =================================================================
            COMMUNITY MODE UI (New Requirements)
            ================================================================= */}
         {mode === 'user' && (
           <div className="mt-12 md:mt-0">
-             {/* 사용자 검색 */}
-             <div className="mb-8">
-               <h3 className="text-sm font-bold mb-3 text-foreground">{t('userSearch.title')}</h3>
-               <SearchInput
-                 placeholder={t('userSearch.placeholder')}
-                 value={userSearchQuery}
-                 onChange={setUserSearchQuery}
-               />
+            {/* 사용자 검색 */}
+            <div className="mb-8">
+              <h3 className="text-foreground mb-3 text-sm font-bold">{t('userSearch.title')}</h3>
+              <SearchInput
+                placeholder={t('userSearch.placeholder')}
+                value={userSearchQuery}
+                onChange={setUserSearchQuery}
+              />
             </div>
           </div>
         )}
@@ -405,7 +383,7 @@ export default function Sidebar({
            ================================================================= */}
         {/* 태그 필터 */}
         <div className="mb-8">
-          <h3 className="text-sm font-bold mb-3 text-foreground">{t('tag.title')}</h3>
+          <h3 className="text-foreground mb-3 text-sm font-bold">{t('tag.title')}</h3>
           <div className="mb-3">
             <SearchInput
               placeholder={t('tag.searchPlaceholder')}
@@ -429,26 +407,24 @@ export default function Sidebar({
 
                     tagItemRefs.current.set(tag.id, element);
                   }}
-                  className="flex items-center gap-3 cursor-pointer px-2 py-1 rounded hover:bg-muted transition-colors duration-200"
+                  className="hover:bg-muted flex cursor-pointer items-center gap-3 rounded px-2 py-1 transition-colors duration-200"
                 >
-                    <input
-                      type="checkbox"
-                      checked={filterState.selectedTags.some(
-                        (id) => id.toLowerCase() === tag.id.toLowerCase(),
-                      )}
-                      onChange={() => toggleTag(tag.id)}
-                      className="w-4 h-4 rounded border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0"
-                    />
-                  <span className="text-sm text-muted-foreground">
-                    {tag.name}
-                  </span>
+                  <input
+                    type="checkbox"
+                    checked={filterState.selectedTags.some(
+                      (id) => id.toLowerCase() === tag.id.toLowerCase(),
+                    )}
+                    onChange={() => toggleTag(tag.id)}
+                    className="border-border text-foreground focus:ring-ring h-4 w-4 rounded focus:ring-2 focus:ring-offset-0"
+                  />
+                  <span className="text-muted-foreground text-sm">{tag.name}</span>
                 </label>
               ))
             )}
             {orderedTags.length > MAX_VISIBLE_ITEMS && (
               <button
                 onClick={handleToggleShowAllTags}
-                className="mt-2 px-4 py-2 rounded-md text-sm text-muted-foreground bg-transparent hover:bg-muted transition-colors duration-200"
+                className="text-muted-foreground hover:bg-muted mt-2 rounded-md bg-transparent px-4 py-2 text-sm transition-colors duration-200"
               >
                 {showAllTags
                   ? t('collapse')

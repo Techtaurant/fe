@@ -1,10 +1,10 @@
-import { buildUserPath } from "./userRoute";
 import {
   NotificationArgument,
   NotificationListItem,
   NotificationTargetType,
   NotificationType,
-} from "../services/notifications";
+} from '../services/notifications';
+import { buildUserPath } from './userRoute';
 
 function findTargetId(
   argumentsList: NotificationArgument[],
@@ -19,26 +19,26 @@ function buildPostPath(postId: string): string {
 }
 
 function shouldRouteToPost(type: NotificationType): boolean {
-  return type === "POST_COMMENT" || type === "COMMENT_REPLY" || type === "FOLLOWER_POST";
+  return type === 'POST_COMMENT' || type === 'COMMENT_REPLY' || type === 'FOLLOWER_POST';
 }
 
 export function resolveNotificationHref(params: {
-  notification: Pick<NotificationListItem, "type" | "arguments">;
+  notification: Pick<NotificationListItem, 'type' | 'arguments'>;
 }): string | null {
   const { notification } = params;
 
-  if (notification.type === "FOLLOW") {
-    const userId = findTargetId(notification.arguments, "USER");
+  if (notification.type === 'FOLLOW') {
+    const userId = findTargetId(notification.arguments, 'USER');
     return userId ? buildUserPath(userId) : null;
   }
 
   if (shouldRouteToPost(notification.type)) {
-    const postId = findTargetId(notification.arguments, "POST");
+    const postId = findTargetId(notification.arguments, 'POST');
     if (!postId) {
       return null;
     }
 
-    const commentId = findTargetId(notification.arguments, "COMMENT");
+    const commentId = findTargetId(notification.arguments, 'COMMENT');
     const basePath = buildPostPath(postId);
 
     if (!commentId) {

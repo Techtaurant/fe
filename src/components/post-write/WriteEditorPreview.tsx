@@ -1,19 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type {
-  ChangeEvent,
-  Dispatch,
-  DragEvent,
-  SetStateAction,
-} from "react";
-import { useTranslations } from "next-intl";
-import { ImagePlus } from "lucide-react";
-import MarkdownRenderer from "../MarkdownRenderer";
-import { FieldErrors } from "../../lib/post-write/types";
-import type { UploadedAttachment } from "../../services/attachments";
-import { fetchAttachmentPreviewUrl } from "../../services/attachments";
+import { ImagePlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import type { ChangeEvent, Dispatch, DragEvent, SetStateAction } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-const ATTACHMENT_ID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { FieldErrors } from '../../lib/post-write/types';
+import type { UploadedAttachment } from '../../services/attachments';
+import { fetchAttachmentPreviewUrl } from '../../services/attachments';
+import MarkdownRenderer from '../MarkdownRenderer';
+
+const ATTACHMENT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MARKDOWN_IMAGE_PATTERN = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g;
 const HTML_IMAGE_PATTERN = /(<img[^>]+src=["'])([^"']+)(["'][^>]*>)/gi;
 
@@ -30,9 +25,7 @@ interface WriteEditorPreviewProps {
 }
 
 function buildImageMarkdown(images: UploadedAttachment[]) {
-  return images
-    .map(({ attachmentId, fileName }) => `![${fileName}](${attachmentId})`)
-    .join("\n\n");
+  return images.map(({ attachmentId, fileName }) => `![${fileName}](${attachmentId})`).join('\n\n');
 }
 
 function extractAttachmentIds(content: string): string[] {
@@ -66,13 +59,13 @@ export default function WriteEditorPreview({
   onUploadImages,
   onClearUploadError,
 }: WriteEditorPreviewProps) {
-  const t = useTranslations("WritePage.editor");
+  const t = useTranslations('WritePage.editor');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
-  const [previewUrlByAttachmentId, setPreviewUrlByAttachmentId] = useState<
-    Record<string, string>
-  >({});
+  const [previewUrlByAttachmentId, setPreviewUrlByAttachmentId] = useState<Record<string, string>>(
+    {},
+  );
   const loadingAttachmentIdsRef = useRef<Set<string>>(new Set());
   const objectPreviewUrlByAttachmentIdRef = useRef<Map<string, string>>(new Map());
   const attachmentIdsInContent = useMemo(() => extractAttachmentIds(content), [content]);
@@ -187,7 +180,7 @@ export default function WriteEditorPreview({
       }
 
       nextPreviewUrlByAttachmentId[attachmentId] = previewUrl;
-      if (previewUrl.startsWith("blob:")) {
+      if (previewUrl.startsWith('blob:')) {
         objectPreviewUrlByAttachmentIdRef.current.set(attachmentId, previewUrl);
       }
     });
@@ -219,8 +212,8 @@ export default function WriteEditorPreview({
     const selectionEnd = textarea.selectionEnd ?? content.length;
     const before = content.slice(0, selectionStart);
     const after = content.slice(selectionEnd);
-    const prefix = before.length > 0 && !before.endsWith("\n") ? "\n\n" : "";
-    const suffix = after.length > 0 && !after.startsWith("\n") ? "\n\n" : "";
+    const prefix = before.length > 0 && !before.endsWith('\n') ? '\n\n' : '';
+    const suffix = after.length > 0 && !after.startsWith('\n') ? '\n\n' : '';
     const nextValue = `${before}${prefix}${imageMarkdown}${suffix}${after}`;
     const nextCursor = before.length + prefix.length + imageMarkdown.length;
 
@@ -255,7 +248,7 @@ export default function WriteEditorPreview({
     try {
       await handleImageFiles(files);
     } finally {
-      event.target.value = "";
+      event.target.value = '';
     }
   };
 
@@ -288,8 +281,8 @@ export default function WriteEditorPreview({
         onDrop={(event) => {
           void handleDrop(event);
         }}
-        className={`flex min-h-[420px] flex-col bg-background px-4 transition-colors md:px-5 xl:min-h-screen xl:px-6 ${
-          isDragActive ? "bg-primary/5" : ""
+        className={`bg-background flex min-h-[420px] flex-col px-4 transition-colors md:px-5 xl:min-h-screen xl:px-6 ${
+          isDragActive ? 'bg-primary/5' : ''
         }`}
       >
         {editorHeader && <div className="mb-6">{editorHeader}</div>}
@@ -303,14 +296,14 @@ export default function WriteEditorPreview({
             void handleFileChange(event);
           }}
         />
-        <div className="flex-1 overflow-hidden bg-background">
+        <div className="bg-background flex-1 overflow-hidden">
           <div className="relative h-full">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="absolute right-1 top-6 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-foreground text-background transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60 md:right-1 md:top-8"
-              aria-label={isUploading ? t("uploading") : t("addImage")}
+              className="bg-foreground text-background absolute top-6 right-1 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60 md:top-8 md:right-1"
+              aria-label={isUploading ? t('uploading') : t('addImage')}
             >
               <ImagePlus className="h-4 w-4" />
             </button>
@@ -324,32 +317,27 @@ export default function WriteEditorPreview({
                   setFieldErrors((prev) => ({ ...prev, content: false }));
                 }
               }}
-              placeholder={t("contentPlaceholder")}
-              className={`h-full min-h-[420px] w-full resize-none border-0 bg-transparent px-0 py-6 pr-12 font-mono text-base leading-8 text-foreground placeholder:text-muted-foreground placeholder:whitespace-pre focus:outline-none md:py-8 md:pr-12 md:text-[15px] ${
-                fieldErrors.content ? "outline outline-1 outline-red-500 outline-offset-[-1px]" : ""
+              placeholder={t('contentPlaceholder')}
+              className={`text-foreground placeholder:text-muted-foreground h-full min-h-[420px] w-full resize-none border-0 bg-transparent px-0 py-6 pr-12 font-mono text-base leading-8 placeholder:whitespace-pre focus:outline-none md:py-8 md:pr-12 md:text-[15px] ${
+                fieldErrors.content ? 'outline outline-1 outline-offset-[-1px] outline-red-500' : ''
               }`}
             />
           </div>
         </div>
-        {uploadError && (
-          <p className="mt-4 text-sm font-medium text-red-600">{uploadError}</p>
-        )}
+        {uploadError && <p className="mt-4 text-sm font-medium text-red-600">{uploadError}</p>}
         {fieldErrors.content && (
-          <p className="mt-2 text-sm font-medium text-red-600">{t("contentRequired")}</p>
+          <p className="mt-2 text-sm font-medium text-red-600">{t('contentRequired')}</p>
         )}
       </div>
 
-      <div className="min-h-[100dvh] bg-[#F4F7F4] dark:bg-zinc-800/40 xl:min-h-screen">
+      <div className="min-h-[100dvh] bg-[#F4F7F4] xl:min-h-screen dark:bg-zinc-800/40">
         <div className="min-h-[100dvh] overflow-hidden bg-transparent xl:min-h-screen">
           <div className="min-h-[100dvh] px-5 py-6 md:px-8 xl:h-full xl:min-h-screen xl:overflow-y-auto xl:px-12 xl:py-8">
-              {content ? (
-                <MarkdownRenderer
-                  content={content}
-                  resolveImageSrc={resolvePreviewImageSrc}
-                />
-              ) : (
-                <div className="min-h-[240px]" />
-              )}
+            {content ? (
+              <MarkdownRenderer content={content} resolveImageSrc={resolvePreviewImageSrc} />
+            ) : (
+              <div className="min-h-[240px]" />
+            )}
           </div>
         </div>
       </div>

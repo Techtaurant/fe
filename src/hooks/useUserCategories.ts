@@ -1,8 +1,9 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "../lib/queryKeys";
-import { UserCategory } from "../services/posts/types";
-import { fetchUserCategories } from "../services/posts";
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+
+import { queryKeys } from '../lib/queryKeys';
+import { fetchUserCategories } from '../services/posts';
+import { UserCategory } from '../services/posts/types';
 
 interface UseUserCategoriesOptions {
   enabled: boolean;
@@ -17,7 +18,7 @@ interface UseUserCategoriesResult {
 }
 
 export function normalizeCategoryPath(path: string): string {
-  return path.trim().replace(/^\/+|\/+$/g, "");
+  return path.trim().replace(/^\/+|\/+$/g, '');
 }
 
 export function isPlaceholderCategoryPath(path: string): boolean {
@@ -26,9 +27,12 @@ export function isPlaceholderCategoryPath(path: string): boolean {
     return true;
   }
 
-  return normalized === "placeholder" || normalized.includes("/placeholder/")
-    || normalized.startsWith("placeholder/")
-    || normalized.endsWith("/placeholder");
+  return (
+    normalized === 'placeholder' ||
+    normalized.includes('/placeholder/') ||
+    normalized.startsWith('placeholder/') ||
+    normalized.endsWith('/placeholder')
+  );
 }
 
 export function useUserCategories({
@@ -46,14 +50,13 @@ export function useUserCategories({
   });
 
   const categories = useMemo<UserCategory[]>(
-    () =>
-      (query.data ?? []).filter((category) => !isPlaceholderCategoryPath(category.path)),
+    () => (query.data ?? []).filter((category) => !isPlaceholderCategoryPath(category.path)),
     [query.data],
   );
 
   return {
     categories,
     isLoading: query.isPending,
-    error: query.error ? "카테고리를 가져오지 못했습니다." : null,
+    error: query.error ? '카테고리를 가져오지 못했습니다.' : null,
   };
 }

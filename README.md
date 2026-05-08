@@ -74,10 +74,10 @@ prd/
 
 ### Header (`app/components/Header.tsx`)
 
-**위치**: 상단 고정 헤더
-**역할**: 로고, 검색, 사용자 인증 UI 제공
+**위치**: 상단 고정 헤더 **역할**: 로고, 검색, 사용자 인증 UI 제공
 
 **주요 기능**:
+
 - Techtaurant 로고 (Montserrat Bold, 클릭 시 홈 이동)
 - 검색창 (Medium 스타일)
 - 마이페이지/로그인 버튼 (로그인 상태에 따라 변경)
@@ -88,10 +88,10 @@ prd/
 
 ### Filter (`app/components/Filter.tsx`)
 
-**위치**: 좌측 사이드바 (고정, 280px)
-**역할**: 게시물 필터링 및 정렬 옵션 제공
+**위치**: 좌측 사이드바 (고정, 280px) **역할**: 게시물 필터링 및 정렬 옵션 제공
 
 **Props**:
+
 ```typescript
 interface FilterProps {
   filterState: FilterState;
@@ -102,6 +102,7 @@ interface FilterProps {
 ```
 
 **주요 기능**:
+
 - 정렬 옵션 (최신순)
 - 읽은 게시물 제외 토글
 - 태그 필터 (최대 5개 노출, 더보기 버튼)
@@ -109,6 +110,7 @@ interface FilterProps {
 - SelectDialog 통합
 
 **동작**:
+
 1. 최대 5개 항목만 표시
 2. 더보기 버튼 클릭 시 SelectDialog 오픈
 3. 선택된 항목은 체크박스로 표시
@@ -117,10 +119,10 @@ interface FilterProps {
 
 ### PostCard (`app/components/PostCard.tsx`)
 
-**위치**: 메인 컨텐츠 영역
-**역할**: 개별 게시물 정보 표시
+**위치**: 메인 컨텐츠 영역 **역할**: 개별 게시물 정보 표시
 
 **Props**:
+
 ```typescript
 interface PostCardProps {
   post: Post;
@@ -129,6 +131,7 @@ interface PostCardProps {
 ```
 
 **표시 정보**:
+
 - 테크 블로그 아이콘 + 이름
 - 게시물 제목
 - 썸네일 이미지 (선택적)
@@ -137,6 +140,7 @@ interface PostCardProps {
 - 읽음 표시 뱃지
 
 **동작**:
+
 - 카드 클릭 시 새 탭에서 게시물 열기
 - 클릭 시 읽음 상태로 자동 변경
 - 호버 시 배경색 변경
@@ -145,10 +149,10 @@ interface PostCardProps {
 
 ### SelectDialog (`app/components/SelectDialog.tsx`)
 
-**위치**: Modal (z-index: 500)
-**역할**: 검색 가능한 다중 선택 다이얼로그
+**위치**: Modal (z-index: 500) **역할**: 검색 가능한 다중 선택 다이얼로그
 
 **Props**:
+
 ```typescript
 interface SelectDialogProps<T extends SelectDialogItem> {
   isOpen: boolean;
@@ -162,6 +166,7 @@ interface SelectDialogProps<T extends SelectDialogItem> {
 ```
 
 **주요 기능**:
+
 - 실시간 검색 필터링
 - 다중 선택 (체크박스)
 - 선택된 항목 카운트 표시
@@ -170,6 +175,7 @@ interface SelectDialogProps<T extends SelectDialogItem> {
 - body 스크롤 잠금
 
 **디자인**:
+
 - 최대 너비: 480px
 - 최대 높이: 640px
 - 배경: 반투명 검정색 백드롭
@@ -182,6 +188,7 @@ interface SelectDialogProps<T extends SelectDialogItem> {
 **역할**: 전체 레이아웃 및 상태 관리
 
 **구조**:
+
 ```typescript
 <Header />
 <div className="flex">
@@ -195,10 +202,12 @@ interface SelectDialogProps<T extends SelectDialogItem> {
 ```
 
 **상태 관리**:
+
 - `filterState`: 필터 상태 (정렬, 읽은 게시물 제외, 선택된 태그/블로그)
 - `posts`: 게시물 목록
 
 **로직**:
+
 1. **필터링**: 읽은 게시물 제외, 태그/기술블로그 필터
 2. **정렬**: 최신순 (publishedAt), 인기순 (viewCount)
 3. **읽음 처리**: PostCard 클릭 시 상태 업데이트
@@ -208,6 +217,7 @@ interface SelectDialogProps<T extends SelectDialogItem> {
 ## 타입 정의 (`app/types/index.ts`)
 
 ### Tag
+
 ```typescript
 interface Tag {
   id: string;
@@ -216,6 +226,7 @@ interface Tag {
 ```
 
 ### TechBlog
+
 ```typescript
 interface TechBlog {
   id: string;
@@ -225,6 +236,7 @@ interface TechBlog {
 ```
 
 ### Post
+
 ```typescript
 interface Post {
   id: string;
@@ -240,6 +252,7 @@ interface Post {
 ```
 
 ### FilterState
+
 ```typescript
 interface FilterState {
   sortBy: 'latest' | 'popular';
@@ -256,26 +269,31 @@ interface FilterState {
 **기반**: Medium 스타일 인터페이스 (`prd/design-system.json`)
 
 ### 색상 팔레트
+
 - **Primary**: Black (#000000), White (#FFFFFF)
 - **Accent**: Gold (#FFC017), Green (#03A87C)
 - **Gray Scale**: 50-800 (9단계)
 
 ### 타이포그래피
+
 - **Serif**: Charter (컨텐츠용)
 - **Sans-Serif**: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto (UI용)
 - **Logo**: Montserrat Bold (브랜드용)
 
 ### 스페이싱
+
 - **Base Unit**: 8px
 - **Scale**: 8px, 12px, 16px, 24px, 32px, 48px, 64px, 80px
 
 ### Border Radius
+
 - **sm**: 4px (뱃지, 태그)
 - **md**: 8px (카드, 버튼)
 - **pill**: 24px (검색창, 주요 버튼)
 - **full**: 9999px (아이콘 버튼, 아바타)
 
 ### Z-Index
+
 - **Base**: 0
 - **Dropdown**: 100
 - **Sticky**: 200
@@ -292,12 +310,14 @@ interface FilterState {
 **역할**: macOS에서 자동으로 mkcert를 설치하고 SSL 인증서를 생성하는 보조 스크립트
 
 **동작**:
+
 1. mkcert 설치 여부 확인
 2. 없으면 Homebrew로 자동 설치
 3. 로컬 CA 등록
 4. SSL 인증서 생성 (`conf/ssl/server.key`, `conf/ssl/server.crt`)
 
 **현재 프로젝트에서는 사용하지 않습니다.**
+
 - 대신 직접 `mkcert localhost 127.0.0.1` 명령어 사용
 - 인증서는 프로젝트 루트에 생성 (`localhost+1.pem`, `localhost+1-key.pem`)
 
@@ -306,6 +326,7 @@ interface FilterState {
 ## 실행 방법
 
 ### 개발 서버 (HTTP)
+
 ```bash
 pnpm install
 pnpm dev
@@ -316,15 +337,18 @@ pnpm dev
 OAuth 2.0 테스트 시 HTTPS가 필요합니다.
 
 #### 1. 로컬 SSL 인증서 생성 (처음 1회만)
+
 ```bash
 mkcert localhost 127.0.0.1
 ```
 
 생성 파일:
+
 - `localhost+1.pem` (인증서)
 - `localhost+1-key.pem` (개인 키)
 
 #### 2. HTTPS 개발 서버 실행
+
 ```bash
 pnpm dev:https
 ```
@@ -334,11 +358,13 @@ pnpm dev:https
 > ⚠️ 자체 서명 인증서이므로 브라우저에서 보안 경고가 나타날 수 있습니다. 무시하고 진행하면 됩니다.
 
 ### 빌드
+
 ```bash
 pnpm build
 ```
 
 ### 프로덕션 실행
+
 ```bash
 pnpm start
 ```
@@ -348,25 +374,30 @@ pnpm start
 ## 주요 기능
 
 ### 1. 필터링
+
 - **태그 필터**: 다중 선택 가능, 검색 지원
 - **기술 블로그 필터**: 다중 선택 가능, 검색 지원
 - **읽은 게시물 제외**: 토글 방식
 
 ### 2. 정렬
+
 - **최신순**: 발행일 기준 내림차순
 - **인기순**: 조회수 기준 내림차순
 
 ### 3. 게시물 카드
+
 - 클릭 시 새 탭에서 열기
 - 자동 읽음 처리
 - 조회수 포맷팅 (천/만 단위)
 
 ### 4. 검색 다이얼로그
+
 - 실시간 검색
 - 다중 선택
 - 키보드 접근성 (ESC 키)
 
 ### 5. 게시물 상세 ToC
+
 - 충분히 넓은 화면에서만 게시물 본문 오른쪽에 목차 표시
 - 목차가 있어도 게시물 본문은 화면 중앙 위치 유지
 - 작은 화면에서는 오른쪽 상단 ToC 아이콘으로 목차 다이얼로그 표시
@@ -377,6 +408,7 @@ pnpm start
 - 현재 스크롤 중인 섹션을 목차에서 굵게 표시
 
 ### 6. 상세 페이지 스크롤 정렬
+
 - ToC 클릭 시 선택한 섹션이 상단 헤더 바로 아래에 오도록 정렬
 - 해시 직접 진입/새로고침 시에도 동일한 위치 정렬 유지
 - 화면 높이가 작아도 마지막 섹션까지 정렬 가능하도록 하단 여백을 viewport 기준으로 보강
@@ -386,11 +418,13 @@ pnpm start
 ## 개발 원칙
 
 ### KISS (Keep It Simple, Stupid)
+
 - 함수는 한 가지 일만 수행
 - 함수 길이 50줄 이하 유지
 - 자기 설명적 코드 작성
 
 ### YAGNI (You Aren't Gonna Need It)
+
 - 명시적으로 요구된 기능만 구현
 - 3번 반복 시 추상화 고려
 
@@ -410,8 +444,8 @@ pnpm start
 
 ### 개요
 
-이 프로젝트는 프론트엔드(`localhost:3000`)와 백엔드(`localhost:8080`)가 분리된 구조입니다.
-API 통신은 `NEXT_PUBLIC_API_BASE_URL` 기반의 직접 백엔드 연결 방식을 사용합니다.
+이 프로젝트는 프론트엔드(`localhost:3000`)와 백엔드(`localhost:8080`)가 분리된 구조입니다. API
+통신은 `NEXT_PUBLIC_API_BASE_URL` 기반의 직접 백엔드 연결 방식을 사용합니다.
 
 ---
 
@@ -427,6 +461,7 @@ API 통신은 `NEXT_PUBLIC_API_BASE_URL` 기반의 직접 백엔드 연결 방�
 #### 환경 설정
 
 **.env.local**:
+
 ```bash
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ```
@@ -455,12 +490,14 @@ public class WebConfig implements WebMvcConfigurer {
 ```javascript
 const cors = require('cors');
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,  // 쿠키 허용 (중요!)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true, // 쿠키 허용 (중요!)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
+);
 ```
 
 #### 중요 설정
@@ -474,14 +511,15 @@ app.use(cors({
 ```javascript
 // 브라우저 콘솔 (F12)
 fetch('http://localhost:8080/api/users/me', {
-  credentials: 'include'
+  credentials: 'include',
 })
-  .then(res => res.json())
-  .then(data => console.log('✅ CORS 성공:', data))
-  .catch(err => console.error('❌ CORS 에러:', err));
+  .then((res) => res.json())
+  .then((data) => console.log('✅ CORS 성공:', data))
+  .catch((err) => console.error('❌ CORS 에러:', err));
 ```
 
 Response Headers 확인:
+
 ```
 Access-Control-Allow-Origin: http://localhost:3000
 Access-Control-Allow-Credentials: true
@@ -490,21 +528,25 @@ Access-Control-Allow-Credentials: true
 #### 트러블슈팅
 
 **CORS policy 에러**:
+
 ```
-Access to fetch at 'http://localhost:8080/api/users/me' from origin 
+Access to fetch at 'http://localhost:8080/api/users/me' from origin
 'http://localhost:3000' has been blocked by CORS policy
 ```
 
 해결:
+
 1. 백엔드 CORS 설정 확인
 2. `allowedOrigins`에 `http://localhost:3000` 포함 확인
 3. `allowCredentials(true)` 설정 확인
 
 **Preflight 요청 실패** (OPTIONS 403):
+
 - OPTIONS 메서드를 `allowedMethods`에 추가
 - Spring Security 사용 시 OPTIONS 요청 허용
 
 **쿠키가 전송되지 않음**:
+
 1. 프론트엔드: `credentials: 'include'` 확인
 2. 백엔드: `allowCredentials(true)` 확인
 3. `allowedOrigins("*")`를 구체적인 URL로 변경
@@ -515,8 +557,7 @@ Access to fetch at 'http://localhost:8080/api/users/me' from origin
 
 ### HTTP 클라이언트 (`app/utils/httpClient.ts`)
 
-**역할**: API 요청 및 자동 토큰 갱신 처리
-**위치**: `app/utils/httpClient.ts`
+**역할**: API 요청 및 자동 토큰 갱신 처리 **위치**: `app/utils/httpClient.ts`
 
 #### 주요 기능
 
@@ -573,11 +614,13 @@ const user = await httpGet<User>('/api/users/me');
 #### 동작 흐름
 
 1. **정상 요청**
+
    ```
    Client → http://localhost:8080/api/users/me → 200 OK → Response
    ```
 
 2. **토큰 만료 시 (Custom Status 3003)**
+
    ```
    Client → http://localhost:8080/api/users/me → 401 (status: 3003)
          ↓
@@ -589,6 +632,7 @@ const user = await httpGet<User>('/api/users/me');
    ```
 
 3. **인증 필요 (Custom Status 3008)**
+
    ```
    Client → http://localhost:8080/api/users/me → 401 (status: 3008)
          ↓
@@ -617,10 +661,12 @@ const user = await httpGet<User>('/api/users/me');
 ### OAuth 2.0 설정
 
 **주의**: 프론트엔드는 **HTTPS**에서만 작동합니다.
+
 - 로컬 개발: `pnpm dev:https`로 `https://localhost:3000`에서 실행
 - 쿠키가 `Secure; SameSite=None` 설정되므로 HTTPS 필수
 
 **동작 흐름**:
+
 1. 로그인 버튼 클릭
 2. 브라우저가 백엔드 OAuth URL로 리다이렉트
 3. 백엔드가 쿠키 설정 (같은 도메인에)
@@ -641,10 +687,10 @@ const user = await httpGet<User>('/api/users/me');
 
 ```typescript
 interface UseUserResult {
-  user: User | null;          // 사용자 정보
-  isLoading: boolean;         // 로딩 상태
-  error: Error | null;        // 에러
-  refetch: () => void;        // 재조회 함수
+  user: User | null; // 사용자 정보
+  isLoading: boolean; // 로딩 상태
+  error: Error | null; // 에러
+  refetch: () => void; // 재조회 함수
 }
 ```
 
@@ -657,10 +703,12 @@ interface UseUserResult {
 **역할**: Access Token 및 Refresh Token 갱신
 
 **요청**:
+
 - Method: POST
 - Headers: refreshToken (쿠키에서 자동 전송)
 
 **응답**:
+
 ```typescript
 {
   status: 0,           // 0: 성공, 기타: 실패
@@ -676,20 +724,20 @@ interface UseUserResult {
 
 #### HTTP Status Code
 
-| Code | 설명 | 처리 |
-|------|------|------|
-| 200 | 성공 | 정상 처리 |
-| 401 | Unauthorized | Custom Status 확인 후 처리 |
-| 기타 | 서버 에러 | 에러 반환 |
+| Code | 설명         | 처리                       |
+| ---- | ------------ | -------------------------- |
+| 200  | 성공         | 정상 처리                  |
+| 401  | Unauthorized | Custom Status 확인 후 처리 |
+| 기타 | 서버 에러    | 에러 반환                  |
 
 #### Custom Status Code
 
-| Code | 설명 | 처리 |
-|------|------|------|
-| 0 | 성공 | 정상 처리 |
-| 3003 | AccessToken 만료 | 자동 토큰 갱신 시도 |
-| 3008 | 인증 필요 | 에러 반환 (갱신하지 않음) |
-| 기타 | 토큰 갱신 실패 | 홈으로 리다이렉트 |
+| Code | 설명             | 처리                      |
+| ---- | ---------------- | ------------------------- |
+| 0    | 성공             | 정상 처리                 |
+| 3003 | AccessToken 만료 | 자동 토큰 갱신 시도       |
+| 3008 | 인증 필요        | 에러 반환 (갱신하지 않음) |
+| 기타 | 토큰 갱신 실패   | 홈으로 리다이렉트         |
 
 ---
 
@@ -697,12 +745,13 @@ interface UseUserResult {
 
 ### 개요
 
-TypeScript의 타입 커버리지를 측정하고 관리하는 시스템입니다.
-`any` 타입 사용을 추적하여 타입 안정성을 보장합니다.
+TypeScript의 타입 커버리지를 측정하고 관리하는 시스템입니다. `any` 타입 사용을 추적하여 타입
+안정성을 보장합니다.
 
 **목표**: 95% 이상의 타입 커버리지 유지
 
 **파일 구조**:
+
 - `.type-coverage/current.json`: 현재 type coverage 결과
 - `.type-coverage/previous.json`: 이전 실행의 coverage 결과 (비교용)
 - `coverage-detail.txt`: any 타입 사용 위치 상세 정보 (임시 파일)
@@ -744,8 +793,8 @@ TypeScript의 타입 커버리지를 측정하고 관리하는 시스템입니�
 
 ```yaml
 permissions:
-  contents: read        # 코드 체크아웃
-  pull-requests: write  # PR 코멘트 작성
+  contents: read # 코드 체크아웃
+  pull-requests: write # PR 코멘트 작성
 ```
 
 ---
@@ -761,12 +810,12 @@ permissions:
 
 ### Coverage Summary
 
-| Metric | Value |
-|--------|-------|
-| **Current Coverage** | **96.50%** |
-| Base Coverage | 95.20% |
-| Change | 🟢 📈 +1.30% |
-| Threshold | 95% |
+| Metric               | Value        |
+| -------------------- | ------------ |
+| **Current Coverage** | **96.50%**   |
+| Base Coverage        | 95.20%       |
+| Change               | 🟢 📈 +1.30% |
+| Threshold            | 95%          |
 
 ### Type Statistics
 
@@ -778,12 +827,11 @@ permissions:
 
 <details>
 <summary><code>app/utils/api.ts</code> (5 occurrences)</summary>
-
 ```
-Line 12:5 - implicit any
-Line 24:10 - implicit any
-Line 45:3 - parameter 'data' implicitly has an 'any' type
-...
+
+Line 12:5 - implicit any Line 24:10 - implicit any Line 45:3 - parameter 'data' implicitly has an
+'any' type ...
+
 ```
 
 </details>
@@ -800,6 +848,7 @@ npm run type-coverage
 ```
 
 **출력 예시**:
+
 ```
 (1525 / 1531) 99.60%
 type-coverage success.
@@ -824,7 +873,8 @@ npm run type-coverage:json
 }
 ```
 
-실행 시 이전 coverage 데이터(`.type-coverage/previous.json`)가 있으면 자동으로 비교하여 변경사항을 추적합니다.
+실행 시 이전 coverage 데이터(`.type-coverage/previous.json`)가 있으면 자동으로 비교하여 변경사항을
+추적합니다.
 
 #### 3. 상세 정보 확인 (any 위치 추적)
 
@@ -833,6 +883,7 @@ npm run type-coverage:detail
 ```
 
 **출력 예시**:
+
 ```
 /path/to/app/utils/httpClient.ts:106:11: body
 /path/to/app/utils/httpClient.ts:108:9: body
@@ -848,12 +899,14 @@ npm run type-coverage:report
 ```
 
 **기능**:
+
 - Coverage 측정
 - 상세 정보 수집
 - PR 코멘트 형식으로 리포트 생성
 - 콘솔에 출력
 
 **출력 예시**:
+
 ```markdown
 ## 📊 Type Coverage Report
 
@@ -861,20 +914,20 @@ npm run type-coverage:report
 
 ### Coverage Summary
 
-| Metric | Value |
-|--------|-------|
-| **Current Coverage** | **99.60%** |
-| Base Coverage | 95.00% |
-| Change | 🟢 📈 +4.60% |
-| Threshold | 95% |
+| Metric               | Value        |
+| -------------------- | ------------ |
+| **Current Coverage** | **99.60%**   |
+| Base Coverage        | 95.00%       |
+| Change               | 🟢 📈 +4.60% |
+| Threshold            | 95%          |
 
 ### 📊 Changes from Previous Run
 
-| Metric | Previous | Current | Change |
-|--------|----------|---------|--------|
-| Coverage | 99.50% | 99.60% | 📈 +0.10% |
-| Total Symbols | 1,520 | 1,531 | +11 |
-| Any Types | 8 | 6 | 🟢 -2 |
+| Metric        | Previous | Current | Change    |
+| ------------- | -------- | ------- | --------- |
+| Coverage      | 99.50%   | 99.60%  | 📈 +0.10% |
+| Total Symbols | 1,520    | 1,531   | +11       |
+| Any Types     | 8        | 6       | 🟢 -2     |
 
 ✨ **Great job!** `any` 타입이 2개 줄었습니다!
 
@@ -883,7 +936,8 @@ npm run type-coverage:report
 ...
 ```
 
-> 💡 **이전 실행 데이터 비교**: `.type-coverage/previous.json` 파일이 있으면 자동으로 이전 실행과 비교하여 개선/악화 내역을 표시합니다.
+> 💡 **이전 실행 데이터 비교**: `.type-coverage/previous.json` 파일이 있으면 자동으로 이전 실행과
+> 비교하여 개선/악화 내역을 표시합니다.
 
 ---
 
@@ -927,6 +981,7 @@ generateMarkdown(options): string
 #### 변경사항 추적
 
 스크립트는 실행 시 다음 작업을 수행합니다:
+
 1. `.type-coverage/previous.json`이 있으면 읽어서 비교 분석
 2. 현재 결과를 `.type-coverage/current.json`에 저장
 3. 다음 비교를 위해 `current.json`을 `previous.json`으로 복사
@@ -941,11 +996,13 @@ generateMarkdown(options): string
 **증상**: PR이 머지되지 않음
 
 **해결**:
+
 1. `npm run type-coverage:detail` 실행
 2. `any` 타입 사용 위치 확인
 3. 명시적 타입 정의 추가
 
 **예시**:
+
 ```typescript
 // ❌ Before (any 타입)
 function getData(id) {
@@ -963,6 +1020,7 @@ function getData(id: string): Promise<Response> {
 **증상**: GitHub Actions에서 type-coverage 워크플로우 실패
 
 **확인 사항**:
+
 1. `type-coverage` 패키지 설치 확인
 2. `tsconfig.json` 존재 확인
 3. `bc` 명령어 사용 가능 여부 (Ubuntu에 기본 설치)
@@ -1031,12 +1089,7 @@ interface User {
 }
 
 function isUser(obj: unknown): obj is User {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'name' in obj &&
-    'email' in obj
-  );
+  return typeof obj === 'object' && obj !== null && 'name' in obj && 'email' in obj;
 }
 ```
 
@@ -1058,6 +1111,7 @@ function isUser(obj: unknown): obj is User {
 ```
 
 **스크립트 설명**:
+
 - `type-coverage`: 간단한 coverage 확인
 - `type-coverage:json`: `.type-coverage` 디렉토리 생성 후 JSON 형식으로 결과 저장
 - `type-coverage:detail`: any 타입 상세 위치 출력
@@ -1065,9 +1119,7 @@ function isUser(obj: unknown): obj is User {
 
 #### GitHub Actions 주요 설정
 
-**Node.js 버전**: 20
-**실행 환경**: ubuntu-latest
-**Coverage 임계값**: 95%
+**Node.js 버전**: 20 **실행 환경**: ubuntu-latest **Coverage 임계값**: 95%
 
 ---
 

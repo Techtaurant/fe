@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { fetchCommunityPostList } from "../services/posts";
-import { PostListPeriod, PostListSort } from "../services/posts/types";
-import { queryKeys } from "../lib/queryKeys";
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+
+import { queryKeys } from '../lib/queryKeys';
+import { fetchCommunityPostList } from '../services/posts';
+import { PostListPeriod, PostListSort } from '../services/posts/types';
 
 interface UseCommunityFeedOptions {
   enabled: boolean;
@@ -26,7 +27,7 @@ export function useCommunityFeed({
   tagIds,
   size = 20,
 }: UseCommunityFeedOptions) {
-  const t = useTranslations("CommunityFeed");
+  const t = useTranslations('CommunityFeed');
   const normalizedTagIds = useMemo(
     () => (tagIds ?? []).map((id) => id.toLowerCase()).sort(),
     [tagIds],
@@ -66,7 +67,7 @@ export function useCommunityFeed({
     const deduped = new Map(merged.map((post) => [post.id, post]));
     const dedupedPosts = Array.from(deduped.values());
 
-    if (sort === "LATEST") {
+    if (sort === 'LATEST') {
       return dedupedPosts.sort(
         (left, right) => parsePublishedAt(right.publishedAt) - parsePublishedAt(left.publishedAt),
       );
@@ -75,7 +76,7 @@ export function useCommunityFeed({
     return dedupedPosts;
   }, [query.data?.pages, sort]);
 
-  const error = query.error ? t("loadFailed") : null;
+  const error = query.error ? t('loadFailed') : null;
   const isLoading = query.isPending;
   const isLoadingMore = query.isFetchingNextPage;
   const hasNext = Boolean(query.hasNextPage);

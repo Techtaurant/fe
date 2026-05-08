@@ -9,9 +9,9 @@
  * @returns {ReactionState}
  */
 export function toReactionState(likeStatus) {
-  if (likeStatus === "LIKE") return "like";
-  if (likeStatus === "DISLIKE") return "dislike";
-  return "none";
+  if (likeStatus === 'LIKE') return 'like';
+  if (likeStatus === 'DISLIKE') return 'dislike';
+  return 'none';
 }
 
 /**
@@ -20,9 +20,9 @@ export function toReactionState(likeStatus) {
  * @returns {LikeStatus}
  */
 export function toLikeStatus(reaction) {
-  if (reaction === "like") return "LIKE";
-  if (reaction === "dislike") return "DISLIKE";
-  return "NONE";
+  if (reaction === 'like') return 'LIKE';
+  if (reaction === 'dislike') return 'DISLIKE';
+  return 'NONE';
 }
 
 /**
@@ -33,5 +33,5 @@ export function toLikeStatus(reaction) {
  * @returns {ReactionState}
  */
 export function resolveNextReaction(currentReaction, target) {
-  return currentReaction === target ? "none" : target;
+  return currentReaction === target ? 'none' : target;
 }

@@ -1,46 +1,47 @@
-"use client";
+'use client';
 
-import { Suspense, useEffect, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "../i18n/navigation";
-import { useUserCategories } from "../hooks/useUserCategories";
-import { useTags } from "../hooks/useTags";
-import { redirectToOAuthLogin } from "../lib/authRedirect";
-import { useUser } from "../hooks/useUser";
-import { queryKeys } from "../lib/queryKeys";
-import AuthExpiredModal from "../components/post-write/AuthExpiredModal";
-import PublishScopeModal from "../components/post-write/PublishScopeModal";
-import WriteActions from "../components/post-write/WriteActions";
-import WriteEditorPreview from "../components/post-write/WriteEditorPreview";
-import WriteFormFields from "../components/post-write/WriteFormFields";
-import { useAutoSave } from "../hooks/post-write/useAutoSave";
-import { useDraftBootstrap } from "../hooks/post-write/useDraftBootstrap";
-import { usePostImageUpload } from "../hooks/post-write/usePostImageUpload";
-import { usePostThumbnail } from "../hooks/post-write/usePostThumbnail";
-import { usePublishFlow } from "../hooks/post-write/usePublishFlow";
-import { useSessionPrecheck } from "../hooks/post-write/useSessionPrecheck";
-import { useWriteFormState } from "../hooks/post-write/useWriteFormState";
-import { getLocalDraftStorageKey } from "../lib/post-write/constants";
+import { useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense, useEffect, useMemo } from 'react';
+
+import AuthExpiredModal from '../components/post-write/AuthExpiredModal';
+import PublishScopeModal from '../components/post-write/PublishScopeModal';
+import WriteActions from '../components/post-write/WriteActions';
+import WriteEditorPreview from '../components/post-write/WriteEditorPreview';
+import WriteFormFields from '../components/post-write/WriteFormFields';
+import { useAutoSave } from '../hooks/post-write/useAutoSave';
+import { useDraftBootstrap } from '../hooks/post-write/useDraftBootstrap';
+import { usePostImageUpload } from '../hooks/post-write/usePostImageUpload';
+import { usePostThumbnail } from '../hooks/post-write/usePostThumbnail';
+import { usePublishFlow } from '../hooks/post-write/usePublishFlow';
+import { useSessionPrecheck } from '../hooks/post-write/useSessionPrecheck';
+import { useWriteFormState } from '../hooks/post-write/useWriteFormState';
+import { useTags } from '../hooks/useTags';
+import { useUser } from '../hooks/useUser';
+import { useUserCategories } from '../hooks/useUserCategories';
+import { usePathname, useRouter } from '../i18n/navigation';
+import { redirectToOAuthLogin } from '../lib/authRedirect';
+import { getLocalDraftStorageKey } from '../lib/post-write/constants';
 import {
   clearLocalDraftSnapshot,
   clearPendingPublishSnapshot,
   writeLocalDraftSnapshot,
-} from "../lib/post-write/storage";
+} from '../lib/post-write/storage';
+import { queryKeys } from '../lib/queryKeys';
 
 function WritePostPageContent() {
-  const t = useTranslations("WritePage");
+  const t = useTranslations('WritePage');
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { user, isLoading: isUserLoading } = useUser();
-  const draftId = searchParams.get("draftId");
-  const postId = searchParams.get("postId");
+  const draftId = searchParams.get('draftId');
+  const postId = searchParams.get('postId');
   const isPostEditMode = Boolean(postId);
   const localDraftStorageKey = getLocalDraftStorageKey(draftId);
-  const draftCountQueryKey = [...queryKeys.posts.all, "drafts-count"] as const;
+  const draftCountQueryKey = [...queryKeys.posts.all, 'drafts-count'] as const;
 
   const form = useWriteFormState();
   const imageUpload = usePostImageUpload();
@@ -93,7 +94,7 @@ function WritePostPageContent() {
 
   const openAuthExpiredModal = () => {
     form.setIsPublishModalOpen(false);
-    form.setError(t("errors.authExpired"));
+    form.setError(t('errors.authExpired'));
     form.setIsAuthExpiredModalOpen(true);
   };
 
@@ -107,7 +108,7 @@ function WritePostPageContent() {
 
   const categorySuggestionsQuery = useUserCategories({
     enabled: Boolean(user?.id),
-    userId: user?.id ?? "",
+    userId: user?.id ?? '',
   });
 
   const categorySuggestions = useMemo(() => {
@@ -191,7 +192,7 @@ function WritePostPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-5 pb-28 md:px-5 md:py-6 md:pb-32 xl:px-0 xl:py-0">
+    <div className="bg-background min-h-screen px-4 py-5 pb-28 md:px-5 md:py-6 md:pb-32 xl:px-0 xl:py-0">
       <div className="mx-auto max-w-[1880px] xl:max-w-none">
         <form
           onSubmit={(e) => {
@@ -233,7 +234,11 @@ function WritePostPageContent() {
                   </div>
                 )}
                 {form.error &&
-                  !(form.fieldErrors.title || form.fieldErrors.content || form.fieldErrors.category) && (
+                  !(
+                    form.fieldErrors.title ||
+                    form.fieldErrors.content ||
+                    form.fieldErrors.category
+                  ) && (
                     <div className="rounded-2xl bg-[#fee] p-4 text-sm font-medium text-[#c33] ring-1 ring-[#fcc]">
                       {form.error}
                     </div>
@@ -252,23 +257,24 @@ function WritePostPageContent() {
             onUploadImages={imageUpload.uploadImages}
             onClearUploadError={imageUpload.clearUploadError}
           />
-
         </form>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 bg-background/96 shadow-[0_-8px_18px_rgba(15,23,42,0.06)] backdrop-blur-sm xl:right-auto xl:w-1/2 dark:shadow-[0_-8px_18px_rgba(0,0,0,0.22)]">
+        <div className="bg-background/96 fixed inset-x-0 bottom-0 z-40 shadow-[0_-8px_18px_rgba(15,23,42,0.06)] backdrop-blur-sm xl:right-auto xl:w-1/2 dark:shadow-[0_-8px_18px_rgba(0,0,0,0.22)]">
           <div className="px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:px-6 xl:px-8">
             <WriteActions
               isSubmitting={publishFlow.isSubmitting}
               isPublishActionDisabled={isPublishActionDisabled}
               draftCountLabel={draftBootstrap.draftCountLabel}
               showDraftActions={!isPostEditMode}
-              onGoBack={() => router.push({
-                pathname: "/",
-                query: { mode: "user" },
-              })}
-              onSaveDraft={() => void publishFlow.handleSubmit("DRAFT")}
+              onGoBack={() =>
+                router.push({
+                  pathname: '/',
+                  query: { mode: 'user' },
+                })
+              }
+              onSaveDraft={() => void publishFlow.handleSubmit('DRAFT')}
               onOpenPublishModal={publishFlow.openPublishModal}
-              onGoDraftList={() => router.push("/post/drafts")}
+              onGoDraftList={() => router.push('/post/drafts')}
             />
           </div>
         </div>
@@ -279,11 +285,11 @@ function WritePostPageContent() {
           onClose={() => form.setIsPublishModalOpen(false)}
           onPublishPublic={() => {
             form.setIsPublishModalOpen(false);
-            void publishFlow.handleSubmit("PUBLISHED");
+            void publishFlow.handleSubmit('PUBLISHED');
           }}
           onPublishPrivate={() => {
             form.setIsPublishModalOpen(false);
-            void publishFlow.handleSubmit("PRIVATE");
+            void publishFlow.handleSubmit('PRIVATE');
           }}
         />
 

@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { FilterState, DateRange, SortOption } from '../types';
+
+import { DateRange, FilterState, SortOption } from '../types';
 
 interface FilterBarProps {
   filterState: FilterState;
@@ -34,19 +35,18 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
   ];
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-border mb-6 gap-4 md:gap-0">
+    <div className="border-border mb-6 flex flex-col justify-between gap-4 border-b py-4 md:flex-row md:items-center md:gap-0">
       {/* 날짜 필터 (왼쪽) */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+      <div className="no-scrollbar flex items-center gap-1 overflow-x-auto pb-2 md:pb-0">
         {dateOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => handleDateChange(option.value)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors
-              ${
-                filterState.dateRange === option.value
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/70'
-              }`}
+            className={`rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+              filterState.dateRange === option.value
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:bg-muted/70'
+            }`}
           >
             {option.label}
           </button>
@@ -54,17 +54,16 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
       </div>
 
       {/* 정렬 필터 (오른쪽) */}
-      <div className="flex items-center gap-4 text-sm overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+      <div className="no-scrollbar flex items-center gap-4 overflow-x-auto pb-2 text-sm md:pb-0">
         {sortOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => handleSortChange(option.value)}
-            className={`whitespace-nowrap transition-colors
-              ${
-                filterState.sortBy === option.value
-                  ? 'font-bold text-foreground'
-                  : 'font-medium text-muted-foreground hover:text-foreground'
-              }`}
+            className={`whitespace-nowrap transition-colors ${
+              filterState.sortBy === option.value
+                ? 'text-foreground font-bold'
+                : 'text-muted-foreground hover:text-foreground font-medium'
+            }`}
           >
             {option.label}
           </button>

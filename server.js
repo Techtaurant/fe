@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -24,34 +25,32 @@ const httpsOptions = {
 const app = next({ dev: true });
 const handle = app.getRequestHandler();
 
-app.prepare()
+app
+  .prepare()
   .then(() => {
-    const server = https
-      .createServer(httpsOptions, (req, res) => {
-        // HTTPS 정보를 헤더에 설정 (Next.js에서 인식하도록)
-        req.headers['x-forwarded-proto'] = 'https';
-        req.headers['x-forwarded-for'] = req.socket.remoteAddress || '127.0.0.1';
-        req.headers['x-forwarded-host'] = req.headers.host || 'localhost:3000';
+    const server = https.createServer(httpsOptions, (req, res) => {
+      // HTTPS 정보를 헤더에 설정 (Next.js에서 인식하도록)
+      req.headers['x-forwarded-proto'] = 'https';
+      req.headers['x-forwarded-for'] = req.socket.remoteAddress || '127.0.0.1';
+      req.headers['x-forwarded-host'] = req.headers.host || 'localhost:3000';
 
-        // req.secure 직접 설정 (프록시 환경 감지용)
-        Object.defineProperty(req, 'secure', {
-          value: true,
-          writable: false,
-          enumerable: true,
-        });
-
-        // 디버그 정보
-        if (req.url === '/' && req.method === 'GET') {
-          console.log(`[HTTPS 검증] ${req.method} ${req.url}`);
-          console.log(`  - Secure: ${req.secure}`);
-          console.log(
-            `  - X-Forwarded-Proto: ${req.headers['x-forwarded-proto']}`
-          );
-          console.log(`  - X-Forwarded-Host: ${req.headers['x-forwarded-host']}`);
-        }
-
-        handle(req, res);
+      // req.secure 직접 설정 (프록시 환경 감지용)
+      Object.defineProperty(req, 'secure', {
+        value: true,
+        writable: false,
+        enumerable: true,
       });
+
+      // 디버그 정보
+      if (req.url === '/' && req.method === 'GET') {
+        console.log(`[HTTPS 검증] ${req.method} ${req.url}`);
+        console.log(`  - Secure: ${req.secure}`);
+        console.log(`  - X-Forwarded-Proto: ${req.headers['x-forwarded-proto']}`);
+        console.log(`  - X-Forwarded-Host: ${req.headers['x-forwarded-host']}`);
+      }
+
+      handle(req, res);
+    });
 
     // 포트 사용 중 에러 핸들링
     server.on('error', (err) => {

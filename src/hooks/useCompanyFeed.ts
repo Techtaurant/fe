@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
 // 현재는 mock data 사용 중
-import { useEffect, useState } from "react";
-import { DUMMY_COMPANY_POSTS } from "../data/dummyData";
-import { Post } from "../types";
+import { useEffect, useState } from 'react';
+
+import { DUMMY_COMPANY_POSTS } from '../data/dummyData';
+import { Post } from '../types';
 
 interface UseCompanyFeedOptions {
   enabled: boolean;

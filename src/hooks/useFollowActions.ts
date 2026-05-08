@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { queryKeys } from '../lib/queryKeys';
 import {
   fetchUserFollowings,
   followUser,
   isFollowApiError,
   unfollowUser,
-} from "../services/users/follow";
-import { queryKeys } from "../lib/queryKeys";
+} from '../services/users/follow';
 
-type FollowAction = "followed" | "unfollowed";
+type FollowAction = 'followed' | 'unfollowed';
 
 export interface ToggleFollowParams {
   actorUserId: string | null;
@@ -27,7 +28,7 @@ type ToggleFollowSuccess = {
 
 type ToggleFollowError = {
   ok: false;
-  reason: "unauthorized" | "self" | "api" | "unknown";
+  reason: 'unauthorized' | 'self' | 'api' | 'unknown';
   message?: string;
   code?: string;
 };
@@ -54,15 +55,15 @@ export function useFollowActions() {
       targetUserId,
       isCurrentlyFollowing,
       targetUserName,
-      fallbackName = "",
+      fallbackName = '',
     } = params;
 
     if (!actorUserId) {
-      return { ok: false, reason: "unauthorized" };
+      return { ok: false, reason: 'unauthorized' };
     }
 
     if (actorUserId === targetUserId) {
-      return { ok: false, reason: "self" };
+      return { ok: false, reason: 'self' };
     }
 
     const shouldFollow = !isCurrentlyFollowing;
@@ -112,24 +113,24 @@ export function useFollowActions() {
 
       return {
         ok: true,
-        action: shouldFollow ? "followed" : "unfollowed",
+        action: shouldFollow ? 'followed' : 'unfollowed',
         name: targetUserName ?? fallbackName,
       };
     } catch (error: unknown) {
       if (isFollowApiError(error)) {
-        if (error.code === "UNAUTHORIZED") {
-          return { ok: false, reason: "unauthorized", code: error.code };
+        if (error.code === 'UNAUTHORIZED') {
+          return { ok: false, reason: 'unauthorized', code: error.code };
         }
 
         return {
           ok: false,
-          reason: "api",
+          reason: 'api',
           message: error.message,
           code: error.code,
         };
       }
 
-      return { ok: false, reason: "unknown" };
+      return { ok: false, reason: 'unknown' };
     }
   };
 

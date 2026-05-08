@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
-import { httpClient } from "../../utils/httpClient";
-import {
-  AUTH_HEARTBEAT_MS,
-  AUTH_PRECHECK_DEBOUNCE_MS,
-} from "../../lib/post-write/constants";
+import { useCallback, useEffect, useRef } from 'react';
+
+import { AUTH_HEARTBEAT_MS, AUTH_PRECHECK_DEBOUNCE_MS } from '../../lib/post-write/constants';
+import { httpClient } from '../../utils/httpClient';
 
 interface UseSessionPrecheckParams {
   user: unknown;
@@ -30,7 +28,7 @@ export function useSessionPrecheck({
 
     isSessionRefreshInFlightRef.current = true;
     try {
-      const sessionProbe = await httpClient("/api/users/me", { method: "GET" });
+      const sessionProbe = await httpClient('/api/users/me', { method: 'GET' });
 
       if (sessionProbe.ok) return;
       if (sessionProbe.status === 401) {
@@ -92,10 +90,5 @@ export function useSessionPrecheck({
         authHeartbeatTimerRef.current = null;
       }
     };
-  }, [
-    hasEditableContent,
-    isAuthExpiredModalOpen,
-    tryBackgroundSessionRefresh,
-    user,
-  ]);
+  }, [hasEditableContent, isAuthExpiredModalOpen, tryBackgroundSessionRefresh, user]);
 }

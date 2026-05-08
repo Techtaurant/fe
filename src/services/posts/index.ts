@@ -1,30 +1,25 @@
-import {
-  CreatePostRequest,
-  CreatePostResponse,
-  Post,
-  UpdatePostRequest,
-} from "../../types";
+import { CreatePostRequest, CreatePostResponse, Post, UpdatePostRequest } from '../../types';
 import {
   createPostRequest,
   deletePostRequest,
+  fetchCommunityPosts,
   fetchDraftDetail,
   fetchDraftPosts,
-  fetchCommunityPosts,
-  fetchUserPosts,
-  fetchUserCategories as fetchUserCategoriesRequest,
   fetchPostDetail,
-  togglePostReadLog,
+  fetchUserCategories as fetchUserCategoriesRequest,
+  fetchUserPosts,
   setPostLike,
+  togglePostReadLog,
   updatePostRequest,
-} from "./client";
-import { mapDetailToPost, mapListItemToPost } from "./mappers";
+} from './client';
+import { mapDetailToPost, mapListItemToPost } from './mappers';
 import {
-  DraftPostListResult,
   CommunityPostListResult,
+  DraftPostListResult,
   PostListPeriod,
   PostListSort,
   UserCategory,
-} from "./types";
+} from './types';
 
 export async function createPost(
   payload: CreatePostRequest,
@@ -73,10 +68,7 @@ export async function fetchUserPostList(params: {
   };
 }
 
-export async function fetchUserCategories(
-  userId: string,
-  path?: string,
-): Promise<UserCategory[]> {
+export async function fetchUserCategories(userId: string, path?: string): Promise<UserCategory[]> {
   const response = await fetchUserCategoriesRequest(userId, path);
   return response.data;
 }
@@ -119,15 +111,12 @@ export async function fetchDraftPostDetail(postId: string): Promise<{
       ...mappedPost,
       viewCount: 0,
     },
-    categoryPath: result.data.category?.path || "",
+    categoryPath: result.data.category?.path || '',
     thumbnailAttachmentId: result.data.thumbnailAttachmentId,
   };
 }
 
-export async function updatePostLike(
-  postId: string,
-  likeStatus: "NONE" | "LIKE" | "DISLIKE",
-) {
+export async function updatePostLike(postId: string, likeStatus: 'NONE' | 'LIKE' | 'DISLIKE') {
   return setPostLike(postId, likeStatus);
 }
 

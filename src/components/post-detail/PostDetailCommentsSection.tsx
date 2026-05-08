@@ -1,13 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Comment } from "../../types";
-import { CommentSort } from "../../services/comments/types";
-import { ValidationErrors } from "../../services/comments/apiError";
-import { scrollToElementBelowHeader } from "../../lib/scrollToElementBelowHeader";
-import PostDetailCommentItem from "./PostDetailCommentItem";
-import PostDetailCommentReplies from "./PostDetailCommentReplies";
+import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
+
+import { scrollToElementBelowHeader } from '../../lib/scrollToElementBelowHeader';
+import { ValidationErrors } from '../../services/comments/apiError';
+import { CommentSort } from '../../services/comments/types';
+import { Comment } from '../../types';
+import PostDetailCommentItem from './PostDetailCommentItem';
+import PostDetailCommentReplies from './PostDetailCommentReplies';
 
 interface PostDetailCommentsSectionProps {
   comments: Comment[];
@@ -58,19 +59,19 @@ export default function PostDetailCommentsSection({
   focusRequestKey,
   onShowError,
 }: PostDetailCommentsSectionProps) {
-  const t = useTranslations("PostDetail");
+  const t = useTranslations('PostDetail');
   const commentInputRef = useRef<HTMLDivElement | null>(null);
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const replyingCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isCommentExpanded, setIsCommentExpanded] = useState(false);
-  const [commentValue, setCommentValue] = useState("");
+  const [commentValue, setCommentValue] = useState('');
   const [openRepliesByCommentId, setOpenRepliesByCommentId] = useState<Record<string, boolean>>({});
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
   const [replyingCommentId, setReplyingCommentId] = useState<string | null>(null);
-  const [replyingCommentValue, setReplyingCommentValue] = useState("");
+  const [replyingCommentValue, setReplyingCommentValue] = useState('');
   const [isReplyActionsBelow, setIsReplyActionsBelow] = useState(false);
   const [replySubmittingCommentId, setReplySubmittingCommentId] = useState<string | null>(null);
-  const collapsedTextareaHeight = "44px";
+  const collapsedTextareaHeight = '44px';
 
   const commentFieldErrorMessage =
     createCommentFieldErrors.content ||
@@ -79,7 +80,7 @@ export default function PostDetailCommentsSection({
     null;
 
   const resizeReplyTextarea = (textarea: HTMLTextAreaElement) => {
-    textarea.style.height = "auto";
+    textarea.style.height = 'auto';
     textarea.style.height = `${textarea.scrollHeight}px`;
     setIsReplyActionsBelow(textarea.scrollHeight > 40);
   };
@@ -87,7 +88,7 @@ export default function PostDetailCommentsSection({
   const beginReplyComment = (comment: Comment) => {
     if (comment.isDeleted || comment.isBanned) return;
     setReplyingCommentId(comment.id);
-    setReplyingCommentValue("");
+    setReplyingCommentValue('');
     setIsReplyActionsBelow(false);
     setOpenRepliesByCommentId((current) => ({
       ...current,
@@ -104,7 +105,7 @@ export default function PostDetailCommentsSection({
 
   const cancelReplyComment = () => {
     setReplyingCommentId(null);
-    setReplyingCommentValue("");
+    setReplyingCommentValue('');
     setIsReplyActionsBelow(false);
     setReplySubmittingCommentId(null);
   };
@@ -115,7 +116,7 @@ export default function PostDetailCommentsSection({
     setReplySubmittingCommentId(parentCommentId);
     try {
       await onCreateComment(trimmed, parentCommentId);
-      setReplyingCommentValue("");
+      setReplyingCommentValue('');
       setIsReplyActionsBelow(false);
       setOpenRepliesByCommentId((current) => ({
         ...current,
@@ -158,16 +159,16 @@ export default function PostDetailCommentsSection({
   const getRepliesLabel = (comment: Comment) => {
     const replyCount = getReplyCount(comment);
     if (replyCount > 0) {
-      return t("replies", { count: replyCount });
+      return t('replies', { count: replyCount });
     }
-    return t("repliesZero");
+    return t('repliesZero');
   };
 
   useEffect(() => {
     if (focusRequestKey <= 0) return;
 
     if (commentInputRef.current) {
-      scrollToElementBelowHeader(commentInputRef.current, "smooth");
+      scrollToElementBelowHeader(commentInputRef.current, 'smooth');
     }
 
     setIsCommentExpanded(true);
@@ -181,33 +182,33 @@ export default function PostDetailCommentsSection({
           <div className="relative">
             <textarea
               ref={commentTextareaRef}
-              placeholder={isCommentExpanded ? "" : t("commentPlaceholder")}
+              placeholder={isCommentExpanded ? '' : t('commentPlaceholder')}
               value={commentValue}
               onChange={(event) => {
                 setCommentValue(event.target.value);
                 if (createCommentFieldErrors.content) {
-                  onClearCommentFieldError("content");
+                  onClearCommentFieldError('content');
                 }
               }}
               onInput={(event) => {
                 const target = event.currentTarget;
-                target.style.height = "auto";
+                target.style.height = 'auto';
                 target.style.height = `${target.scrollHeight}px`;
               }}
-              className={`w-full px-4 rounded-xl border border-border bg-background text-base resize-none focus:outline-none transition-colors duration-200 placeholder:text-base hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover ${
+              className={`border-border bg-background hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover w-full resize-none rounded-xl border px-4 text-base transition-colors duration-200 placeholder:text-base focus:outline-none ${
                 commentFieldErrorMessage
-                  ? "border-red-500 focus:border-red-500"
-                  : "border-border focus:border-border"
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-border focus:border-border'
               } ${
                 isCommentExpanded
-                  ? "min-h-[120px] max-h-60 overflow-y-auto text-left pt-3 pb-14"
-                  : "h-[44px] min-h-[44px] max-h-[44px] overflow-hidden text-left pt-[10px] pb-[10px] leading-[22px]"
+                  ? 'max-h-60 min-h-[120px] overflow-y-auto pt-3 pb-14 text-left'
+                  : 'h-[44px] max-h-[44px] min-h-[44px] overflow-hidden pt-[10px] pb-[10px] text-left leading-[22px]'
               }`}
               rows={1}
               onFocus={() => {
                 setIsCommentExpanded(true);
                 if (commentTextareaRef.current && !commentValue) {
-                  commentTextareaRef.current.style.height = "120px";
+                  commentTextareaRef.current.style.height = '120px';
                 }
               }}
             />
@@ -216,15 +217,15 @@ export default function PostDetailCommentsSection({
                 <button
                   type="button"
                   onClick={() => {
-                    setCommentValue("");
+                    setCommentValue('');
                     setIsCommentExpanded(false);
                     if (commentTextareaRef.current) {
                       commentTextareaRef.current.style.height = collapsedTextareaHeight;
                     }
                   }}
-                  className="h-8 px-4 rounded-md border border-border text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200"
+                  className="border-border text-muted-foreground hover:text-foreground hover:bg-muted/85 h-8 rounded-md border px-4 text-sm font-semibold transition-colors duration-200"
                 >
-                  {t("cancel")}
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
@@ -234,7 +235,7 @@ export default function PostDetailCommentsSection({
                     setIsCommentSubmitting(true);
                     try {
                       await onCreateComment(trimmed);
-                      setCommentValue("");
+                      setCommentValue('');
                       setIsCommentExpanded(false);
                       if (commentTextareaRef.current) {
                         commentTextareaRef.current.style.height = collapsedTextareaHeight;
@@ -244,9 +245,9 @@ export default function PostDetailCommentsSection({
                     }
                   }}
                   disabled={isCommentSubmitting}
-                  className="h-8 px-4 rounded-md text-sm font-semibold comment-submit-button disabled:cursor-not-allowed disabled:opacity-60"
+                  className="comment-submit-button h-8 rounded-md px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {t("comment")}
+                  {t('comment')}
                 </button>
               </div>
             ) : null}
@@ -261,19 +262,19 @@ export default function PostDetailCommentsSection({
         <div className="flex items-center gap-2">
           {(
             [
-              { label: t("sortLatest"), value: "LATEST" },
-              { label: t("sortLikes"), value: "LIKE" },
-              { label: t("sortReplies"), value: "REPLY" },
+              { label: t('sortLatest'), value: 'LATEST' },
+              { label: t('sortLikes'), value: 'LIKE' },
+              { label: t('sortReplies'), value: 'REPLY' },
             ] as const
           ).map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => onCommentsSortChange(option.value)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors duration-200 ${
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors duration-200 ${
                 commentsSort === option.value
-                  ? "bg-primary text-primary-foreground"
-                  : "comment-sort-button"
+                  ? 'bg-primary text-primary-foreground'
+                  : 'comment-sort-button'
               }`}
             >
               {option.label}
@@ -282,7 +283,7 @@ export default function PostDetailCommentsSection({
         </div>
 
         {isCommentsLoading && comments.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-4">{t("loadingComments")}</div>
+          <div className="text-muted-foreground py-4 text-sm">{t('loadingComments')}</div>
         ) : comments.length > 0 ? (
           comments.map((comment) => {
             const isReplyThreadOpen = Boolean(openRepliesByCommentId[comment.id]);
@@ -308,23 +309,25 @@ export default function PostDetailCommentsSection({
                     <button
                       type="button"
                       onClick={() => toggleReplies(comment.id)}
-                      className="text-xs text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground text-xs"
                     >
-                      {isReplyThreadOpen ? t("hideReplies") : getRepliesLabel(comment)}
+                      {isReplyThreadOpen ? t('hideReplies') : getRepliesLabel(comment)}
                     </button>
                   ) : !comment.isBanned ? (
-                    <span className="text-xs text-muted-foreground">{getRepliesLabel(comment)}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {getRepliesLabel(comment)}
+                    </span>
                   ) : null
                 }
               >
                 {isReplyingCurrentComment ? (
-                  <div className="mt-2 relative">
+                  <div className="relative mt-2">
                     <textarea
                       ref={isReplyingCurrentComment ? replyingCommentTextareaRef : null}
                       value={replyingCommentValue}
                       onChange={(event) => setReplyingCommentValue(event.target.value)}
-                      className={`w-full min-h-9 rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover focus:border-border ${
-                        isReplyActionsBelow ? "pr-3" : "pr-24"
+                      className={`border-border bg-background hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover focus:border-border min-h-9 w-full resize-none rounded-xl border px-3 py-2 text-sm focus:outline-none ${
+                        isReplyActionsBelow ? 'pr-3' : 'pr-24'
                       }`}
                       rows={1}
                       onInput={(event) => {
@@ -335,17 +338,17 @@ export default function PostDetailCommentsSection({
                     <div
                       className={
                         isReplyActionsBelow
-                          ? "mt-2 flex items-center justify-end gap-2"
-                          : "absolute right-2 top-[6px] flex items-center gap-2"
+                          ? 'mt-2 flex items-center justify-end gap-2'
+                          : 'absolute top-[6px] right-2 flex items-center gap-2'
                       }
                     >
                       <button
                         type="button"
                         onClick={cancelReplyComment}
                         disabled={replySubmittingCommentId === comment.id}
-                        className="min-w-[37px] h-6 px-2 rounded-md border border-border text-[11px] leading-none font-semibold whitespace-nowrap flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="border-border text-muted-foreground hover:text-foreground hover:bg-muted/85 flex h-6 min-w-[37px] items-center justify-center rounded-md border px-2 text-[11px] leading-none font-semibold whitespace-nowrap transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {t("cancel")}
+                        {t('cancel')}
                       </button>
                       <button
                         type="button"
@@ -353,9 +356,9 @@ export default function PostDetailCommentsSection({
                           void handleCreateReply(comment.id);
                         }}
                         disabled={replySubmittingCommentId === comment.id}
-                        className="min-w-[37px] h-6 px-2 rounded-md text-[11px] leading-none font-bold whitespace-nowrap flex items-center justify-center save-action-button disabled:cursor-not-allowed disabled:opacity-60"
+                        className="save-action-button flex h-6 min-w-[37px] items-center justify-center rounded-md px-2 text-[11px] leading-none font-bold whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {t("comment")}
+                        {t('comment')}
                       </button>
                     </div>
                   </div>
@@ -382,7 +385,7 @@ export default function PostDetailCommentsSection({
             );
           })
         ) : (
-          <p className="text-center text-muted-foreground py-8">{t("noComments")}</p>
+          <p className="text-muted-foreground py-8 text-center">{t('noComments')}</p>
         )}
 
         {commentsHasNext ? (
@@ -391,9 +394,9 @@ export default function PostDetailCommentsSection({
               type="button"
               onClick={onLoadMoreComments}
               disabled={isCommentsLoadingMore}
-              className="px-5 py-2.5 rounded-full border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+              className="border-border text-muted-foreground hover:text-foreground hover:bg-muted/85 rounded-full border px-5 py-2.5 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isCommentsLoadingMore ? t("loadingMore") : t("loadMore")}
+              {isCommentsLoadingMore ? t('loadingMore') : t('loadMore')}
             </button>
           </div>
         ) : null}

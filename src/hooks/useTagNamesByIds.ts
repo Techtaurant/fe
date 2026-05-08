@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "../lib/queryKeys";
-import { Tag } from "../types";
-import { httpClient } from "../utils/httpClient";
-import { TAGS_ENDPOINT, TAGS_PAGE_SIZE } from "../constants/tags";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+
+import { TAGS_ENDPOINT, TAGS_PAGE_SIZE } from '../constants/tags';
+import { queryKeys } from '../lib/queryKeys';
+import { Tag } from '../types';
+import { httpClient } from '../utils/httpClient';
 
 interface TagListResponse {
   data?: {
@@ -31,8 +32,8 @@ export function useTagNamesByIds(tagIds: string[]) {
     queryFn: async () => {
       const resultMap = new Map<string, string>();
       const unresolvedIds = new Set(normalizedTagIds);
-      const cachedPageTags = queryClient.getQueryData<Tag[]>(queryKeys.tags.list("page")) ?? [];
-      const cachedAllTags = queryClient.getQueryData<Tag[]>(queryKeys.tags.list("all")) ?? [];
+      const cachedPageTags = queryClient.getQueryData<Tag[]>(queryKeys.tags.list('page')) ?? [];
+      const cachedAllTags = queryClient.getQueryData<Tag[]>(queryKeys.tags.list('all')) ?? [];
       const cachedTags = [...cachedPageTags, ...cachedAllTags];
 
       cachedTags.forEach((tag) => {
@@ -52,15 +53,14 @@ export function useTagNamesByIds(tagIds: string[]) {
 
       while (unresolvedIds.size > 0) {
         const searchParams = new URLSearchParams();
-        searchParams.set("size", String(TAGS_PAGE_SIZE));
+        searchParams.set('size', String(TAGS_PAGE_SIZE));
         if (cursor) {
-          searchParams.set("cursor", cursor);
+          searchParams.set('cursor', cursor);
         }
 
-        const response = await httpClient(
-          `${TAGS_ENDPOINT}?${searchParams.toString()}`,
-          { method: "GET" },
-        );
+        const response = await httpClient(`${TAGS_ENDPOINT}?${searchParams.toString()}`, {
+          method: 'GET',
+        });
         if (!response.ok) {
           throw new Error(`Failed to fetch tags: ${response.status}`);
         }

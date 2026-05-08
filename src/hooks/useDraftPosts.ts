@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { fetchDraftPostList } from "../services/posts";
-import { queryKeys } from "../lib/queryKeys";
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+
+import { queryKeys } from '../lib/queryKeys';
+import { fetchDraftPostList } from '../services/posts';
 
 interface UseDraftPostsOptions {
   enabled: boolean;
@@ -12,7 +13,7 @@ interface UseDraftPostsOptions {
 }
 
 export function useDraftPosts({ enabled, size = 20 }: UseDraftPostsOptions) {
-  const t = useTranslations("DraftsPage");
+  const t = useTranslations('DraftsPage');
   const query = useInfiniteQuery({
     queryKey: queryKeys.posts.draftsList({ size }),
     enabled,
@@ -37,11 +38,11 @@ export function useDraftPosts({ enabled, size = 20 }: UseDraftPostsOptions) {
 
   const errorMessage = (() => {
     if (!query.error) return null;
-    const message = query.error instanceof Error ? query.error.message : "UNKNOWN";
-    if (message === "UNAUTHORIZED") {
-      return t("signInRequired");
+    const message = query.error instanceof Error ? query.error.message : 'UNKNOWN';
+    if (message === 'UNAUTHORIZED') {
+      return t('signInRequired');
     }
-    return t("loadFailed");
+    return t('loadFailed');
   })();
 
   const loadMore = useCallback(async () => {

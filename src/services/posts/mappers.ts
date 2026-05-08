@@ -1,27 +1,26 @@
-import { Post } from "../../types";
-import { buildCommunityPostPath } from "../../lib/communityPostRoute";
-import { PostDetailResponse, PostListItem } from "./types";
+import { buildCommunityPostPath } from '../../lib/communityPostRoute';
+import { Post } from '../../types';
+import { PostDetailResponse, PostListItem } from './types';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 function normalizeUrl(url?: string) {
   if (!url) return undefined;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
   return `${API_BASE_URL}${url}`;
 }
 
 function resolvePublishedAt(
-  status: PostListItem["status"] | PostDetailResponse["data"]["status"],
+  status: PostListItem['status'] | PostDetailResponse['data']['status'],
   publishedAt?: string,
   updatedAt?: string,
   createdAt?: string,
 ): string {
-  if (status === "DRAFT") {
-    return updatedAt || createdAt || "";
+  if (status === 'DRAFT') {
+    return updatedAt || createdAt || '';
   }
 
-  return publishedAt || updatedAt || createdAt || "";
+  return publishedAt || updatedAt || createdAt || '';
 }
 
 export function mapListItemToPost(item: PostListItem): Post {
@@ -37,8 +36,8 @@ export function mapListItemToPost(item: PostListItem): Post {
 
   return {
     id: item.id,
-    type: "community",
-    status: item.status ?? "PUBLISHED",
+    type: 'community',
+    status: item.status ?? 'PUBLISHED',
     title: item.title,
     content: item.content,
     categoryId: item.category?.id,
@@ -50,9 +49,9 @@ export function mapListItemToPost(item: PostListItem): Post {
       id: authorId,
       name: item.authorName,
       nickname: item.authorNickname,
-      email: "",
-      profileImageUrl: normalizeUrl(item.authorProfileImageUrl) || "",
-      role: "USER",
+      email: '',
+      profileImageUrl: normalizeUrl(item.authorProfileImageUrl) || '',
+      role: 'USER',
     },
     categoryPath,
     isRead: item.isRead,
@@ -67,7 +66,7 @@ export function mapListItemToPost(item: PostListItem): Post {
   };
 }
 
-export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
+export function mapDetailToPost(detail: PostDetailResponse['data']): Post {
   const resolvedPublishedAt = resolvePublishedAt(
     detail.status,
     detail.publishedAt,
@@ -78,22 +77,22 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
 
   return {
     id: detail.id,
-    type: "community",
-    status: detail.status ?? "PUBLISHED",
-    title: detail.title || "새 게시물",
-    content: detail.content || "",
+    type: 'community',
+    status: detail.status ?? 'PUBLISHED',
+    title: detail.title || '새 게시물',
+    content: detail.content || '',
     viewCount: detail.viewCount ?? 0,
     likeCount: detail.likeCount ?? 0,
-    likeStatus: detail.likeStatus ?? "NONE",
+    likeStatus: detail.likeStatus ?? 'NONE',
     commentCount: detail.commentCount ?? 0,
     tags: detail.tags ?? [],
     author: {
       id: detail.author.id,
       name: detail.author.name,
       nickname: detail.author.nickname,
-      email: "",
-      profileImageUrl: normalizeUrl(detail.author.profileImageUrl) || "",
-      role: "USER",
+      email: '',
+      profileImageUrl: normalizeUrl(detail.author.profileImageUrl) || '',
+      role: 'USER',
     },
     categoryPath,
     isRead: Boolean(detail.isRead),

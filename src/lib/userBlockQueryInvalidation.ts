@@ -1,5 +1,6 @@
-import { type QueryClient } from "@tanstack/react-query";
-import { queryKeys } from "./queryKeys";
+import { type QueryClient } from '@tanstack/react-query';
+
+import { queryKeys } from './queryKeys';
 
 export async function invalidateUserBlockRelatedQueries(
   queryClient: QueryClient,
@@ -15,8 +16,14 @@ export async function invalidateUserBlockRelatedQueries(
     ...(currentUserId
       ? [queryClient.invalidateQueries({ queryKey: queryKeys.user.followings(currentUserId) })]
       : []),
-    queryClient.invalidateQueries({ queryKey: [...queryKeys.posts.all, "user-community"] as const }),
-    queryClient.invalidateQueries({ queryKey: [...queryKeys.posts.all, "user-community-category"] as const }),
-    queryClient.invalidateQueries({ queryKey: [...queryKeys.posts.all, "user-categories"] as const }),
+    queryClient.invalidateQueries({
+      queryKey: [...queryKeys.posts.all, 'user-community'] as const,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: [...queryKeys.posts.all, 'user-community-category'] as const,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: [...queryKeys.posts.all, 'user-categories'] as const,
+    }),
   ]);
 }

@@ -1,24 +1,22 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { FEED_MODES } from "../constants/feed";
-import { FeedMode, FilterState, Post } from "../types";
-import { PostListPeriod, PostListSort } from "../services/posts/types";
+import { useMemo, useState } from 'react';
+
+import { FEED_MODES } from '../constants/feed';
+import { PostListPeriod, PostListSort } from '../services/posts/types';
+import { FeedMode, FilterState, Post } from '../types';
 
 interface UseFeedFiltersArgs {
   initialMode: FeedMode;
   initialSelectedTags?: string[];
 }
 
-export function useFeedFilters({
-  initialMode,
-  initialSelectedTags = [],
-}: UseFeedFiltersArgs) {
+export function useFeedFilters({ initialMode, initialSelectedTags = [] }: UseFeedFiltersArgs) {
   const [filterState, setFilterState] = useState<FilterState>({
     mode: initialMode,
-    dateRange: "all",
-    sortBy: "latest",
-    searchUser: "",
+    dateRange: 'all',
+    sortBy: 'latest',
+    searchUser: '',
     hideReadPosts: false,
     selectedTags: Array.from(new Set(initialSelectedTags.map((id) => id.toLowerCase()))),
     selectedTechBlogs: [],
@@ -28,30 +26,28 @@ export function useFeedFilters({
     setFilterState((prev) => ({
       ...prev,
       mode,
-      sortBy: "latest",
+      sortBy: 'latest',
     }));
   };
 
   const communityPeriod = useMemo<PostListPeriod>(() => {
-    if (filterState.dateRange === "7d") return "WEEK";
-    if (filterState.dateRange === "30d") return "MONTH";
-    if (filterState.dateRange === "365d") return "YEAR";
-    return "ALL";
+    if (filterState.dateRange === '7d') return 'WEEK';
+    if (filterState.dateRange === '30d') return 'MONTH';
+    if (filterState.dateRange === '365d') return 'YEAR';
+    return 'ALL';
   }, [filterState.dateRange]);
 
   const communitySort = useMemo<PostListSort>(() => {
-    if (filterState.sortBy === "likes") return "LIKE";
-    if (filterState.sortBy === "comments") return "COMMENT";
-    if (filterState.sortBy === "views" || filterState.sortBy === "popular") {
-      return "VIEW";
+    if (filterState.sortBy === 'likes') return 'LIKE';
+    if (filterState.sortBy === 'comments') return 'COMMENT';
+    if (filterState.sortBy === 'views' || filterState.sortBy === 'popular') {
+      return 'VIEW';
     }
-    return "LATEST";
+    return 'LATEST';
   }, [filterState.sortBy]);
 
   const getVisiblePosts = (posts: Post[]) => {
-    const selectedTagIdSet = new Set(
-      filterState.selectedTags.map((id) => id.toLowerCase()),
-    );
+    const selectedTagIdSet = new Set(filterState.selectedTags.map((id) => id.toLowerCase()));
 
     const filteredPosts = posts.filter((post) => {
       if (filterState.hideReadPosts && post.isRead) return false;
@@ -72,13 +68,13 @@ export function useFeedFilters({
           return false;
         }
       } else {
-        if (filterState.dateRange !== "all") {
+        if (filterState.dateRange !== 'all') {
           const postDate = new Date(post.publishedAt);
           const now = new Date();
           let days = 0;
-          if (filterState.dateRange === "7d") days = 7;
-          else if (filterState.dateRange === "30d") days = 30;
-          else if (filterState.dateRange === "365d") days = 365;
+          if (filterState.dateRange === '7d') days = 7;
+          else if (filterState.dateRange === '30d') days = 30;
+          else if (filterState.dateRange === '365d') days = 365;
 
           const diffTime = Math.abs(now.getTime() - postDate.getTime());
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -86,11 +82,7 @@ export function useFeedFilters({
         }
 
         if (filterState.searchUser && post.author) {
-          if (
-            !post.author.name
-              .toLowerCase()
-              .includes(filterState.searchUser.toLowerCase())
-          ) {
+          if (!post.author.name.toLowerCase().includes(filterState.searchUser.toLowerCase())) {
             return false;
           }
         }
@@ -101,15 +93,15 @@ export function useFeedFilters({
 
     return [...filteredPosts].sort((a, b) => {
       switch (filterState.sortBy) {
-        case "popular":
+        case 'popular':
           return b.viewCount - a.viewCount;
-        case "comments":
+        case 'comments':
           return (b.commentCount || 0) - (a.commentCount || 0);
-        case "views":
+        case 'views':
           return b.viewCount - a.viewCount;
-        case "likes":
+        case 'likes':
           return (b.likeCount || 0) - (a.likeCount || 0);
-        case "latest":
+        case 'latest':
         default:
           return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
       }

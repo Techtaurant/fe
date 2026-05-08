@@ -1,17 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { TechBlog } from "../types";
-import {
-  parseTechBlogCache,
-  TechBlogCachePayload,
-} from "../schemas/techBlogTagCache";
-import {
-  TECH_BLOGS_CACHE_KEY,
-  TECH_BLOGS_TTL_MS,
-} from "../constants/techBlogsTags";
-import { queryKeys } from "../lib/queryKeys";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
+
+import { TECH_BLOGS_CACHE_KEY, TECH_BLOGS_TTL_MS } from '../constants/techBlogsTags';
+import { queryKeys } from '../lib/queryKeys';
+import { parseTechBlogCache, TechBlogCachePayload } from '../schemas/techBlogTagCache';
+import { TechBlog } from '../types';
 
 interface UseTechBlogsResult {
   techBlogs: TechBlog[];
@@ -21,14 +16,14 @@ interface UseTechBlogsResult {
 }
 
 const readCache = (): TechBlogCachePayload | null => {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem(TECH_BLOGS_CACHE_KEY);
   if (!raw) return null;
   return parseTechBlogCache(raw);
 };
 
 const writeCache = (techBlogs: TechBlog[]) => {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   try {
     const payload: TechBlogCachePayload = {
       techBlogs,
@@ -40,12 +35,10 @@ const writeCache = (techBlogs: TechBlog[]) => {
   }
 };
 
-export function useTechBlogsTags(
-  initialTechBlogs: TechBlog[] = [],
-): UseTechBlogsResult {
+export function useTechBlogsTags(initialTechBlogs: TechBlog[] = []): UseTechBlogsResult {
   const queryClient = useQueryClient();
   const initialSignature = useMemo(
-    () => initialTechBlogs.map((blog) => blog.id).join(","),
+    () => initialTechBlogs.map((blog) => blog.id).join(','),
     [initialTechBlogs],
   );
   const queryKey = queryKeys.techBlogs.list(initialSignature);

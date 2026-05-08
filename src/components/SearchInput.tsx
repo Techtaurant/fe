@@ -30,10 +30,10 @@ export default function SearchInput({
             onEnter();
           }
         }}
-        className="w-full bg-search-input-background border-none rounded-lg py-2 pl-10 pr-4 text-sm text-foreground transition-colors duration-200 focus:bg-search-input-background focus:outline-none"
+        className="bg-search-input-background text-foreground focus:bg-search-input-background w-full rounded-lg border-none py-2 pr-4 pl-10 text-sm transition-colors duration-200 focus:outline-none"
       />
       <svg
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"
+        className="text-muted-foreground absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

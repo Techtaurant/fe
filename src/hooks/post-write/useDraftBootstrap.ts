@@ -1,12 +1,13 @@
-import { useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { queryKeys } from "../../lib/queryKeys";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
+
+import { queryKeys } from '../../lib/queryKeys';
 import {
   fetchDraftPostDetail,
   fetchDraftPostList,
   fetchPostDetailWithMeta,
-} from "../../services/posts";
+} from '../../services/posts';
 
 interface UseDraftBootstrapParams {
   draftId: string | null;
@@ -31,11 +32,11 @@ export function useDraftBootstrap({
   setThumbnail,
   clearThumbnailPreview,
 }: UseDraftBootstrapParams) {
-  const t = useTranslations("WritePage.draft");
+  const t = useTranslations('WritePage.draft');
   const hydratedDraftIdRef = useRef<string | null>(null);
 
   const draftDetailQuery = useQuery({
-    queryKey: queryKeys.posts.draftDetail(draftId ?? ""),
+    queryKey: queryKeys.posts.draftDetail(draftId ?? ''),
     queryFn: () => fetchDraftPostDetail(draftId as string),
     enabled: Boolean(draftId),
     staleTime: Infinity,
@@ -46,7 +47,7 @@ export function useDraftBootstrap({
   });
 
   const postDetailQuery = useQuery({
-    queryKey: queryKeys.posts.detail(postId ?? ""),
+    queryKey: queryKeys.posts.detail(postId ?? ''),
     queryFn: () => fetchPostDetailWithMeta(postId as string),
     enabled: !draftId && Boolean(postId),
     staleTime: Infinity,
@@ -62,7 +63,7 @@ export function useDraftBootstrap({
     queryFn: async () => {
       try {
         const firstPage = await fetchDraftPostList({ size: 100 });
-        if (typeof firstPage.totalCount === "number") {
+        if (typeof firstPage.totalCount === 'number') {
           return firstPage.totalCount;
         }
 
@@ -83,7 +84,7 @@ export function useDraftBootstrap({
 
         return draftIds.size;
       } catch (error) {
-        if (error instanceof Error && error.message === "UNAUTHORIZED") {
+        if (error instanceof Error && error.message === 'UNAUTHORIZED') {
           return null;
         }
         throw error;
@@ -98,9 +99,9 @@ export function useDraftBootstrap({
     if (hydratedDraftIdRef.current === activeId) return;
 
     if (draftId && draftDetailQuery.data) {
-      setTitle(draftDetailQuery.data.post.title || "");
-      setContent(draftDetailQuery.data.post.content || "");
-      setCategoryPath(draftDetailQuery.data.categoryPath || "");
+      setTitle(draftDetailQuery.data.post.title || '');
+      setContent(draftDetailQuery.data.post.content || '');
+      setCategoryPath(draftDetailQuery.data.categoryPath || '');
       setTags(draftDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
       clearThumbnailPreview();
       setThumbnail(draftDetailQuery.data.thumbnailAttachmentId ?? null);
@@ -109,9 +110,9 @@ export function useDraftBootstrap({
     }
 
     if (!draftId && postId && postDetailQuery.data) {
-      setTitle(postDetailQuery.data.post.title || "");
-      setContent(postDetailQuery.data.post.content || "");
-      setCategoryPath(postDetailQuery.data.post.categoryPath || "");
+      setTitle(postDetailQuery.data.post.title || '');
+      setContent(postDetailQuery.data.post.content || '');
+      setCategoryPath(postDetailQuery.data.post.categoryPath || '');
       setTags(postDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
       clearThumbnailPreview();
       setThumbnail(postDetailQuery.data.thumbnailAttachmentId ?? null);
@@ -136,23 +137,20 @@ export function useDraftBootstrap({
   const draftErrorMessage = (() => {
     const activeError = draftId ? draftDetailQuery.error : postDetailQuery.error;
     if (!activeError) return null;
-    const message =
-      activeError instanceof Error
-        ? activeError.message
-        : "UNKNOWN";
-    if (message === "NOT_FOUND") {
-      return t("notFound");
+    const message = activeError instanceof Error ? activeError.message : 'UNKNOWN';
+    if (message === 'NOT_FOUND') {
+      return t('notFound');
     }
-    if (message === "UNAUTHORIZED") {
-      return t("unauthorized");
+    if (message === 'UNAUTHORIZED') {
+      return t('unauthorized');
     }
-    return t("loadFailed");
+    return t('loadFailed');
   })();
 
   const draftCountLabel = (() => {
-    if (draftCountQuery.isPending) return "...";
-    if (draftCountQuery.data === null) return "-";
-    if (typeof draftCountQuery.data !== "number") return "0";
+    if (draftCountQuery.isPending) return '...';
+    if (draftCountQuery.data === null) return '-';
+    if (typeof draftCountQuery.data !== 'number') return '0';
     return String(draftCountQuery.data);
   })();
 

@@ -4,12 +4,8 @@ import {
   fetchUserFollowingsRequest,
   followUserRequest,
   unfollowUserRequest,
-} from "./client";
-import {
-  FollowCountsResponse,
-  FollowUserResponse,
-  FollowUsersListResponse,
-} from "./types";
+} from './client';
+import { FollowCountsResponse, FollowUserResponse, FollowUsersListResponse } from './types';
 
 export async function followUser(targetUserId: string): Promise<FollowUserResponse> {
   return followUserRequest(targetUserId);
@@ -31,5 +27,5 @@ export async function fetchUserFollowings(userId: string): Promise<FollowUsersLi
   return fetchUserFollowingsRequest(userId);
 }
 
-export * from "./types";
-export * from "./apiError";
+export * from './apiError';
+export * from './types';

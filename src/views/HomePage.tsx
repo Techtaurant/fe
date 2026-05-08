@@ -1,49 +1,43 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "../i18n/navigation";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import FilterBar from "../components/FilterBar";
-import CommunityFeedSection from "../components/feed/CommunityFeedSection";
-import CompanyFeedSection from "../components/feed/CompanyFeedSection";
-import { FEED_MODES } from "../constants/feed";
-import { FeedMode, FilterState } from "../types";
-import { DUMMY_TECH_BLOGS } from "../data/dummyData";
-import { useCompanyFeed } from "../hooks/useCompanyFeed";
-import { useFeedFilters } from "../hooks/useFeedFilters";
-import { useCommunityFeed } from "../hooks/useCommunityFeed";
-import { useTagNamesByIds } from "../hooks/useTagNamesByIds";
-import { useUser } from "../hooks/useUser";
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import CommunityFeedSection from '../components/feed/CommunityFeedSection';
+import CompanyFeedSection from '../components/feed/CompanyFeedSection';
+import FilterBar from '../components/FilterBar';
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
+import { FEED_MODES } from '../constants/feed';
+import { DUMMY_TECH_BLOGS } from '../data/dummyData';
+import { useCommunityFeed } from '../hooks/useCommunityFeed';
+import { useCompanyFeed } from '../hooks/useCompanyFeed';
+import { useFeedFilters } from '../hooks/useFeedFilters';
+import { useTagNamesByIds } from '../hooks/useTagNamesByIds';
+import { useUser } from '../hooks/useUser';
+import { usePathname, useRouter } from '../i18n/navigation';
+import { FeedMode, FilterState } from '../types';
 
-function HomeContent({
-  initialMode,
-}: {
-  initialMode: FeedMode;
-}) {
-  const t = useTranslations("HomePage");
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function HomeContent({ initialMode }: { initialMode: FeedMode }) {
+  const t = useTranslations('HomePage');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { user } = useUser();
-  const [readPostIdsByUser, setReadPostIdsByUser] = useState<Record<string, Set<string>>>(
-    {},
-  );
+  const [readPostIdsByUser, setReadPostIdsByUser] = useState<Record<string, Set<string>>>({});
   const selectedTagIdsFromUrl = useMemo(
     () =>
       searchParams
-        .getAll("tagIds")
+        .getAll('tagIds')
         .map((tagId) => tagId.trim().toLowerCase())
         .filter((tagId) => UUID_PATTERN.test(tagId)),
     [searchParams],
   );
-  const modeParam = searchParams.get("mode");
+  const modeParam = searchParams.get('mode');
   const modeFromUrl: FeedMode =
     selectedTagIdsFromUrl.length > 0
       ? FEED_MODES.USER
@@ -76,12 +70,12 @@ function HomeContent({
       }
 
       const nextParams = new URLSearchParams(searchParams.toString());
-      nextParams.set("mode", nextState.mode);
-      nextParams.delete("tagIds");
+      nextParams.set('mode', nextState.mode);
+      nextParams.delete('tagIds');
 
       if (nextState.mode === FEED_MODES.USER) {
         normalizedTagIds.forEach((tagId) => {
-          nextParams.append("tagIds", tagId);
+          nextParams.append('tagIds', tagId);
         });
       }
 
@@ -123,7 +117,7 @@ function HomeContent({
   }, [modeFromUrl, selectedTagIdsFromUrl, setFilterState]);
 
   const communityFeed = useCommunityFeed({
-    enabled: filterState.mode === "user",
+    enabled: filterState.mode === 'user',
     period: communityPeriod,
     sort: communitySort,
     tagIds: filterState.selectedTags,
@@ -154,17 +148,13 @@ function HomeContent({
   };
 
   const currentPosts =
-    filterState.mode === FEED_MODES.COMPANY
-      ? companyFeed.posts
-      : communityFeed.posts;
+    filterState.mode === FEED_MODES.COMPANY ? companyFeed.posts : communityFeed.posts;
   const visiblePosts = useMemo(() => {
     const currentUserReadPosts = user?.id ? readPostIdsByUser[user.id] : undefined;
 
     const mergedPosts = currentPosts.map((post) => ({
       ...post,
-      isRead:
-        Boolean(user?.id) &&
-        (post.isRead || Boolean(currentUserReadPosts?.has(post.id))),
+      isRead: Boolean(user?.id) && (post.isRead || Boolean(currentUserReadPosts?.has(post.id))),
     }));
 
     return getVisiblePosts(mergedPosts);
@@ -175,28 +165,28 @@ function HomeContent({
     () =>
       filterState.selectedTags.map((tagId) => ({
         id: tagId,
-        name: tagNameMap[tagId.toLowerCase()] ?? t("unknownTag"),
+        name: tagNameMap[tagId.toLowerCase()] ?? t('unknownTag'),
       })),
     [filterState.selectedTags, t, tagNameMap],
   );
 
   const selectedTagSummary = useMemo(() => {
-    if (selectedTagItems.length === 0) return "";
+    if (selectedTagItems.length === 0) return '';
     if (selectedTagItems.length === 1) return `#${selectedTagItems[0].name}`;
 
-    return `#${selectedTagItems[0].name} ${t("andMore", {
+    return `#${selectedTagItems[0].name} ${t('andMore', {
       count: selectedTagItems.length - 1,
     })}`;
   }, [selectedTagItems, t]);
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="bg-background min-h-screen overflow-x-hidden">
       <Header
         onMenuClick={() => setIsMobileSidebarOpen(true)}
         currentMode={filterState.mode}
         onModeChange={handleModeChange}
       />
-      <div className="md:flex max-w-[1400px] mx-auto">
+      <div className="mx-auto max-w-[1400px] md:flex">
         <Sidebar
           key={filterState.mode}
           mode={filterState.mode}
@@ -207,25 +197,20 @@ function HomeContent({
           isOpen={isMobileSidebarOpen}
           onClose={() => setIsMobileSidebarOpen(false)}
         />
-        <main className="flex-1 md:max-w-[728px] mx-auto px-4 md:px-6 py-6">
-          {filterState.mode === "user" && (
+        <main className="mx-auto flex-1 px-4 py-6 md:max-w-[728px] md:px-6">
+          {filterState.mode === 'user' && (
             <>
               {selectedTagItems.length > 0 && (
                 <section className="mb-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    {selectedTagSummary}
-                  </p>
+                  <p className="text-foreground text-sm font-semibold">{selectedTagSummary}</p>
                 </section>
               )}
 
-              <FilterBar
-                filterState={filterState}
-                onFilterChange={handleFilterChange}
-              />
+              <FilterBar filterState={filterState} onFilterChange={handleFilterChange} />
             </>
           )}
 
-          {filterState.mode === "user" ? (
+          {filterState.mode === 'user' ? (
             <CommunityFeedSection
               posts={visiblePosts}
               error={communityFeed.error}
@@ -252,9 +237,9 @@ function HomeContent({
 
 export default function HomePage() {
   const searchParams = useSearchParams();
-  const modeParam = searchParams.get("mode");
+  const modeParam = searchParams.get('mode');
   const initialTagIds = searchParams
-    .getAll("tagIds")
+    .getAll('tagIds')
     .map((tagId) => tagId.trim().toLowerCase())
     .filter((tagId) => UUID_PATTERN.test(tagId));
 
@@ -265,10 +250,5 @@ export default function HomePage() {
         ? modeParam
         : FEED_MODES.COMPANY;
 
-  return (
-    <HomeContent
-      key={initialMode}
-      initialMode={initialMode}
-    />
-  );
+  return <HomeContent key={initialMode} initialMode={initialMode} />;
 }

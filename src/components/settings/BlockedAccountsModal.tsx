@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { Ban, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import AppModal from "../common/AppModal";
-import UnblockActionButton from "../ui/UnblockActionButton";
+import { Ban, X } from 'lucide-react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+
+import AppModal from '../common/AppModal';
+import UnblockActionButton from '../ui/UnblockActionButton';
 
 interface BlockedAccountItem {
   userId: string;
@@ -30,7 +31,7 @@ export default function BlockedAccountsModal({
   onClose,
   onUnban,
 }: BlockedAccountsModalProps) {
-  const t = useTranslations("SettingsPage");
+  const t = useTranslations('SettingsPage');
 
   return (
     <AppModal
@@ -41,30 +42,30 @@ export default function BlockedAccountsModal({
     >
       <div className="relative flex h-full flex-col">
         <div className="flex items-center">
-          <h3 className="text-[20px] leading-none font-bold tracking-[-0.02em] text-foreground">
-            {t("blockedModal.title")}
+          <h3 className="text-foreground text-[20px] leading-none font-bold tracking-[-0.02em]">
+            {t('blockedModal.title')}
           </h3>
         </div>
 
         <button
           type="button"
-          aria-label={t("blockedModal.closeAria")}
+          aria-label={t('blockedModal.closeAria')}
           onClick={onClose}
-          className="absolute right-5 top-0 inline-flex items-center justify-center rounded-md px-[6px] py-[3px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-0 right-5 inline-flex items-center justify-center rounded-md px-[6px] py-[3px] transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
 
         {isLoading ? (
-          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-            {t("blockedModal.loading")}
+          <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
+            {t('blockedModal.loading')}
           </div>
         ) : bans.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-muted-foreground">
-            <div className="rounded-xl bg-muted p-3">
+          <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-4">
+            <div className="bg-muted rounded-xl p-3">
               <Ban className="h-7 w-7" />
             </div>
-            <p className="text-sm font-medium text-muted-foreground">{t("blockedModal.empty")}</p>
+            <p className="text-muted-foreground text-sm font-medium">{t('blockedModal.empty')}</p>
           </div>
         ) : (
           <ul className="mt-2 flex-1 space-y-2 overflow-y-auto">
@@ -86,12 +87,12 @@ export default function BlockedAccountsModal({
                           className="object-cover"
                         />
                       ) : (
-                        <span className="inline-flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
-                          {item.name.charAt(0) || "?"}
+                        <span className="text-muted-foreground inline-flex h-full w-full items-center justify-center text-sm font-semibold">
+                          {item.name.charAt(0) || '?'}
                         </span>
                       )}
                     </div>
-                    <p className="truncate text-sm leading-none font-semibold tracking-[-0.02em] text-foreground">
+                    <p className="text-foreground truncate text-sm leading-none font-semibold tracking-[-0.02em]">
                       {item.name}
                     </p>
                   </div>
@@ -101,9 +102,9 @@ export default function BlockedAccountsModal({
                     onClick={async () => {
                       await onUnban(item.userId);
                     }}
-                    className="mr-[20px] mt-[2px]"
+                    className="mt-[2px] mr-[20px]"
                   >
-                    {isUnbanning ? t("blockedModal.unblocking") : t("blockedModal.unblockAction")}
+                    {isUnbanning ? t('blockedModal.unblocking') : t('blockedModal.unblockAction')}
                   </UnblockActionButton>
                 </li>
               );

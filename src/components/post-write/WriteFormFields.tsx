@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import { useTranslations } from "next-intl";
-import { Image as ImageIcon } from "lucide-react";
-import { normalizeCategoryPath } from "../../hooks/useUserCategories";
-import { FieldErrors } from "../../lib/post-write/types";
+import { Image as ImageIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import type { Dispatch, SetStateAction } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { normalizeCategoryPath } from '../../hooks/useUserCategories';
+import { FieldErrors } from '../../lib/post-write/types';
 
 interface WriteFormFieldsProps {
   title: string;
@@ -44,7 +45,7 @@ export default function WriteFormFields({
   handleRemoveTag,
   handleUploadThumbnail,
 }: WriteFormFieldsProps) {
-  const t = useTranslations("WritePage.form");
+  const t = useTranslations('WritePage.form');
   const tagInputRef = useRef<HTMLInputElement | null>(null);
   const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
   const categoryInputRef = useRef<HTMLInputElement | null>(null);
@@ -68,8 +69,8 @@ export default function WriteFormFields({
     );
     const containsMatches = dedupedSuggestions.filter(
       (suggestion) =>
-        !suggestion.toLowerCase().startsWith(normalizedInput)
-        && suggestion.toLowerCase().includes(normalizedInput),
+        !suggestion.toLowerCase().startsWith(normalizedInput) &&
+        suggestion.toLowerCase().includes(normalizedInput),
     );
 
     return [...startsWithMatches, ...containsMatches].slice(0, 8);
@@ -95,8 +96,8 @@ export default function WriteFormFields({
     );
     const containsMatches = dedupedSuggestions.filter(
       (suggestion) =>
-        !suggestion.toLowerCase().startsWith(normalizedInput)
-        && suggestion.toLowerCase().includes(normalizedInput),
+        !suggestion.toLowerCase().startsWith(normalizedInput) &&
+        suggestion.toLowerCase().includes(normalizedInput),
     );
 
     return [...startsWithMatches, ...containsMatches].slice(0, 8);
@@ -114,10 +115,10 @@ export default function WriteFormFields({
       }
 
       if (
-        categoryInputRef.current?.contains(target)
-        || categoryDropdownRef.current?.contains(target)
-        || tagInputRef.current?.contains(target)
-        || tagDropdownRef.current?.contains(target)
+        categoryInputRef.current?.contains(target) ||
+        categoryDropdownRef.current?.contains(target) ||
+        tagInputRef.current?.contains(target) ||
+        tagDropdownRef.current?.contains(target)
       ) {
         return;
       }
@@ -126,9 +127,9 @@ export default function WriteFormFields({
       setIsTagMenuOpen(false);
     };
 
-    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener('mousedown', handlePointerDown);
     return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener('mousedown', handlePointerDown);
     };
   }, []);
 
@@ -162,11 +163,9 @@ export default function WriteFormFields({
                 setFieldErrors((prev) => ({ ...prev, title: false }));
               }
             }}
-            placeholder={t("titlePlaceholder")}
-            className={`w-full border-0 bg-transparent px-0 py-0 text-2xl font-semibold tracking-[-0.04em] text-foreground transition-colors duration-200 placeholder:text-muted-foreground/80 focus:outline-none md:text-3xl xl:text-4xl ${
-              fieldErrors.title
-                ? "text-red-600 placeholder:text-red-300"
-                : ""
+            placeholder={t('titlePlaceholder')}
+            className={`text-foreground placeholder:text-muted-foreground/80 w-full border-0 bg-transparent px-0 py-0 text-2xl font-semibold tracking-[-0.04em] transition-colors duration-200 focus:outline-none md:text-3xl xl:text-4xl ${
+              fieldErrors.title ? 'text-red-600 placeholder:text-red-300' : ''
             }`}
           />
           <>
@@ -183,7 +182,7 @@ export default function WriteFormFields({
                     await handleUploadThumbnail(file);
                   }
                 } finally {
-                  event.target.value = "";
+                  event.target.value = '';
                 }
               }}
             />
@@ -191,10 +190,10 @@ export default function WriteFormFields({
               type="button"
               onClick={() => thumbnailInputRef.current?.click()}
               disabled={isThumbnailUploading}
-              className={`absolute right-1 top-0 inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`absolute top-0 right-1 inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                 hasThumbnail
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-foreground hover:bg-muted/80"
+                  ? 'bg-foreground text-background'
+                  : 'bg-muted text-foreground hover:bg-muted/80'
               }`}
               aria-label="썸네일 이미지 추가"
             >
@@ -202,16 +201,19 @@ export default function WriteFormFields({
             </button>
           </>
         </div>
-        <div className="mt-4 h-1.5 w-16 bg-foreground/80" />
+        <div className="bg-foreground/80 mt-4 h-1.5 w-16" />
         {fieldErrors.title && (
-          <p className="mt-2 text-sm font-medium text-red-600">{t("titleRequired")}</p>
+          <p className="mt-2 text-sm font-medium text-red-600">{t('titleRequired')}</p>
         )}
       </div>
 
       <div className="mb-5 space-y-4 md:mb-6">
         <div className="relative">
-          <label htmlFor="category" className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {t("category")} <span className="text-red-600">*</span>
+          <label
+            htmlFor="category"
+            className="text-muted-foreground mb-2 block text-xs font-semibold tracking-[0.18em] uppercase"
+          >
+            {t('category')} <span className="text-red-600">*</span>
           </label>
           <input
             ref={categoryInputRef}
@@ -228,9 +230,9 @@ export default function WriteFormFields({
               window.setTimeout(() => {
                 const activeElement = document.activeElement;
                 if (
-                  activeElement instanceof Node
-                  && (categoryInputRef.current?.contains(activeElement)
-                    || categoryDropdownRef.current?.contains(activeElement))
+                  activeElement instanceof Node &&
+                  (categoryInputRef.current?.contains(activeElement) ||
+                    categoryDropdownRef.current?.contains(activeElement))
                 ) {
                   return;
                 }
@@ -250,7 +252,7 @@ export default function WriteFormFields({
                 return;
               }
 
-              if (event.key === "ArrowDown") {
+              if (event.key === 'ArrowDown') {
                 event.preventDefault();
                 setActiveCategorySuggestionIndex((prev) =>
                   prev < filteredCategorySuggestions.length - 1 ? prev + 1 : 0,
@@ -258,7 +260,7 @@ export default function WriteFormFields({
                 return;
               }
 
-              if (event.key === "ArrowUp") {
+              if (event.key === 'ArrowUp') {
                 event.preventDefault();
                 setActiveCategorySuggestionIndex((prev) =>
                   prev > 0 ? prev - 1 : filteredCategorySuggestions.length - 1,
@@ -266,7 +268,7 @@ export default function WriteFormFields({
                 return;
               }
 
-              if (event.key === "Enter") {
+              if (event.key === 'Enter') {
                 if (activeCategorySuggestionIndex < 0) {
                   return;
                 }
@@ -276,19 +278,19 @@ export default function WriteFormFields({
                 return;
               }
 
-              if (event.key === "Escape") {
+              if (event.key === 'Escape') {
                 setIsCategoryMenuOpen(false);
               }
             }}
-            placeholder={t("categoryPlaceholder")}
-            className={`w-full bg-transparent px-0 py-0 text-base text-muted-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent] [&:-webkit-autofill]:[-webkit-text-fill-color:currentColor] ${
-              fieldErrors.category ? "text-red-600 placeholder:text-red-300" : ""
+            placeholder={t('categoryPlaceholder')}
+            className={`text-muted-foreground placeholder:text-muted-foreground w-full bg-transparent px-0 py-0 text-base transition-colors duration-200 focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent] [&:-webkit-autofill]:[-webkit-text-fill-color:currentColor] ${
+              fieldErrors.category ? 'text-red-600 placeholder:text-red-300' : ''
             }`}
           />
           {isCategoryMenuOpen && filteredCategorySuggestions.length > 0 ? (
             <div
               ref={categoryDropdownRef}
-              className="absolute top-full left-0 z-20 mt-3 w-full max-w-[26rem] overflow-hidden rounded-2xl border border-border bg-background/95 shadow-[0_16px_36px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
+              className="border-border bg-background/95 absolute top-full left-0 z-20 mt-3 w-full max-w-[26rem] overflow-hidden rounded-2xl border shadow-[0_16px_36px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
             >
               <ul className="py-2">
                 {filteredCategorySuggestions.map((suggestion, index) => {
@@ -305,8 +307,8 @@ export default function WriteFormFields({
                         onMouseEnter={() => setActiveCategorySuggestionIndex(index)}
                         className={`flex w-full cursor-pointer items-center px-4 py-2.5 text-left text-sm transition-colors ${
                           isActive
-                            ? "bg-muted font-semibold text-[#3182F6]"
-                            : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                            ? 'bg-muted font-semibold text-[#3182F6]'
+                            : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                         }`}
                       >
                         <span className="truncate">{suggestion}</span>
@@ -318,13 +320,16 @@ export default function WriteFormFields({
             </div>
           ) : null}
           {fieldErrors.category && (
-            <p className="mt-2 text-sm font-medium text-red-600">{t("categoryRequired")}</p>
+            <p className="mt-2 text-sm font-medium text-red-600">{t('categoryRequired')}</p>
           )}
         </div>
 
         <div className="relative">
-          <label htmlFor="tags" className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {t("tags")}
+          <label
+            htmlFor="tags"
+            className="text-muted-foreground mb-2 block text-xs font-semibold tracking-[0.18em] uppercase"
+          >
+            {t('tags')}
           </label>
           <div
             className="flex cursor-text flex-wrap items-center gap-x-2 gap-y-2"
@@ -333,14 +338,14 @@ export default function WriteFormFields({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm text-foreground"
+                className="bg-muted text-foreground inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm"
               >
                 {tag}
                 <button
                   type="button"
                   onClick={() => handleRemoveTag(tag)}
-                  className="cursor-pointer border-0 bg-transparent p-0 text-lg text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label={t("removeTag", { tag })}
+                  className="text-muted-foreground hover:text-foreground cursor-pointer border-0 bg-transparent p-0 text-lg transition-colors"
+                  aria-label={t('removeTag', { tag })}
                 >
                   ×
                 </button>
@@ -360,9 +365,9 @@ export default function WriteFormFields({
                 window.setTimeout(() => {
                   const activeElement = document.activeElement;
                   if (
-                    activeElement instanceof Node
-                    && (tagInputRef.current?.contains(activeElement)
-                      || tagDropdownRef.current?.contains(activeElement))
+                    activeElement instanceof Node &&
+                    (tagInputRef.current?.contains(activeElement) ||
+                      tagDropdownRef.current?.contains(activeElement))
                   ) {
                     return;
                   }
@@ -376,7 +381,7 @@ export default function WriteFormFields({
               }}
               onKeyDown={(event) => {
                 if (isTagMenuOpen && filteredTagSuggestions.length > 0) {
-                  if (event.key === "ArrowDown") {
+                  if (event.key === 'ArrowDown') {
                     event.preventDefault();
                     setActiveTagSuggestionIndex((prev) =>
                       prev < filteredTagSuggestions.length - 1 ? prev + 1 : 0,
@@ -384,7 +389,7 @@ export default function WriteFormFields({
                     return;
                   }
 
-                  if (event.key === "ArrowUp") {
+                  if (event.key === 'ArrowUp') {
                     event.preventDefault();
                     setActiveTagSuggestionIndex((prev) =>
                       prev > 0 ? prev - 1 : filteredTagSuggestions.length - 1,
@@ -392,32 +397,32 @@ export default function WriteFormFields({
                     return;
                   }
 
-                  if (event.key === "Enter" && activeTagSuggestionIndex >= 0) {
+                  if (event.key === 'Enter' && activeTagSuggestionIndex >= 0) {
                     event.preventDefault();
                     applyTagSuggestion(filteredTagSuggestions[activeTagSuggestionIndex]);
                     return;
                   }
                 }
 
-                if (event.key === "Enter") {
+                if (event.key === 'Enter') {
                   event.preventDefault();
                   handleAddTag();
                   setIsTagMenuOpen(false);
                   return;
                 }
 
-                if (event.key === "Escape") {
+                if (event.key === 'Escape') {
                   setIsTagMenuOpen(false);
                 }
               }}
-              placeholder={tags.length === 0 ? t("tagsPlaceholder") : ""}
-              className="min-w-[180px] flex-1 bg-transparent px-0 py-0 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+              placeholder={tags.length === 0 ? t('tagsPlaceholder') : ''}
+              className="text-foreground placeholder:text-muted-foreground min-w-[180px] flex-1 bg-transparent px-0 py-0 text-base focus:outline-none"
             />
           </div>
           {isTagMenuOpen && filteredTagSuggestions.length > 0 ? (
             <div
               ref={tagDropdownRef}
-              className="absolute top-full left-0 z-20 mt-3 w-full max-w-[26rem] overflow-hidden rounded-2xl border border-border bg-background/95 shadow-[0_16px_36px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
+              className="border-border bg-background/95 absolute top-full left-0 z-20 mt-3 w-full max-w-[26rem] overflow-hidden rounded-2xl border shadow-[0_16px_36px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
             >
               <ul className="py-2">
                 {filteredTagSuggestions.map((suggestion, index) => {
@@ -434,8 +439,8 @@ export default function WriteFormFields({
                         onMouseEnter={() => setActiveTagSuggestionIndex(index)}
                         className={`flex w-full cursor-pointer items-center px-4 py-2.5 text-left text-sm transition-colors ${
                           isActive
-                            ? "bg-muted font-semibold text-[#3182F6]"
-                            : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                            ? 'bg-muted font-semibold text-[#3182F6]'
+                            : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                         }`}
                       >
                         <span className="truncate">{suggestion}</span>

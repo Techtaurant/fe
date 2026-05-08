@@ -1,4 +1,4 @@
-const SEGMENT_SEPARATOR = "/";
+const SEGMENT_SEPARATOR = '/';
 
 function encodePathSegment(value: string): string {
   return encodeURIComponent(value.trim());
@@ -17,7 +17,7 @@ function normalizeCategorySegments(categoryPath?: string): string[] {
 }
 
 function resolveNickname(nickname?: string, fallbackName?: string): string {
-  const candidate = nickname?.trim() || fallbackName?.trim() || "unknown";
+  const candidate = nickname?.trim() || fallbackName?.trim() || 'unknown';
   return encodePathSegment(candidate);
 }
 
@@ -32,5 +32,5 @@ export function buildCommunityPostPath(params: {
   const categorySegments = normalizeCategorySegments(categoryPath);
   const safePostId = encodePathSegment(postId);
 
-  return ["/blog", safeNickname, ...categorySegments, safePostId].join(SEGMENT_SEPARATOR);
+  return ['/blog', safeNickname, ...categorySegments, safePostId].join(SEGMENT_SEPARATOR);
 }

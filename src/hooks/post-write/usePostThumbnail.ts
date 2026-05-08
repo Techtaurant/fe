@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
-import { fetchAttachmentPreviewUrl } from "../../services/attachments";
-import { usePostThumbnailUpload } from "./usePostThumbnailUpload";
+import { useCallback, useEffect, useRef } from 'react';
+
+import { fetchAttachmentPreviewUrl } from '../../services/attachments';
+import { usePostThumbnailUpload } from './usePostThumbnailUpload';
 
 interface UsePostThumbnailParams {
   thumbnailAttachmentId: string | null;
@@ -23,12 +24,12 @@ export function usePostThumbnail({
       if (
         thumbnailObjectUrlRef.current &&
         thumbnailObjectUrlRef.current !== nextPreviewUrl &&
-        thumbnailObjectUrlRef.current.startsWith("blob:")
+        thumbnailObjectUrlRef.current.startsWith('blob:')
       ) {
         URL.revokeObjectURL(thumbnailObjectUrlRef.current);
       }
 
-      thumbnailObjectUrlRef.current = nextPreviewUrl?.startsWith("blob:") ? nextPreviewUrl : null;
+      thumbnailObjectUrlRef.current = nextPreviewUrl?.startsWith('blob:') ? nextPreviewUrl : null;
       setThumbnailPreviewUrl(nextPreviewUrl);
     },
     [setThumbnailPreviewUrl],
@@ -36,7 +37,7 @@ export function usePostThumbnail({
 
   useEffect(
     () => () => {
-      if (thumbnailObjectUrlRef.current?.startsWith("blob:")) {
+      if (thumbnailObjectUrlRef.current?.startsWith('blob:')) {
         URL.revokeObjectURL(thumbnailObjectUrlRef.current);
       }
     },

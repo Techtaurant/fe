@@ -1,38 +1,32 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
-import { useRouter } from "../i18n/navigation";
-import Header from "../components/Header";
-import { FEED_MODES } from "../constants/feed";
-import { useDraftPosts } from "../hooks/useDraftPosts";
-import { useUser } from "../hooks/useUser";
+import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
+
+import Header from '../components/Header';
+import { FEED_MODES } from '../constants/feed';
+import { useDraftPosts } from '../hooks/useDraftPosts';
+import { useUser } from '../hooks/useUser';
+import { useRouter } from '../i18n/navigation';
 
 function formatDateTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
 export default function DraftPostsPage() {
-  const t = useTranslations("DraftsPage");
+  const t = useTranslations('DraftsPage');
   const router = useRouter();
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
   const { user, isLoading: isUserLoading } = useUser();
-  const {
-    drafts,
-    errorMessage,
-    isLoading,
-    isLoadingMore,
-    hasNext,
-    loadMore,
-  } = useDraftPosts({
+  const { drafts, errorMessage, isLoading, isLoadingMore, hasNext, loadMore } = useDraftPosts({
     enabled: Boolean(user),
     size: 20,
   });
@@ -47,7 +41,7 @@ export default function DraftPostsPage() {
         if (!first?.isIntersecting) return;
         void loadMore();
       },
-      { rootMargin: "200px 0px" },
+      { rootMargin: '200px 0px' },
     );
 
     observer.observe(target);
@@ -55,37 +49,31 @@ export default function DraftPostsPage() {
   }, [loadMore, user]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        onMenuClick={() => {}}
-        currentMode={FEED_MODES.USER}
-        onModeChange={() => {}}
-      />
+    <div className="bg-background min-h-screen">
+      <Header onMenuClick={() => {}} currentMode={FEED_MODES.USER} onModeChange={() => {}} />
 
       <main className="mx-auto w-full max-w-4xl px-4 py-6 md:py-8">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("description")}
-            </p>
+            <h1 className="text-foreground text-2xl font-bold">{t('title')}</h1>
+            <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
           </div>
           <button
             type="button"
-            onClick={() => router.push("/post/write")}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            onClick={() => router.push('/post/write')}
+            className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90"
           >
-            {t("newPost")}
+            {t('newPost')}
           </button>
         </div>
 
         {isUserLoading ? (
-          <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-            {t("loadingUser")}
+          <div className="border-border bg-card text-muted-foreground rounded-lg border p-8 text-center">
+            {t('loadingUser')}
           </div>
         ) : !user ? (
-          <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <p className="text-muted-foreground">{t("signInRequired")}</p>
+          <div className="border-border bg-card rounded-lg border p-8 text-center">
+            <p className="text-muted-foreground">{t('signInRequired')}</p>
           </div>
         ) : null}
 
@@ -96,8 +84,8 @@ export default function DraftPostsPage() {
         )}
 
         {user && drafts.length === 0 && !isLoading ? (
-          <div className="rounded-lg border border-border bg-card p-10 text-center text-muted-foreground">
-            {t("empty")}
+          <div className="border-border bg-card text-muted-foreground rounded-lg border p-10 text-center">
+            {t('empty')}
           </div>
         ) : null}
 
@@ -106,22 +94,24 @@ export default function DraftPostsPage() {
             {drafts.map((draft) => (
               <li key={draft.id}>
                 <button
-                   type="button"
-                   onClick={() => router.push({
-                     pathname: "/post/write",
-                     query: { draftId: draft.id },
-                   })}
-                   className="w-full rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-muted/50"
-                 >
-                  <h2 className="line-clamp-1 text-base font-semibold text-foreground">
+                  type="button"
+                  onClick={() =>
+                    router.push({
+                      pathname: '/post/write',
+                      query: { draftId: draft.id },
+                    })
+                  }
+                  className="border-border bg-card hover:bg-muted/50 w-full rounded-lg border p-4 text-left transition-colors"
+                >
+                  <h2 className="text-foreground line-clamp-1 text-base font-semibold">
                     {draft.title}
                   </h2>
-                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                  <p className="text-muted-foreground mt-2 line-clamp-2 text-sm">
                     {draft.contentPreview}
                   </p>
-                   <p className="mt-3 text-xs text-muted-foreground">
-                     {t("updatedAt")}: {formatDateTime(draft.updatedAt)}
-                   </p>
+                  <p className="text-muted-foreground mt-3 text-xs">
+                    {t('updatedAt')}: {formatDateTime(draft.updatedAt)}
+                  </p>
                 </button>
               </li>
             ))}
@@ -131,15 +121,11 @@ export default function DraftPostsPage() {
         {user && <div ref={loadMoreTriggerRef} className="h-2 w-full" />}
 
         {user && isLoadingMore && (
-          <div className="py-4 text-center text-sm text-muted-foreground">
-            {t("loadingMore")}
-          </div>
+          <div className="text-muted-foreground py-4 text-center text-sm">{t('loadingMore')}</div>
         )}
 
         {user && !hasNext && drafts.length > 0 && !isLoading && !isLoadingMore && (
-          <div className="py-4 text-center text-sm text-muted-foreground">
-            {t("reachedEnd")}
-          </div>
+          <div className="text-muted-foreground py-4 text-center text-sm">{t('reachedEnd')}</div>
         )}
       </main>
     </div>

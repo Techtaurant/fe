@@ -30,7 +30,7 @@ export interface TechBlog {
 // 게시물
 export interface Post {
   id: string;
-  type: "company" | "community"; // 게시물 타입
+  type: 'company' | 'community'; // 게시물 타입
   status?: PostStatus;
   title: string;
   content?: string; // 게시물 본문 (커뮤니티 상세 페이지용)
@@ -39,7 +39,7 @@ export interface Post {
   categoryId?: string;
   viewCount: number;
   likeCount?: number;
-  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
+  likeStatus?: 'NONE' | 'LIKE' | 'DISLIKE';
   commentCount?: number;
   tags?: Tag[];
   techBlog?: TechBlog; // 기업 블로그 글일 경우
@@ -60,7 +60,7 @@ export interface Comment {
   author: User;
   createdAt: string;
   likeCount: number;
-  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
+  likeStatus?: 'NONE' | 'LIKE' | 'DISLIKE';
   replyCount: number;
   isDeleted: boolean;
   isBanned?: boolean;
@@ -69,13 +69,13 @@ export interface Comment {
 }
 
 // 피드 모드 (기업 글 / 일반 사용자 글)
-export type FeedMode = "company" | "user";
+export type FeedMode = 'company' | 'user';
 
 // 날짜 범위
-export type DateRange = "7d" | "30d" | "365d" | "all";
+export type DateRange = '7d' | '30d' | '365d' | 'all';
 
 // 정렬 옵션
-export type SortOption = "latest" | "popular" | "comments" | "views" | "likes";
+export type SortOption = 'latest' | 'popular' | 'comments' | 'views' | 'likes';
 
 // 필터 상태
 export interface FilterState {
@@ -88,7 +88,7 @@ export interface FilterState {
   selectedTechBlogs: string[];
 }
 
-export type PostStatus = "DRAFT" | "PUBLISHED" | "PRIVATE";
+export type PostStatus = 'DRAFT' | 'PUBLISHED' | 'PRIVATE';
 
 // 게시물 작성 요청
 export interface CreatePostRequest {
@@ -133,7 +133,7 @@ export interface CreateAttachmentPresignedUrlRequest {
   fileName: string;
   contentType: string;
   fileSize: number;
-  referenceType: "POST" | "USER";
+  referenceType: 'POST' | 'USER';
 }
 
 export interface CreateAttachmentPresignedUrlResponse {

@@ -1,9 +1,9 @@
 export type BanApiErrorCode =
-  | "UNAUTHORIZED"
-  | "BAD_REQUEST"
-  | "NOT_FOUND"
-  | "CONFLICT"
-  | "HTTP_ERROR";
+  | 'UNAUTHORIZED'
+  | 'BAD_REQUEST'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'HTTP_ERROR';
 
 interface BanApiErrorOptions {
   status: number;
@@ -17,7 +17,7 @@ export class BanApiError extends Error {
 
   constructor(code: BanApiErrorCode, options: BanApiErrorOptions) {
     super(options.message || code);
-    this.name = "BanApiError";
+    this.name = 'BanApiError';
     this.code = code;
     this.status = options.status;
   }

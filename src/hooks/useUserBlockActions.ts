@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { banUser, isBanApiError, unbanUser } from "../services/users/ban";
-import { invalidateUserBlockRelatedQueries } from "../lib/userBlockQueryInvalidation";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-type BlockResult = "blocked" | "alreadyBlocked";
+import { invalidateUserBlockRelatedQueries } from '../lib/userBlockQueryInvalidation';
+import { banUser, isBanApiError, unbanUser } from '../services/users/ban';
+
+type BlockResult = 'blocked' | 'alreadyBlocked';
 
 export function useUserBlockActions(currentUserId?: string | null) {
   const queryClient = useQueryClient();
@@ -13,17 +14,17 @@ export function useUserBlockActions(currentUserId?: string | null) {
     mutationFn: async (targetUserId: string): Promise<BlockResult> => {
       try {
         await banUser(targetUserId);
-        return "blocked";
+        return 'blocked';
       } catch (error: unknown) {
-        if (isBanApiError(error) && error.code === "CONFLICT") {
-          return "alreadyBlocked";
+        if (isBanApiError(error) && error.code === 'CONFLICT') {
+          return 'alreadyBlocked';
         }
 
         throw error;
       }
     },
     onSuccess: (result, targetUserId) => {
-      if (result === "blocked" || result === "alreadyBlocked") {
+      if (result === 'blocked' || result === 'alreadyBlocked') {
         void invalidateUserBlockRelatedQueries(queryClient, targetUserId, currentUserId);
       }
     },

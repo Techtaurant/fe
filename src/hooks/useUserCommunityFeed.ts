@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { Post } from "../types";
-import { queryKeys } from "../lib/queryKeys";
-import { fetchUserPostList } from "../services/posts";
-import { isPlaceholderCategoryPath, normalizeCategoryPath } from "./useUserCategories";
-import { PostListPeriod, PostListSort } from "../services/posts/types";
-import { UNCATEGORIZED_CATEGORY_ID } from "../constants/category";
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+
+import { UNCATEGORIZED_CATEGORY_ID } from '../constants/category';
+import { queryKeys } from '../lib/queryKeys';
+import { fetchUserPostList } from '../services/posts';
+import { PostListPeriod, PostListSort } from '../services/posts/types';
+import { Post } from '../types';
+import { isPlaceholderCategoryPath, normalizeCategoryPath } from './useUserCategories';
 
 interface UseUserCommunityFeedOptions {
   enabled: boolean;
@@ -36,7 +37,7 @@ function filterPrivatePosts(posts: Post[], includePrivatePosts: boolean): Post[]
     return posts;
   }
 
-  return posts.filter((post) => post.status !== "PRIVATE");
+  return posts.filter((post) => post.status !== 'PRIVATE');
 }
 
 function sortPosts(posts: Post[], sort: PostListSort): Post[] {
@@ -47,13 +48,13 @@ function sortPosts(posts: Post[], sort: PostListSort): Post[] {
   };
 
   copy.sort((left, right) => {
-    if (sort === "LATEST") {
+    if (sort === 'LATEST') {
       return parsePublishedAt(right.publishedAt) - parsePublishedAt(left.publishedAt);
     }
-    if (sort === "VIEW") {
+    if (sort === 'VIEW') {
       return (right.viewCount ?? 0) - (left.viewCount ?? 0);
     }
-    if (sort === "LIKE") {
+    if (sort === 'LIKE') {
       return (right.likeCount ?? 0) - (left.likeCount ?? 0);
     }
     return (right.commentCount ?? 0) - (left.commentCount ?? 0);
@@ -126,7 +127,7 @@ export function useUserCommunityFeed({
   size = 20,
   includePrivatePosts = false,
 }: UseUserCommunityFeedOptions): UseUserCommunityFeedResult {
-  const t = useTranslations("CommunityFeed");
+  const t = useTranslations('CommunityFeed');
   const normalizedCategoryIds = useMemo(() => {
     return [...new Set((categoryIds ?? []).filter((id) => Boolean(id)))];
   }, [categoryIds]);
@@ -227,10 +228,14 @@ export function useUserCommunityFeed({
     includePrivatePosts,
   ]);
 
-  const error = (hasCategoryFilter ? filteredQuery.error : listQuery.error) ? t("loadFailed") : null;
+  const error = (hasCategoryFilter ? filteredQuery.error : listQuery.error)
+    ? t('loadFailed')
+    : null;
   const isLoading = hasCategoryFilter ? filteredQuery.isPending : listQuery.isPending;
   const isLoadingMore = hasCategoryFilter ? false : listQuery.isFetchingNextPage;
-  const hasNext = hasCategoryFilter ? Boolean(filteredQuery.data?.hasNext) : Boolean(listQuery.hasNextPage);
+  const hasNext = hasCategoryFilter
+    ? Boolean(filteredQuery.data?.hasNext)
+    : Boolean(listQuery.hasNextPage);
 
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = listQuery;
 

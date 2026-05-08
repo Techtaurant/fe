@@ -1,41 +1,42 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { TableOfContentsHeading } from "../MarkdownRenderer";
-import { scrollToElementBelowHeader } from "../../lib/scrollToElementBelowHeader";
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { scrollToElementBelowHeader } from '../../lib/scrollToElementBelowHeader';
+import { TableOfContentsHeading } from '../MarkdownRenderer';
 
 interface PostDetailTableOfContentsProps {
   headings: TableOfContentsHeading[];
-  variant?: "desktop" | "dialog";
+  variant?: 'desktop' | 'dialog';
   onNavigate?: () => void;
 }
 
 function getDecodedHash(): string {
-  if (typeof window === "undefined") {
-    return "";
+  if (typeof window === 'undefined') {
+    return '';
   }
 
-  return decodeURIComponent(window.location.hash.replace(/^#/, ""));
+  return decodeURIComponent(window.location.hash.replace(/^#/, ''));
 }
 
 export default function PostDetailTableOfContents({
   headings,
-  variant = "desktop",
+  variant = 'desktop',
   onNavigate,
 }: PostDetailTableOfContentsProps) {
-  const [activeHeadingId, setActiveHeadingId] = useState("");
+  const [activeHeadingId, setActiveHeadingId] = useState('');
   const tocContainerRef = useRef<HTMLDivElement | null>(null);
   const isProgrammaticScrollRef = useRef(false);
   const scrollUnlockTimeoutRef = useRef<number | null>(null);
   const headingIds = useMemo(() => headings.map((heading) => heading.id), [headings]);
   const wrapperClassName =
-    variant === "dialog"
-      ? "block w-full"
-      : "hidden xl:col-start-3 xl:row-start-2 xl:block xl:w-full xl:min-w-0 xl:pl-6";
+    variant === 'dialog'
+      ? 'block w-full'
+      : 'hidden xl:col-start-3 xl:row-start-2 xl:block xl:w-full xl:min-w-0 xl:pl-6';
   const containerClassName =
-    variant === "dialog"
-      ? "toc-scrollbar max-h-[min(62dvh,520px)] overflow-y-auto overscroll-contain pr-2"
-      : "toc-scrollbar sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-l border-border/80 pl-6 pr-4";
+    variant === 'dialog'
+      ? 'toc-scrollbar max-h-[min(62dvh,520px)] overflow-y-auto overscroll-contain pr-2'
+      : 'toc-scrollbar sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-l border-border/80 pl-6 pr-4';
 
   useEffect(() => {
     if (headings.length === 0) {
@@ -45,7 +46,7 @@ export default function PostDetailTableOfContents({
     const syncActiveHeadingFromHash = () => {
       const hash = getDecodedHash();
       if (!hash) {
-        setActiveHeadingId(headings[0]?.id ?? "");
+        setActiveHeadingId(headings[0]?.id ?? '');
         return;
       }
 
@@ -55,24 +56,24 @@ export default function PostDetailTableOfContents({
     const handleHashChange = () => {
       const hash = getDecodedHash();
       if (!hash) {
-        setActiveHeadingId(headings[0]?.id ?? "");
+        setActiveHeadingId(headings[0]?.id ?? '');
         return;
       }
 
       const targetElement = document.getElementById(hash);
       if (targetElement instanceof HTMLElement) {
-        scrollToElementBelowHeader(targetElement, "auto");
+        scrollToElementBelowHeader(targetElement, 'auto');
       }
 
       setActiveHeadingId(hash);
     };
 
     const frameId = window.requestAnimationFrame(syncActiveHeadingFromHash);
-    window.addEventListener("hashchange", handleHashChange);
+    window.addEventListener('hashchange', handleHashChange);
 
     return () => {
       window.cancelAnimationFrame(frameId);
-      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener('hashchange', handleHashChange);
     };
   }, [headings]);
 
@@ -87,9 +88,8 @@ export default function PostDetailTableOfContents({
       }
 
       const headerBottom =
-        document
-          .querySelector<HTMLElement>("[data-app-header='true']")
-          ?.getBoundingClientRect().bottom ?? 0;
+        document.querySelector<HTMLElement>("[data-app-header='true']")?.getBoundingClientRect()
+          .bottom ?? 0;
       const activationLine = headerBottom + 24;
 
       const currentHeading = headingIds.reduce<string>((activeId, headingId) => {
@@ -99,19 +99,19 @@ export default function PostDetailTableOfContents({
         }
 
         return element.getBoundingClientRect().top <= activationLine ? headingId : activeId;
-      }, headingIds[0] ?? "");
+      }, headingIds[0] ?? '');
 
       setActiveHeadingId(currentHeading);
     };
 
     const frameId = window.requestAnimationFrame(syncActiveHeadingFromScroll);
-    window.addEventListener("scroll", syncActiveHeadingFromScroll, { passive: true });
-    window.addEventListener("resize", syncActiveHeadingFromScroll);
+    window.addEventListener('scroll', syncActiveHeadingFromScroll, { passive: true });
+    window.addEventListener('resize', syncActiveHeadingFromScroll);
 
     return () => {
       window.cancelAnimationFrame(frameId);
-      window.removeEventListener("scroll", syncActiveHeadingFromScroll);
-      window.removeEventListener("resize", syncActiveHeadingFromScroll);
+      window.removeEventListener('scroll', syncActiveHeadingFromScroll);
+      window.removeEventListener('resize', syncActiveHeadingFromScroll);
     };
   }, [headingIds]);
 
@@ -121,7 +121,9 @@ export default function PostDetailTableOfContents({
     }
 
     const container = tocContainerRef.current;
-    const activeLink = container?.querySelector<HTMLElement>(`[data-toc-heading-id="${CSS.escape(activeHeadingId)}"]`);
+    const activeLink = container?.querySelector<HTMLElement>(
+      `[data-toc-heading-id="${CSS.escape(activeHeadingId)}"]`,
+    );
     if (!container || !activeLink) {
       return;
     }
@@ -133,7 +135,7 @@ export default function PostDetailTableOfContents({
       activeLinkRect.bottom > containerRect.bottom - 24;
 
     if (isOutOfView) {
-      activeLink.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   }, [activeHeadingId]);
 
@@ -151,16 +153,13 @@ export default function PostDetailTableOfContents({
 
   return (
     <aside className={wrapperClassName}>
-      <div
-        ref={tocContainerRef}
-        className={containerClassName}
-      >
+      <div ref={tocContainerRef} className={containerClassName}>
         <nav aria-label="게시물 목차">
           <ul className="space-y-3 py-2">
             {headings.map((heading) => {
               const isActive = activeHeadingId === heading.id;
               const paddingClass =
-                heading.level === 1 ? "pl-0" : heading.level === 2 ? "pl-4" : "pl-8";
+                heading.level === 1 ? 'pl-0' : heading.level === 2 ? 'pl-4' : 'pl-8';
 
               return (
                 <li key={heading.id}>
@@ -180,8 +179,8 @@ export default function PostDetailTableOfContents({
                       }
 
                       isProgrammaticScrollRef.current = true;
-                      window.history.replaceState(null, "", `#${encodeURIComponent(heading.id)}`);
-                      scrollToElementBelowHeader(targetElement, "auto");
+                      window.history.replaceState(null, '', `#${encodeURIComponent(heading.id)}`);
+                      scrollToElementBelowHeader(targetElement, 'auto');
                       setActiveHeadingId(heading.id);
                       onNavigate?.();
 
@@ -191,8 +190,8 @@ export default function PostDetailTableOfContents({
                     }}
                     className={`block w-full cursor-pointer text-left text-[15px] leading-8 tracking-[-0.01em] transition-colors ${paddingClass} ${
                       isActive
-                        ? "font-semibold text-foreground dark:text-white"
-                        : "font-medium text-muted-foreground/90 hover:text-foreground"
+                        ? 'text-foreground font-semibold dark:text-white'
+                        : 'text-muted-foreground/90 hover:text-foreground font-medium'
                     }`}
                   >
                     {heading.text}

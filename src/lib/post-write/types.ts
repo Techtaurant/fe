@@ -1,4 +1,4 @@
-import { CreatePostRequest, CreatePostResponse, PostStatus } from "../../types";
+import { CreatePostRequest, CreatePostResponse, PostStatus } from '../../types';
 
 export interface FieldErrors {
   title: boolean;
@@ -10,14 +10,14 @@ export interface SavePostVariables {
   status: PostStatus;
   payload: CreatePostRequest;
   requestId: string;
-  source: "manual" | "resume";
+  source: 'manual' | 'resume';
 }
 
 export interface SavePostResult {
   result: CreatePostResponse;
   status: PostStatus;
   requestedDraftId: string | null;
-  source: "manual" | "resume";
+  source: 'manual' | 'resume';
 }
 
 export interface PendingPublishSnapshot {
@@ -27,7 +27,7 @@ export interface PendingPublishSnapshot {
   requestId: string;
   path: string;
   draftId: string | null;
-  status: "PUBLISHED" | "PRIVATE";
+  status: 'PUBLISHED' | 'PRIVATE';
   payload: CreatePostRequest;
 }
 

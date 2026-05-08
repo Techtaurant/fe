@@ -1,10 +1,10 @@
 export type CommentApiErrorCode =
-  | "UNAUTHORIZED"
-  | "NOT_FOUND"
-  | "BAD_REQUEST"
-  | "FORBIDDEN"
-  | "GONE"
-  | "HTTP_ERROR";
+  | 'UNAUTHORIZED'
+  | 'NOT_FOUND'
+  | 'BAD_REQUEST'
+  | 'FORBIDDEN'
+  | 'GONE'
+  | 'HTTP_ERROR';
 
 export type ValidationErrors = Record<string, string>;
 
@@ -22,7 +22,7 @@ export class CommentApiError extends Error {
     },
   ) {
     super(options?.message || code);
-    this.name = "CommentApiError";
+    this.name = 'CommentApiError';
     this.code = code;
     this.status = options?.status;
     this.validationErrors = options?.validationErrors;

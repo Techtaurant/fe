@@ -7,9 +7,9 @@ export type MessageCatalog = MessageObject;
 function isMessageValue(value: unknown): value is MessageValue {
   if (
     value === null ||
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
   ) {
     return true;
   }
@@ -18,7 +18,7 @@ function isMessageValue(value: unknown): value is MessageValue {
     return value.every(isMessageValue);
   }
 
-  if (typeof value === "object") {
+  if (typeof value === 'object') {
     return Object.values(value).every(isMessageValue);
   }
 
@@ -26,7 +26,7 @@ function isMessageValue(value: unknown): value is MessageValue {
 }
 
 function isMessageObject(value: unknown): value is MessageObject {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return false;
   }
 

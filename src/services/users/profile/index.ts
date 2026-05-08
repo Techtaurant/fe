@@ -1,1 +1,1 @@
-export { updateMyProfileRequest } from "./client";
+export { updateMyProfileRequest } from './client';

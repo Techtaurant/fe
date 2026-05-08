@@ -1,37 +1,36 @@
-"use client";
+'use client';
 
-import { useLocale, useTranslations } from "next-intl";
-import { ListTree, X } from "lucide-react";
-import { useMemo, useState } from "react";
-import Header from "./Header";
-import AppModal from "./common/AppModal";
-import MarkdownRenderer, { extractTableOfContents } from "./MarkdownRenderer";
-import PostDetailActionBar from "./post-detail/PostDetailActionBar";
-import PostDetailCommentsSection from "./post-detail/PostDetailCommentsSection";
+import { ListTree, X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+
+import { ValidationErrors } from '../services/comments/apiError';
+import { CommentSort } from '../services/comments/types';
+import { Comment, FeedMode, Post } from '../types';
+import AppModal from './common/AppModal';
+import Header from './Header';
+import MarkdownRenderer, { extractTableOfContents } from './MarkdownRenderer';
+import PostDetailActionBar from './post-detail/PostDetailActionBar';
+import PostDetailCommentsSection from './post-detail/PostDetailCommentsSection';
 import PostDetailConfirmDialog, {
-  DELETE_CONFIRM_BUTTON_CLASS_NAME,
   CANCEL_CONFIRM_BUTTON_CLASS_NAME,
+  DELETE_CONFIRM_BUTTON_CLASS_NAME,
   PRIVATE_CONFIRM_BUTTON_CLASS_NAME,
   PUBLIC_CONFIRM_BUTTON_CLASS_NAME,
-} from "./post-detail/PostDetailConfirmDialog";
-import PostDetailHeader from "./post-detail/PostDetailHeader";
-import PostDetailTableOfContents from "./post-detail/PostDetailTableOfContents";
-import { Comment, FeedMode, Post } from "../types";
-import { CommentSort } from "../services/comments/types";
-import { ValidationErrors } from "../services/comments/apiError";
+} from './post-detail/PostDetailConfirmDialog';
+import PostDetailHeader from './post-detail/PostDetailHeader';
+import PostDetailTableOfContents from './post-detail/PostDetailTableOfContents';
 
-const ATTACHMENT_ID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ATTACHMENT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const POST_DETAIL_CENTER_COLUMN_CLASS_NAME =
-  "mx-auto w-full max-w-[728px] min-w-0 xl:col-start-2";
+const POST_DETAIL_CENTER_COLUMN_CLASS_NAME = 'mx-auto w-full max-w-[728px] min-w-0 xl:col-start-2';
 const POST_DETAIL_CENTER_CONTENT_COLUMN_CLASS_NAME = `${POST_DETAIL_CENTER_COLUMN_CLASS_NAME} xl:row-start-2`;
 
 interface PostDetailProps {
   post: Post;
   comments: Comment[];
   isRead: boolean;
-  reactionState: "like" | "dislike" | "none";
+  reactionState: 'like' | 'dislike' | 'none';
   currentMode: FeedMode;
   isCommentsLoading: boolean;
   commentsHasNext: boolean;
@@ -114,25 +113,18 @@ export default function PostDetail({
   isReporting,
   onShowError,
 }: PostDetailProps) {
-  const t = useTranslations("PostDetail");
+  const t = useTranslations('PostDetail');
   const locale = useLocale();
-  const isOwner = Boolean(
-    currentUserId && post.author?.id && currentUserId === post.author.id,
-  );
+  const isOwner = Boolean(currentUserId && post.author?.id && currentUserId === post.author.id);
   const canToggleRead = !isOwner;
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportConfirmOpen, setIsReportConfirmOpen] = useState(false);
   const [isVisibilityConfirmOpen, setIsVisibilityConfirmOpen] = useState(false);
-  const [isTableOfContentsDialogOpen, setIsTableOfContentsDialogOpen] =
-    useState(false);
+  const [isTableOfContentsDialogOpen, setIsTableOfContentsDialogOpen] = useState(false);
   const [commentFocusRequestKey, setCommentFocusRequestKey] = useState(0);
-  const nextVisibilityStatus =
-    post.status === "PRIVATE" ? "PUBLISHED" : "PRIVATE";
-  const isNextStatusPrivate = nextVisibilityStatus === "PRIVATE";
-  const tableOfContents = useMemo(
-    () => extractTableOfContents(post.content || ""),
-    [post.content],
-  );
+  const nextVisibilityStatus = post.status === 'PRIVATE' ? 'PUBLISHED' : 'PRIVATE';
+  const isNextStatusPrivate = nextVisibilityStatus === 'PRIVATE';
+  const tableOfContents = useMemo(() => extractTableOfContents(post.content || ''), [post.content]);
   const attachmentPresignedUrlMap = useMemo(
     () =>
       new Map(
@@ -146,10 +138,10 @@ export default function PostDetail({
   const hasTableOfContents = tableOfContents.length > 0;
   const postDetailHeaderColumnClassName = hasTableOfContents
     ? POST_DETAIL_CENTER_COLUMN_CLASS_NAME
-    : "min-w-0";
+    : 'min-w-0';
   const postDetailContentColumnClassName = hasTableOfContents
     ? POST_DETAIL_CENTER_CONTENT_COLUMN_CLASS_NAME
-    : "min-w-0";
+    : 'min-w-0';
 
   const resolvePostImageSrc = (src: string): string | null => {
     if (!ATTACHMENT_ID_PATTERN.test(src)) {
@@ -160,7 +152,7 @@ export default function PostDetail({
   };
 
   const formatCount = (count: number): string => {
-    if (locale === "ko") {
+    if (locale === 'ko') {
       if (count >= 10000) return `${(count / 10000).toFixed(1)}만`;
       if (count >= 1000) return `${(count / 1000).toFixed(1)}천`;
       return count.toString();
@@ -171,20 +163,16 @@ export default function PostDetail({
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        onMenuClick={() => {}}
-        currentMode={currentMode}
-        onModeChange={() => {}}
-      />
+    <div className="bg-background min-h-screen">
+      <Header onMenuClick={() => {}} currentMode={currentMode} onModeChange={() => {}} />
 
       <main className="mx-auto px-4 pt-8 pb-[calc(max(18rem,100vh)+env(safe-area-inset-bottom))] md:px-6 md:pt-12 md:pb-[calc(max(24rem,100vh)+env(safe-area-inset-bottom))]">
         {hasTableOfContents ? (
           <button
             type="button"
-            aria-label={t("tocOpen")}
+            aria-label={t('tocOpen')}
             onClick={() => setIsTableOfContentsDialogOpen(true)}
-            className="fixed right-4 top-20 z-[250] inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/95 text-foreground shadow-lg shadow-black/10 backdrop-blur transition-colors hover:bg-muted md:right-6 xl:hidden"
+            className="border-border bg-background/95 text-foreground hover:bg-muted fixed top-20 right-4 z-[250] inline-flex h-11 w-11 items-center justify-center rounded-full border shadow-lg shadow-black/10 backdrop-blur transition-colors md:right-6 xl:hidden"
           >
             <ListTree className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -193,8 +181,8 @@ export default function PostDetail({
         <div
           className={
             hasTableOfContents
-              ? "mx-auto grid w-full grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,728px)_minmax(0,1fr)]"
-              : "mx-auto max-w-[728px]"
+              ? 'mx-auto grid w-full grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,728px)_minmax(0,1fr)]'
+              : 'mx-auto max-w-[728px]'
           }
         >
           <div className={postDetailHeaderColumnClassName}>
@@ -218,7 +206,7 @@ export default function PostDetail({
           <div className={postDetailContentColumnClassName}>
             <article className="mb-12">
               <MarkdownRenderer
-                content={post.content || ""}
+                content={post.content || ''}
                 resolveImageSrc={resolvePostImageSrc}
               />
             </article>
@@ -235,9 +223,7 @@ export default function PostDetail({
               onDislike={onDislike}
               onToggleRead={onToggleRead}
               onShare={onShare}
-              onFocusComment={() =>
-                setCommentFocusRequestKey((prev) => prev + 1)
-              }
+              onFocusComment={() => setCommentFocusRequestKey((prev) => prev + 1)}
             />
 
             <PostDetailCommentsSection
@@ -266,9 +252,7 @@ export default function PostDetail({
             />
           </div>
 
-          {hasTableOfContents ? (
-            <PostDetailTableOfContents headings={tableOfContents} />
-          ) : null}
+          {hasTableOfContents ? <PostDetailTableOfContents headings={tableOfContents} /> : null}
         </div>
 
         {hasTableOfContents ? (
@@ -278,12 +262,12 @@ export default function PostDetail({
             panelClassName="w-full max-w-[420px] rounded-2xl border border-border bg-background p-5 shadow-2xl"
           >
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-lg font-semibold text-foreground">{t("tocTitle")}</h2>
+              <h2 className="text-foreground text-lg font-semibold">{t('tocTitle')}</h2>
               <button
                 type="button"
-                aria-label={t("tocClose")}
+                aria-label={t('tocClose')}
                 onClick={() => setIsTableOfContentsDialogOpen(false)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
@@ -300,10 +284,10 @@ export default function PostDetail({
 
         <PostDetailConfirmDialog
           isOpen={isDeleteConfirmOpen}
-          title={t("deleteConfirmTitle")}
-          description={t("deleteConfirmDescription")}
-          cancelLabel={t("close")}
-          confirmLabel={t("deleteConfirmAction")}
+          title={t('deleteConfirmTitle')}
+          description={t('deleteConfirmDescription')}
+          cancelLabel={t('close')}
+          confirmLabel={t('deleteConfirmAction')}
           onCancel={() => setIsDeleteConfirmOpen(false)}
           onConfirm={async () => {
             const deleted = await onDelete();
@@ -320,16 +304,12 @@ export default function PostDetail({
           isOpen={isVisibilityConfirmOpen}
           title={
             isNextStatusPrivate
-              ? t("visibilityConfirmToPrivateTitle")
-              : t("visibilityConfirmToPublicTitle")
+              ? t('visibilityConfirmToPrivateTitle')
+              : t('visibilityConfirmToPublicTitle')
           }
-          description={t("visibilityConfirmDescription")}
-          cancelLabel={t("close")}
-          confirmLabel={
-            isNextStatusPrivate
-              ? t("menuToggleToPrivate")
-              : t("menuToggleToPublic")
-          }
+          description={t('visibilityConfirmDescription')}
+          cancelLabel={t('close')}
+          confirmLabel={isNextStatusPrivate ? t('menuToggleToPrivate') : t('menuToggleToPublic')}
           onCancel={() => setIsVisibilityConfirmOpen(false)}
           onConfirm={async () => {
             await onToggleVisibility();
@@ -346,10 +326,10 @@ export default function PostDetail({
 
         <PostDetailConfirmDialog
           isOpen={isReportConfirmOpen}
-          title={t("reportConfirmTitle")}
-          description={t("reportConfirmDescription")}
-          cancelLabel={t("cancel")}
-          confirmLabel={t("reportConfirmAction")}
+          title={t('reportConfirmTitle')}
+          description={t('reportConfirmDescription')}
+          cancelLabel={t('cancel')}
+          confirmLabel={t('reportConfirmAction')}
           onCancel={() => setIsReportConfirmOpen(false)}
           onConfirm={async () => {
             await onReport();

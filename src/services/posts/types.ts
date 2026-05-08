@@ -1,7 +1,7 @@
-import { Post } from "../../types";
+import { Post } from '../../types';
 
-export type PostListSort = "LATEST" | "VIEW" | "LIKE" | "COMMENT";
-export type PostListPeriod = "WEEK" | "MONTH" | "YEAR" | "ALL";
+export type PostListSort = 'LATEST' | 'VIEW' | 'LIKE' | 'COMMENT';
+export type PostListPeriod = 'WEEK' | 'MONTH' | 'YEAR' | 'ALL';
 
 export interface PostListItem {
   id: string;
@@ -14,7 +14,7 @@ export interface PostListItem {
     id?: string;
     path?: string;
   };
-  status?: "DRAFT" | "PUBLISHED" | "PRIVATE";
+  status?: 'DRAFT' | 'PUBLISHED' | 'PRIVATE';
   authorName: string;
   authorProfileImageUrl?: string;
   thumbnailUrl?: string;
@@ -71,7 +71,7 @@ export interface PostDetailResponse {
     id: string;
     title?: string;
     content?: string;
-    status?: "DRAFT" | "PUBLISHED" | "PRIVATE";
+    status?: 'DRAFT' | 'PUBLISHED' | 'PRIVATE';
     publishedAt?: string;
     author: {
       id: string;
@@ -89,7 +89,7 @@ export interface PostDetailResponse {
     tags?: { id: string; name: string }[];
     viewCount?: number;
     likeCount?: number;
-    likeStatus?: "NONE" | "LIKE" | "DISLIKE";
+    likeStatus?: 'NONE' | 'LIKE' | 'DISLIKE';
     commentCount?: number;
     isRead?: boolean;
     attachmentPresignedUrls?: {

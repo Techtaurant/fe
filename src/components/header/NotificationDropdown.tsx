@@ -1,34 +1,35 @@
-"use client";
+'use client';
 
-import { Bell, ChevronRight } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { startTransition, useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import { useRouter } from "../../i18n/navigation";
-import { useNotifications } from "../../hooks/useNotifications";
-import { resolveNotificationHref } from "../../lib/notificationRoute";
-import { ALLOWED_HTML_TAGS } from "../../constants/markdownAllowedHtml";
-import { NotificationListItem } from "../../services/notifications";
-import { formatDisplayTime } from "../../utils";
+import { Bell, ChevronRight } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { startTransition, useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+
+import { ALLOWED_HTML_TAGS } from '../../constants/markdownAllowedHtml';
+import { useNotifications } from '../../hooks/useNotifications';
+import { useRouter } from '../../i18n/navigation';
+import { resolveNotificationHref } from '../../lib/notificationRoute';
+import { NotificationListItem } from '../../services/notifications';
+import { formatDisplayTime } from '../../utils';
 
 const notificationSanitizedSchema = {
   ...defaultSchema,
   tagNames: ALLOWED_HTML_TAGS,
   attributes: {
     ...defaultSchema.attributes,
-    a: ["href", "title", "target", "rel"],
-    div: ["className", "title", ["align", "left", "center", "right"]],
-    img: ["src", "width", "height", "alt"],
-    span: ["className", "title"],
-    p: [["align", "left", "center", "right"]],
-    strong: ["className"],
+    a: ['href', 'title', 'target', 'rel'],
+    div: ['className', 'title', ['align', 'left', 'center', 'right']],
+    img: ['src', 'width', 'height', 'alt'],
+    span: ['className', 'title'],
+    p: [['align', 'left', 'center', 'right']],
+    strong: ['className'],
   },
 } as const;
 
 function stripNotificationImages(html: string): string {
-  return html.replace(/<img\b[^>]*>/gi, "").trim();
+  return html.replace(/<img\b[^>]*>/gi, '').trim();
 }
 
 function NotificationPayloadPreview({
@@ -38,20 +39,15 @@ function NotificationPayloadPreview({
   html: string;
   thumbnailUrl?: string | null;
 }) {
-  const normalizedThumbnailUrl =
-    typeof thumbnailUrl === "string" ? thumbnailUrl.trim() : "";
+  const normalizedThumbnailUrl = typeof thumbnailUrl === 'string' ? thumbnailUrl.trim() : '';
   const hasThumbnail = normalizedThumbnailUrl.length > 0;
   const markdownSource = hasThumbnail ? stripNotificationImages(html) : html;
 
   return (
-    <div className="notification-payload flex max-h-[72px] items-start gap-2 overflow-hidden text-[12.5px] leading-[1.5] text-foreground">
+    <div className="notification-payload text-foreground flex max-h-[72px] items-start gap-2 overflow-hidden text-[12.5px] leading-[1.5]">
       {hasThumbnail ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={normalizedThumbnailUrl}
-          alt=""
-          className="notification-payload-thumbnail"
-        />
+        <img src={normalizedThumbnailUrl} alt="" className="notification-payload-thumbnail" />
       ) : null}
 
       <div className="notification-payload-body min-w-0 flex-1">
@@ -59,17 +55,13 @@ function NotificationPayloadPreview({
           rehypePlugins={[rehypeRaw, [rehypeSanitize, notificationSanitizedSchema]]}
           components={{
             img: ({ src, alt, ...props }) => {
-              if (typeof src !== "string" || src.trim().length === 0) {
+              if (typeof src !== 'string' || src.trim().length === 0) {
                 return null;
               }
 
               return (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={src}
-                  alt={alt ?? ""}
-                  {...props}
-                />
+                <img src={src} alt={alt ?? ''} {...props} />
               );
             },
           }}
@@ -130,7 +122,7 @@ function NotificationPayloadPreview({
 }
 
 export default function NotificationDropdown() {
-  const t = useTranslations("Header");
+  const t = useTranslations('Header');
   const locale = useLocale();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -152,20 +144,17 @@ export default function NotificationDropdown() {
     listEnabled: isOpen,
   });
 
-  const unreadBadgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
+  const unreadBadgeLabel = unreadCount > 99 ? '99+' : String(unreadCount);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleNotificationClick = async (notification: NotificationListItem) => {
@@ -180,7 +169,7 @@ export default function NotificationDropdown() {
     try {
       await markNotificationAsRead(notification.id);
     } catch (error) {
-      console.error("Failed to mark notification as read:", error);
+      console.error('Failed to mark notification as read:', error);
     }
 
     setIsOpen(false);
@@ -193,7 +182,7 @@ export default function NotificationDropdown() {
     try {
       await markAllAsRead();
     } catch (error) {
-      console.error("Failed to mark all notifications as read:", error);
+      console.error('Failed to mark all notifications as read:', error);
     }
   };
 
@@ -204,27 +193,27 @@ export default function NotificationDropdown() {
         onClick={() => setIsOpen((current) => !current)}
         className={`relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
           isOpen
-            ? "border-border bg-muted/80 text-foreground"
-            : "border-border/70 bg-background text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground"
+            ? 'border-border bg-muted/80 text-foreground'
+            : 'border-border/70 bg-background text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground'
         }`}
-        aria-label={isOpen ? t("notificationsClose") : t("notificationsOpen")}
+        aria-label={isOpen ? t('notificationsClose') : t('notificationsOpen')}
       >
         <Bell className="h-[17px] w-[17px]" strokeWidth={2.1} />
         {hasUnreadNotifications ? (
-          <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
+          <span className="bg-primary text-primary-foreground ring-background absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-semibold ring-2">
             {unreadBadgeLabel}
           </span>
         ) : null}
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 top-[calc(100%+0.625rem)] z-[420] w-[338px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[28px] border border-border/80 bg-background text-foreground shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
-          <div className="flex items-center justify-between border-b border-border/70 px-4 pb-3 pt-4">
+        <div className="border-border/80 bg-background text-foreground absolute top-[calc(100%+0.625rem)] right-0 z-[420] w-[338px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[28px] border shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+          <div className="border-border/70 flex items-center justify-between border-b px-4 pt-4 pb-3">
             <div className="flex min-w-0 items-center gap-2">
-              <p className="truncate text-[15px] font-semibold tracking-[-0.01em] text-foreground">
-                {t("notifications")}
+              <p className="text-foreground truncate text-[15px] font-semibold tracking-[-0.01em]">
+                {t('notifications')}
               </p>
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+              <span className="bg-primary text-primary-foreground inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold">
                 {unreadCount}
               </span>
             </div>
@@ -235,27 +224,27 @@ export default function NotificationDropdown() {
                 void handleMarkAllAsRead();
               }}
               disabled={!hasUnreadNotifications || isRefreshingReadState}
-              className="rounded-full px-2 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="text-muted-foreground hover:bg-muted/70 hover:text-foreground rounded-full px-2 py-1 text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {t("notificationsMarkAllRead")}
+              {t('notificationsMarkAllRead')}
             </button>
           </div>
 
-          <div className="max-h-[372px] overflow-y-auto px-2 pb-3 pt-2">
+          <div className="max-h-[372px] overflow-y-auto px-2 pt-2 pb-3">
             {isLoading ? (
-              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-                {t("notificationsLoading")}
+              <div className="text-muted-foreground px-4 py-12 text-center text-sm">
+                {t('notificationsLoading')}
               </div>
             ) : errorMessage && notifications.length === 0 ? (
-              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+              <div className="text-muted-foreground px-4 py-12 text-center text-sm">
                 {errorMessage}
               </div>
             ) : notifications.length === 0 ? (
-              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-                {t("notificationsEmpty")}
+              <div className="text-muted-foreground px-4 py-12 text-center text-sm">
+                {t('notificationsEmpty')}
               </div>
             ) : (
-              <div className="divide-y divide-border/60">
+              <div className="divide-border/60 divide-y">
                 {notifications.map((notification) => {
                   const href = resolveNotificationHref({
                     notification,
@@ -270,22 +259,22 @@ export default function NotificationDropdown() {
                       }}
                       disabled={!href}
                       className="group block w-full rounded-[18px] px-0 py-1 text-left transition-colors focus-visible:outline-none disabled:cursor-default"
-                      aria-label={t("notificationsNavigateLabel")}
+                      aria-label={t('notificationsNavigateLabel')}
                     >
                       <div
-                        className={`flex items-start gap-3 rounded-[16px] px-3 py-2 transition-colors group-hover:bg-muted/50 group-focus-visible:bg-muted/60 ${
-                          notification.isRead ? "bg-transparent" : "bg-muted/25"
+                        className={`group-hover:bg-muted/50 group-focus-visible:bg-muted/60 flex items-start gap-3 rounded-[16px] px-3 py-2 transition-colors ${
+                          notification.isRead ? 'bg-transparent' : 'bg-muted/25'
                         }`}
                       >
                         <div className="relative min-w-0 flex-1">
                           {!notification.isRead ? (
-                            <span className="absolute -left-3 top-1.5 block h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                            <span className="absolute top-1.5 -left-3 block h-2.5 w-2.5 rounded-full bg-emerald-500" />
                           ) : null}
                           <NotificationPayloadPreview
                             html={notification.payloadHtml}
                             thumbnailUrl={notification.thumbnailUrl}
                           />
-                          <p className="mt-2 text-[11px] font-medium text-muted-foreground">
+                          <p className="text-muted-foreground mt-2 text-[11px] font-medium">
                             {formatDisplayTime(notification.createdAt, locale)}
                           </p>
                         </div>
@@ -298,16 +287,16 @@ export default function NotificationDropdown() {
           </div>
 
           {hasNext ? (
-            <div className="border-t border-border/70 px-4 py-3">
+            <div className="border-border/70 border-t px-4 py-3">
               <button
                 type="button"
                 onClick={() => {
                   void loadMore();
                 }}
                 disabled={isLoadingMore}
-                className="mx-auto inline-flex min-w-[118px] items-center justify-center gap-1 rounded-full border border-border/80 bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-60"
+                className="border-border/80 bg-background text-foreground hover:bg-muted/60 mx-auto inline-flex min-w-[118px] items-center justify-center gap-1 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isLoadingMore ? t("notificationsLoading") : t("notificationsLoadMore")}
+                {isLoadingMore ? t('notificationsLoading') : t('notificationsLoadMore')}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

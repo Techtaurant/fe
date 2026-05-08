@@ -1,8 +1,8 @@
 import {
   CreateAttachmentPresignedUrlRequest,
   CreateAttachmentPresignedUrlResponse,
-} from "../../types";
-import { httpClient } from "../../utils/httpClient";
+} from '../../types';
+import { httpClient } from '../../utils/httpClient';
 
 export interface UploadedAttachment {
   attachmentId: string;
@@ -22,38 +22,34 @@ interface AttachmentPreviewUrlResponse {
 
 async function createAttachmentPresignedUrl(
   payload: CreateAttachmentPresignedUrlRequest,
-): Promise<CreateAttachmentPresignedUrlResponse["data"]> {
-  const response = await httpClient("/api/attachments/presigned-url", {
-    method: "POST",
+): Promise<CreateAttachmentPresignedUrlResponse['data']> {
+  const response = await httpClient('/api/attachments/presigned-url', {
+    method: 'POST',
     body: JSON.stringify(payload),
   });
 
   if (response.status === 400) {
-    throw new Error("BAD_REQUEST");
+    throw new Error('BAD_REQUEST');
   }
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (!response.ok) {
     throw new Error(`HTTP_${response.status}`);
   }
 
-  const body =
-    (await response.json()) as CreateAttachmentPresignedUrlResponse;
+  const body = (await response.json()) as CreateAttachmentPresignedUrlResponse;
 
   return body.data;
 }
 
-async function uploadFileToPresignedUrl(
-  presignedUrl: string,
-  file: File,
-): Promise<void> {
+async function uploadFileToPresignedUrl(presignedUrl: string, file: File): Promise<void> {
   const response = await fetch(presignedUrl, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
-      "Content-Type": file.type || "application/octet-stream",
+      'Content-Type': file.type || 'application/octet-stream',
     },
     body: file,
   });
@@ -65,13 +61,13 @@ async function uploadFileToPresignedUrl(
 
 async function uploadFilesByReferenceType(
   files: File[],
-  referenceType: CreateAttachmentPresignedUrlRequest["referenceType"],
+  referenceType: CreateAttachmentPresignedUrlRequest['referenceType'],
 ): Promise<UploadedAttachment[]> {
   return Promise.all(
     files.map(async (file) => {
       const presigned = await createAttachmentPresignedUrl({
         fileName: file.name,
-        contentType: file.type || "application/octet-stream",
+        contentType: file.type || 'application/octet-stream',
         fileSize: file.size,
         referenceType,
       });
@@ -79,7 +75,7 @@ async function uploadFilesByReferenceType(
       await uploadFileToPresignedUrl(presigned.presignedUrl, file);
 
       const previewUrl =
-        typeof URL !== "undefined" && typeof URL.createObjectURL === "function"
+        typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
           ? URL.createObjectURL(file)
           : undefined;
 
@@ -93,31 +89,31 @@ async function uploadFilesByReferenceType(
 }
 
 export async function uploadPostImages(files: File[]): Promise<UploadedAttachment[]> {
-  return uploadFilesByReferenceType(files, "POST");
+  return uploadFilesByReferenceType(files, 'POST');
 }
 
 export async function uploadProfileImages(files: File[]): Promise<UploadedAttachment[]> {
-  return uploadFilesByReferenceType(files, "USER");
+  return uploadFilesByReferenceType(files, 'USER');
 }
 
 export async function fetchAttachmentPreviewUrl(attachmentId: string): Promise<string> {
   const response = await httpClient(
     `/api/attachments/${encodeURIComponent(attachmentId)}/preview-url`,
     {
-      method: "GET",
+      method: 'GET',
     },
   );
 
   if (response.status === 400) {
-    throw new Error("BAD_REQUEST");
+    throw new Error('BAD_REQUEST');
   }
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new Error('NOT_FOUND');
   }
 
   if (!response.ok) {
