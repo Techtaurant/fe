@@ -14,6 +14,7 @@ import { redirectToOAuthLogin } from "../../lib/authRedirect";
 import { useUserBans } from "../../hooks/useUserBans";
 import BlockedAccountsModal from "./BlockedAccountsModal";
 import ActionSnackbar from "../ui/ActionSnackbar";
+import ProfileEditModal from "../user/ProfileEditModal";
 
 type ThemeMode = "light" | "dark" | "system";
 type SettingsTab = "general" | "management";
@@ -83,6 +84,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const [isBlockedAccountsModalOpen, setIsBlockedAccountsModalOpen] = useState(false);
+  const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
   const { snackbar, showSnackbar } = useActionSnackbar();
   const {
     bans,
@@ -251,7 +253,12 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
             <article className="p-0">
               <section>
                 <h3 className="text-base font-semibold text-foreground">{t("management.profile")}</h3>
-                <div className="mt-3 flex items-center px-1 py-2">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileEditModalOpen(true)}
+                  aria-label={`${t("management.profile")} ${t("management.edit")}`}
+                  className="mt-3 flex w-full items-center justify-between rounded-md px-1 py-2 text-left transition-colors hover:bg-muted/60"
+                >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="relative h-8 w-8 overflow-hidden rounded-full bg-muted">
                       {user.profileImageUrl ? (
@@ -269,7 +276,11 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                     </div>
                     <p className="truncate text-sm font-semibold text-foreground">{user.name}</p>
                   </div>
-                </div>
+                  <span className="ml-3 inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-muted-foreground">
+                    {t("management.edit")}
+                    <ChevronRight className="h-5 w-5" />
+                  </span>
+                </button>
               </section>
 
               <section className="mt-6 border-t border-border pt-6">
@@ -298,6 +309,13 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
           onClose={() => setIsBlockedAccountsModalOpen(false)}
           onUnban={handleUnbanUser}
         />
+        {user ? (
+          <ProfileEditModal
+            isOpen={isProfileEditModalOpen}
+            user={user}
+            onClose={() => setIsProfileEditModalOpen(false)}
+          />
+        ) : null}
       </div>
     </>
   );
