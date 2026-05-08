@@ -1,3 +1,12 @@
 {
-  "eslint.useFlatConfig": true
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "eslint.useFlatConfig": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always",
+    "source.removeUnusedImports": "always",
+    "source.organizeImports": "never",
+    "source.addMissingImports": "always"
+  }
 }
