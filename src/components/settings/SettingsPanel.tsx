@@ -309,13 +309,13 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
           onClose={() => setIsBlockedAccountsModalOpen(false)}
           onUnban={handleUnbanUser}
         />
-        {user ? (
+        {user && (
           <ProfileEditModal
             isOpen={isProfileEditModalOpen}
             user={user}
             onClose={() => setIsProfileEditModalOpen(false)}
           />
-        ) : null}
+        )}
       </div>
     </>
   );
