@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
-import { QueryClient } from "@tanstack/react-query";
-import { createPost, updatePost } from "../../services/posts";
-import { useRouter } from "../../i18n/navigation";
-import { queryKeys } from "../../lib/queryKeys";
-import { CreatePostRequest } from "../../types";
+import { QueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef } from 'react';
+
+import { useRouter } from '../../i18n/navigation';
 import {
   AUTO_SAVE_DEBOUNCE_MS,
   AUTO_SAVE_RETRY_BASE_MS,
   AUTO_SAVE_RETRY_MAX_MS,
   LOCAL_SAVE_DEBOUNCE_MS,
-} from "../../lib/post-write/constants";
+} from '../../lib/post-write/constants';
+import { queryKeys } from '../../lib/queryKeys';
+import { createPost, updatePost } from '../../services/posts';
+import { CreatePostRequest } from '../../types';
 
 interface UseAutoSaveParams {
   enabled?: boolean;
@@ -23,7 +24,7 @@ interface UseAutoSaveParams {
   tags: string[];
   thumbnailAttachmentId: string | null;
   contentFingerprint: string;
-  buildPostPayload: (status: "DRAFT") => CreatePostRequest;
+  buildPostPayload: (status: 'DRAFT') => CreatePostRequest;
   writeLocalDraftSnapshot: () => void;
   clearLocalDraftSnapshot: () => void;
   setAutoSaveNotice: (message: string | null) => void;
@@ -51,7 +52,7 @@ export function useAutoSave({
   draftCountQueryKey,
   router,
 }: UseAutoSaveParams) {
-  const t = useTranslations("WritePage.notice");
+  const t = useTranslations('WritePage.notice');
   const autoSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const localSaveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoSaveRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -89,7 +90,7 @@ export function useAutoSave({
     const requestSequence = ++autoSaveRequestSequenceRef.current;
 
     try {
-      const payload = buildPostPayload("DRAFT");
+      const payload = buildPostPayload('DRAFT');
       const result = draftId
         ? await updatePost(draftId, payload, abortController.signal)
         : await createPost(payload, abortController.signal);
@@ -101,11 +102,11 @@ export function useAutoSave({
       autoSaveAppliedSequenceRef.current = requestSequence;
       autoSaveRetryDelayRef.current = AUTO_SAVE_RETRY_BASE_MS;
       clearLocalDraftSnapshot();
-      setAutoSaveNotice(t("autoSaved"));
+      setAutoSaveNotice(t('autoSaved'));
 
       if (!draftId && !hasIncrementedDraftCountForCurrentCreateRef.current) {
         queryClient.setQueryData<number | null>(draftCountQueryKey, (current) => {
-          if (typeof current !== "number") return current;
+          if (typeof current !== 'number') return current;
           return current + 1;
         });
         hasIncrementedDraftCountForCurrentCreateRef.current = true;
@@ -113,7 +114,7 @@ export function useAutoSave({
 
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: [...queryKeys.posts.all, "drafts"] as const,
+          queryKey: [...queryKeys.posts.all, 'drafts'] as const,
         }),
         queryClient.invalidateQueries({ queryKey: draftCountQueryKey }),
       ]);
@@ -122,10 +123,10 @@ export function useAutoSave({
         router.replace(`/post/write?draftId=${result.data.id}`);
       }
     } catch (saveError) {
-      if (saveError instanceof DOMException && saveError.name === "AbortError") {
+      if (saveError instanceof DOMException && saveError.name === 'AbortError') {
         return;
       }
-      setAutoSaveNotice(t("autoSaveRetry"));
+      setAutoSaveNotice(t('autoSaveRetry'));
       if (autoSaveRetryTimerRef.current) {
         clearTimeout(autoSaveRetryTimerRef.current);
         autoSaveRetryTimerRef.current = null;
@@ -175,7 +176,7 @@ export function useAutoSave({
 
     localSaveDebounceTimerRef.current = setTimeout(() => {
       writeLocalDraftSnapshot();
-      setAutoSaveNotice(t("localSaved"));
+      setAutoSaveNotice(t('localSaved'));
     }, LOCAL_SAVE_DEBOUNCE_MS);
 
     if (autoSaveDebounceTimerRef.current) {
@@ -208,7 +209,7 @@ export function useAutoSave({
   useEffect(() => {
     if (!enabled) return;
     const flushAutoSave = () => {
-      if (document.visibilityState === "hidden") {
+      if (document.visibilityState === 'hidden') {
         writeLocalDraftSnapshot();
         void runAutoSave();
       }
@@ -219,12 +220,12 @@ export function useAutoSave({
       void runAutoSave();
     };
 
-    document.addEventListener("visibilitychange", flushAutoSave);
-    window.addEventListener("beforeunload", flushBeforeUnload);
+    document.addEventListener('visibilitychange', flushAutoSave);
+    window.addEventListener('beforeunload', flushBeforeUnload);
 
     return () => {
-      document.removeEventListener("visibilitychange", flushAutoSave);
-      window.removeEventListener("beforeunload", flushBeforeUnload);
+      document.removeEventListener('visibilitychange', flushAutoSave);
+      window.removeEventListener('beforeunload', flushBeforeUnload);
     };
   }, [enabled, runAutoSave, writeLocalDraftSnapshot]);
 

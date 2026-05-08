@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
 interface WriteActionsProps {
   isSubmitting: boolean;
@@ -21,34 +21,34 @@ export default function WriteActions({
   onOpenPublishModal,
   onGoDraftList,
 }: WriteActionsProps) {
-  const t = useTranslations("WritePage.actions");
+  const t = useTranslations('WritePage.actions');
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <button
         type="button"
         onClick={onGoBack}
-        className="rounded-lg border border-transparent bg-muted/70 px-5 py-2.5 text-base font-semibold text-foreground transition-colors hover:bg-muted/80"
+        className="bg-muted/70 text-foreground hover:bg-muted/80 rounded-lg border border-transparent px-5 py-2.5 text-base font-semibold transition-colors"
       >
-        {t("exit")}
+        {t('exit')}
       </button>
 
       <div className="flex flex-wrap justify-end gap-3">
         {showDraftActions && (
-          <div className="inline-flex overflow-hidden rounded-lg bg-close-button">
+          <div className="bg-close-button inline-flex overflow-hidden rounded-lg">
             <button
               type="button"
               disabled={isPublishActionDisabled}
               onClick={onSaveDraft}
-              className="px-4 py-2.5 text-base font-semibold text-foreground transition-colors hover:bg-close-button-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className="text-foreground hover:bg-close-button-hover px-4 py-2.5 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? t("saving") : t("saveDraft")}
+              {isSubmitting ? t('saving') : t('saveDraft')}
             </button>
             <button
               type="button"
               onClick={onGoDraftList}
-              className="min-w-11 border-l border-white/80 dark:border-ring px-2.5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-close-button-hover"
-              aria-label={t("draftListAria")}
+              className="dark:border-ring text-foreground hover:bg-close-button-hover min-w-11 border-l border-white/80 px-2.5 py-2 text-sm font-semibold transition-colors"
+              aria-label={t('draftListAria')}
             >
               {draftCountLabel}
             </button>
@@ -59,9 +59,9 @@ export default function WriteActions({
           type="button"
           disabled={isPublishActionDisabled}
           onClick={onOpenPublishModal}
-          className="rounded-lg bg-comment-submit-button px-7 py-2.5 text-base font-semibold text-white transition-colors duration-200 hover:bg-comment-submit-button-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="bg-comment-submit-button hover:bg-comment-submit-button-hover rounded-lg px-7 py-2.5 text-base font-semibold text-white transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting ? t("publishing") : t("publish")}
+          {isSubmitting ? t('publishing') : t('publish')}
         </button>
       </div>
     </div>

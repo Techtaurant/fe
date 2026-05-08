@@ -1,16 +1,17 @@
-"use client";
+'use client';
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Camera, LoaderCircle, PencilLine, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { uploadProfileImages } from "../../services/attachments";
-import { queryKeys } from "../../lib/queryKeys";
-import { updateMyProfileRequest } from "../../services/users/profile";
-import { User } from "../../types";
-import AppModal from "../common/AppModal";
-import PrimaryRectButton from "../ui/PrimaryRectButton";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Camera, LoaderCircle, PencilLine, X } from 'lucide-react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+
+import { queryKeys } from '../../lib/queryKeys';
+import { uploadProfileImages } from '../../services/attachments';
+import { updateMyProfileRequest } from '../../services/users/profile';
+import { User } from '../../types';
+import AppModal from '../common/AppModal';
+import PrimaryRectButton from '../ui/PrimaryRectButton';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ interface ProfileEditModalProps {
 }
 
 export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditModalProps) {
-  const t = useTranslations("UserPage.profileEdit");
+  const t = useTranslations('UserPage.profileEdit');
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [name, setName] = useState(user.name);
@@ -28,7 +29,7 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
   const [generalErrorMessage, setGeneralErrorMessage] = useState<string | null>(null);
 
   const previewUrl = useMemo(
-    () => (selectedFile ? URL.createObjectURL(selectedFile) : user.profileImageUrl || ""),
+    () => (selectedFile ? URL.createObjectURL(selectedFile) : user.profileImageUrl || ''),
     [selectedFile, user.profileImageUrl],
   );
 
@@ -46,7 +47,7 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
     mutationFn: async () => {
       const trimmedName = name.trim();
       if (!trimmedName) {
-        throw new Error("EMPTY_NAME");
+        throw new Error('EMPTY_NAME');
       }
 
       const uploadedImage = selectedFile
@@ -65,58 +66,58 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
         ...user,
         name: result.data.name,
         email: result.data.email,
-        profileImageUrl: result.data.profileImageUrl ?? "",
+        profileImageUrl: result.data.profileImageUrl ?? '',
       });
       void queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
       onClose();
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : "UNKNOWN";
+      const message = error instanceof Error ? error.message : 'UNKNOWN';
 
-      if (message === "EMPTY_NAME") {
-        setNameErrorMessage(t("errors.emptyName"));
+      if (message === 'EMPTY_NAME') {
+        setNameErrorMessage(t('errors.emptyName'));
         return;
       }
 
-      if (message === "DUPLICATE_NAME") {
-        setNameErrorMessage(t("errors.duplicateName"));
+      if (message === 'DUPLICATE_NAME') {
+        setNameErrorMessage(t('errors.duplicateName'));
         return;
       }
 
-      if (message === "UNAUTHORIZED") {
-        setGeneralErrorMessage(t("errors.unauthorized"));
+      if (message === 'UNAUTHORIZED') {
+        setGeneralErrorMessage(t('errors.unauthorized'));
         return;
       }
 
-      if (message === "BAD_REQUEST") {
-        setGeneralErrorMessage(t("errors.badRequest"));
+      if (message === 'BAD_REQUEST') {
+        setGeneralErrorMessage(t('errors.badRequest'));
         return;
       }
 
-      if (message.startsWith("UPLOAD_")) {
-        setGeneralErrorMessage(t("errors.uploadFailed"));
+      if (message.startsWith('UPLOAD_')) {
+        setGeneralErrorMessage(t('errors.uploadFailed'));
         return;
       }
 
-      if (message.startsWith("HTTP_")) {
-        setGeneralErrorMessage(t("errors.http", { code: message.replace("HTTP_", "") }));
+      if (message.startsWith('HTTP_')) {
+        setGeneralErrorMessage(t('errors.http', { code: message.replace('HTTP_', '') }));
         return;
       }
 
-      setGeneralErrorMessage(t("errors.saveFailed"));
+      setGeneralErrorMessage(t('errors.saveFailed'));
     },
   });
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
-    event.target.value = "";
+    event.target.value = '';
 
     if (!file) {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      setGeneralErrorMessage(t("errors.invalidImageType"));
+    if (!file.type.startsWith('image/')) {
+      setGeneralErrorMessage(t('errors.invalidImageType'));
       return;
     }
 
@@ -135,26 +136,26 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
       }}
       panelClassName="w-full max-w-[560px]"
     >
-      <div className="overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+      <div className="border-border bg-background overflow-hidden rounded-3xl border shadow-2xl">
+        <div className="border-border flex items-center justify-between border-b px-5 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">{t("title")}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{t("description")}</p>
+            <h2 className="text-foreground text-lg font-semibold">{t('title')}</h2>
+            <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={updateProfileMutation.isPending}
-            aria-label={t("closeAria")}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+            aria-label={t('closeAria')}
+            className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:opacity-50"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="space-y-6 px-5 py-5">
-          <section className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card px-4 py-5">
-            <div className="relative h-24 w-24 overflow-hidden rounded-full bg-muted">
+          <section className="border-border bg-card flex flex-col items-center gap-3 rounded-2xl border px-4 py-5">
+            <div className="bg-muted relative h-24 w-24 overflow-hidden rounded-full">
               {previewUrl ? (
                 <Image
                   src={previewUrl}
@@ -164,23 +165,23 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
                   className="object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-muted-foreground">
-                  {(name.trim() || user.name || "?").charAt(0)}
+                <div className="text-muted-foreground flex h-full w-full items-center justify-center text-3xl font-bold">
+                  {(name.trim() || user.name || '?').charAt(0)}
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={updateProfileMutation.isPending}
-                aria-label={t("imageAction")}
-                className="absolute bottom-1 right-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background shadow-sm transition-transform hover:scale-[1.03] disabled:opacity-60"
+                aria-label={t('imageAction')}
+                className="bg-foreground text-background absolute right-1 bottom-1 inline-flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-transform hover:scale-[1.03] disabled:opacity-60"
               >
                 <Camera className="h-4 w-4" />
               </button>
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">{t("imageTitle")}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{t("imageDescription")}</p>
+              <p className="text-foreground text-sm font-semibold">{t('imageTitle')}</p>
+              <p className="text-muted-foreground mt-1 text-xs">{t('imageDescription')}</p>
             </div>
             <input
               ref={fileInputRef}
@@ -193,16 +194,19 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={updateProfileMutation.isPending}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+              className="border-border bg-background text-foreground hover:bg-muted inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60"
             >
               <PencilLine className="h-4 w-4" />
-              {t("changeImage")}
+              {t('changeImage')}
             </button>
           </section>
 
           <section>
-            <label htmlFor="profile-edit-name" className="mb-2 block text-sm font-semibold text-foreground">
-              {t("nameLabel")}
+            <label
+              htmlFor="profile-edit-name"
+              className="text-foreground mb-2 block text-sm font-semibold"
+            >
+              {t('nameLabel')}
             </label>
             <input
               id="profile-edit-name"
@@ -215,16 +219,18 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
                 setGeneralErrorMessage(null);
               }}
               disabled={updateProfileMutation.isPending}
-              placeholder={t("namePlaceholder")}
-              className={`h-12 w-full rounded-2xl border bg-background px-4 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary ${
-                nameErrorMessage ? "border-red-500" : "border-border"
+              placeholder={t('namePlaceholder')}
+              className={`bg-background text-foreground placeholder:text-muted-foreground focus:border-primary h-12 w-full rounded-2xl border px-4 text-base transition-colors outline-none ${
+                nameErrorMessage ? 'border-red-500' : 'border-border'
               }`}
             />
             <div className="mt-2 flex items-center justify-between gap-3">
-              <p className={`text-xs ${nameErrorMessage ? "text-red-600" : "text-muted-foreground"}`}>
-                {nameErrorMessage || t("nameHint")}
+              <p
+                className={`text-xs ${nameErrorMessage ? 'text-red-600' : 'text-muted-foreground'}`}
+              >
+                {nameErrorMessage || t('nameHint')}
               </p>
-              <p className="text-xs font-medium text-muted-foreground">{name.trim().length}/20</p>
+              <p className="text-muted-foreground text-xs font-medium">{name.trim().length}/20</p>
             </div>
           </section>
 
@@ -235,14 +241,14 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
           ) : null}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
+        <div className="border-border grid grid-cols-2 gap-3 border-t px-5 py-4">
           <button
             type="button"
             onClick={onClose}
             disabled={updateProfileMutation.isPending}
-            className="btn-rect btn-neutral-surface inline-flex h-11 w-full items-center justify-center px-4 text-sm font-semibold text-muted-foreground disabled:opacity-60"
+            className="btn-rect btn-neutral-surface text-muted-foreground inline-flex h-11 w-full items-center justify-center px-4 text-sm font-semibold disabled:opacity-60"
           >
-            {t("cancel")}
+            {t('cancel')}
           </button>
           <PrimaryRectButton
             onClick={() => {
@@ -256,10 +262,10 @@ export default function ProfileEditModal({ isOpen, user, onClose }: ProfileEditM
             {updateProfileMutation.isPending ? (
               <span className="inline-flex items-center gap-2">
                 <LoaderCircle className="h-4 w-4 animate-spin" />
-                {t("saving")}
+                {t('saving')}
               </span>
             ) : (
-              t("save")
+              t('save')
             )}
           </PrimaryRectButton>
         </div>

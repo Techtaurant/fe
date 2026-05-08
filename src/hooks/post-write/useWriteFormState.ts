@@ -1,13 +1,14 @@
-import { useMemo, useState } from "react";
-import { CreatePostRequest, PostStatus } from "../../types";
-import { extractAttachmentIdsFromContent } from "../../lib/post-write/attachmentIds";
-import { FieldErrors } from "../../lib/post-write/types";
+import { useMemo, useState } from 'react';
+
+import { extractAttachmentIdsFromContent } from '../../lib/post-write/attachmentIds';
+import { FieldErrors } from '../../lib/post-write/types';
+import { CreatePostRequest, PostStatus } from '../../types';
 
 export function useWriteFormState() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [categoryPath, setCategoryPath] = useState("");
-  const [tagInput, setTagInput] = useState("");
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [categoryPath, setCategoryPath] = useState('');
+  const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [thumbnailAttachmentId, setThumbnailAttachmentId] = useState<string | null>(null);
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function useWriteFormState() {
     const trimmedTag = (nextTag ?? tagInput).trim();
     if (trimmedTag && !tags.includes(trimmedTag)) {
       setTags([...tags, trimmedTag]);
-      setTagInput("");
+      setTagInput('');
     }
   };
 
@@ -53,7 +54,9 @@ export function useWriteFormState() {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const validateRequiredFields = ({ requireCategory = false }: { requireCategory?: boolean } = {}) => {
+  const validateRequiredFields = ({
+    requireCategory = false,
+  }: { requireCategory?: boolean } = {}) => {
     const trimmedCategory = categoryPath.trim();
     const nextFieldErrors = {
       title: !title.trim(),
@@ -80,19 +83,17 @@ export function useWriteFormState() {
       ...(trimmedContent ? { content: trimmedContent } : {}),
       ...(trimmedCategory ? { categoryPath: trimmedCategory } : {}),
       ...(tags.length > 0 ? { tags } : {}),
-      ...(trimmedContent
-        ? { attachmentIds: extractAttachmentIdsFromContent(trimmedContent) }
-        : {}),
+      ...(trimmedContent ? { attachmentIds: extractAttachmentIdsFromContent(trimmedContent) } : {}),
       ...(thumbnailAttachmentId ? { thumbnailAttachmentId } : {}),
       status,
     };
   };
 
   const clearEditorState = () => {
-    setTitle("");
-    setContent("");
-    setCategoryPath("");
-    setTagInput("");
+    setTitle('');
+    setContent('');
+    setCategoryPath('');
+    setTagInput('');
     setTags([]);
     setThumbnailAttachmentId(null);
     setThumbnailPreviewUrl(null);

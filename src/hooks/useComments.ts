@@ -1,16 +1,17 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "./useUser";
+import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { queryKeys } from '../lib/queryKeys';
 import {
   createComment,
   deleteComment,
   fetchComments,
   updateComment,
   updateCommentLike,
-} from "../services/comments";
-import { banUser, isBanApiError } from "../services/users/ban";
+} from '../services/comments';
+import { ValidationErrors } from '../services/comments/apiError';
 import {
   redirectToGoogleLogin,
   resolveCommentLikeError,
@@ -18,29 +19,25 @@ import {
   resolveDeleteCommentError,
   resolveFetchCommentsError,
   resolveUpdateCommentError,
-} from "../services/comments/errors";
+} from '../services/comments/errors';
 import {
   mapCommentListItemToComment,
   mapCreatedCommentToComment,
   mapUpdatedCommentToComment,
-} from "../services/comments/mappers";
+} from '../services/comments/mappers';
 import {
   CommentListResponse,
   CommentSort,
   FetchCommentRepliesResponse,
   FetchCommentsResponse,
-} from "../services/comments/types";
-import { ValidationErrors } from "../services/comments/apiError";
-import { queryKeys } from "../lib/queryKeys";
-import { calculateNextLikeCount } from "../utils/reactionCounter";
-import { FetchMyBansResponse } from "../services/users/ban/types";
-import {
-  resolveNextReaction,
-  toLikeStatus,
-  toReactionState,
-} from "../utils/reactionState";
+} from '../services/comments/types';
+import { banUser, isBanApiError } from '../services/users/ban';
+import { FetchMyBansResponse } from '../services/users/ban/types';
+import { calculateNextLikeCount } from '../utils/reactionCounter';
+import { resolveNextReaction, toLikeStatus, toReactionState } from '../utils/reactionState';
+import { useUser } from './useUser';
 
-type ReactionState = "like" | "dislike" | "none";
+type ReactionState = 'like' | 'dislike' | 'none';
 
 const COMMENTS_PAGE_SIZE = 20;
 
@@ -51,9 +48,8 @@ export function useComments(
 ) {
   const queryClient = useQueryClient();
   const { user } = useUser();
-  const [commentsSort, setCommentsSort] = useState<CommentSort>("LATEST");
-  const [createCommentFieldErrors, setCreateCommentFieldErrors] =
-    useState<ValidationErrors>({});
+  const [commentsSort, setCommentsSort] = useState<CommentSort>('LATEST');
+  const [createCommentFieldErrors, setCreateCommentFieldErrors] = useState<ValidationErrors>({});
   const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const [banningCommentAuthorId, setBanningCommentAuthorId] = useState<string | null>(null);
@@ -78,13 +74,7 @@ export function useComments(
   });
 
   const createCommentMutation = useMutation({
-    mutationFn: async ({
-      content,
-      parentId,
-    }: {
-      content: string;
-      parentId?: string;
-    }) =>
+    mutationFn: async ({ content, parentId }: { content: string; parentId?: string }) =>
       createComment({
         content,
         postId,
@@ -93,26 +83,23 @@ export function useComments(
     onSuccess: (result, variables) => {
       if (!user) return;
 
-      const createdComment = mapCreatedCommentToComment(
-        result.data,
-        user.profileImageUrl || "",
-      );
+      const createdComment = mapCreatedCommentToComment(result.data, user.profileImageUrl || '');
 
       if (variables.parentId) {
         void queryClient.invalidateQueries({
           predicate: (query) => {
             const queryKey = query.queryKey as [string, unknown, unknown?] | unknown[];
             if (!Array.isArray(queryKey)) return false;
-            if (queryKey[0] !== "comments") return false;
+            if (queryKey[0] !== 'comments') return false;
 
-            if (queryKey[1] === "replies") {
+            if (queryKey[1] === 'replies') {
               const params = queryKey[2];
-              if (!params || typeof params !== "object") return false;
+              if (!params || typeof params !== 'object') return false;
               return (params as { commentId?: string }).commentId === variables.parentId;
             }
 
             const params = queryKey[1];
-            if (!params || typeof params !== "object") return false;
+            if (!params || typeof params !== 'object') return false;
             return (params as { postId?: string }).postId === postId;
           },
         });
@@ -121,41 +108,38 @@ export function useComments(
         return;
       }
 
-      queryClient.setQueryData<InfiniteData<FetchCommentsResponse>>(
-        commentsQueryKey,
-        (current) => {
-          if (!current || current.pages.length === 0) return current;
-          const [firstPage, ...restPages] = current.pages;
-          const nextFirstPage: FetchCommentsResponse = {
-            ...firstPage,
-            data: {
-                ...firstPage.data,
-                content: [
-                  {
-                    id: createdComment.id,
-                    content: createdComment.content,
-                    postId,
-                    authorId: createdComment.author.id,
-                    authorName: createdComment.author.name,
-                    authorProfileImageUrl: createdComment.author.profileImageUrl || null,
-                    depth: 0,
-                    isDeleted: createdComment.isDeleted,
-                    likeCount: createdComment.likeCount,
-                    replyCount: createdComment.replyCount,
-                    likeStatus: "NONE",
-                    createdAt: createdComment.createdAt,
-                    updatedAt: result.data.updatedAt,
-                  },
-                  ...firstPage.data.content,
-                ],
+      queryClient.setQueryData<InfiniteData<FetchCommentsResponse>>(commentsQueryKey, (current) => {
+        if (!current || current.pages.length === 0) return current;
+        const [firstPage, ...restPages] = current.pages;
+        const nextFirstPage: FetchCommentsResponse = {
+          ...firstPage,
+          data: {
+            ...firstPage.data,
+            content: [
+              {
+                id: createdComment.id,
+                content: createdComment.content,
+                postId,
+                authorId: createdComment.author.id,
+                authorName: createdComment.author.name,
+                authorProfileImageUrl: createdComment.author.profileImageUrl || null,
+                depth: 0,
+                isDeleted: createdComment.isDeleted,
+                likeCount: createdComment.likeCount,
+                replyCount: createdComment.replyCount,
+                likeStatus: 'NONE',
+                createdAt: createdComment.createdAt,
+                updatedAt: result.data.updatedAt,
               },
-            };
-          return {
-            ...current,
-            pages: [nextFirstPage, ...restPages],
-          };
-        },
-      );
+              ...firstPage.data.content,
+            ],
+          },
+        };
+        return {
+          ...current,
+          pages: [nextFirstPage, ...restPages],
+        };
+      });
 
       onCommentCreated?.();
     },
@@ -252,7 +236,7 @@ export function useComments(
       if (!user) return;
 
       updateCommentInAllCommentCaches(result.data.id, (item) => {
-        const updated = mapUpdatedCommentToComment(result.data, item.authorProfileImageUrl || "");
+        const updated = mapUpdatedCommentToComment(result.data, item.authorProfileImageUrl || '');
         return {
           ...item,
           id: updated.id,
@@ -286,17 +270,17 @@ export function useComments(
         predicate: (query) => {
           const queryKey = query.queryKey as [string, unknown, unknown?] | unknown[];
           if (!Array.isArray(queryKey)) return false;
-          if (queryKey[0] !== "comments") return false;
+          if (queryKey[0] !== 'comments') return false;
 
-          if (queryKey[1] === "replies") {
+          if (queryKey[1] === 'replies') {
             if (!deletedComment?.parentId) return false;
             const params = queryKey[2];
-            if (!params || typeof params !== "object") return false;
+            if (!params || typeof params !== 'object') return false;
             return (params as { commentId?: string }).commentId === deletedComment.parentId;
           }
 
           const params = queryKey[1];
-          if (!params || typeof params !== "object") return false;
+          if (!params || typeof params !== 'object') return false;
           return (params as { postId?: string }).postId === postId;
         },
       });
@@ -304,7 +288,9 @@ export function useComments(
   });
 
   const banUserMutation = useMutation({
-    mutationFn: ({ targetUserId }: {
+    mutationFn: ({
+      targetUserId,
+    }: {
       targetUserId: string;
       targetUserName: string;
       targetUserProfileImageUrl: string | null;
@@ -324,7 +310,7 @@ export function useComments(
           return {
             status: 200,
             data: [optimisticBan],
-            message: "OK",
+            message: 'OK',
           };
         }
 
@@ -341,7 +327,7 @@ export function useComments(
       return { previous };
     },
     onError: (error, _variables, context) => {
-      if (isBanApiError(error) && error.code === "CONFLICT") {
+      if (isBanApiError(error) && error.code === 'CONFLICT') {
         return;
       }
 
@@ -363,7 +349,7 @@ export function useComments(
           return {
             status: 200,
             data: [serverBan],
-            message: "OK",
+            message: 'OK',
           };
         }
 
@@ -394,8 +380,13 @@ export function useComments(
   });
 
   const likeCommentMutation = useMutation({
-    mutationFn: ({ commentId, likeStatus }: { commentId: string; likeStatus: "NONE" | "LIKE" | "DISLIKE" }) =>
-      updateCommentLike(commentId, { likeStatus }),
+    mutationFn: ({
+      commentId,
+      likeStatus,
+    }: {
+      commentId: string;
+      likeStatus: 'NONE' | 'LIKE' | 'DISLIKE';
+    }) => updateCommentLike(commentId, { likeStatus }),
   });
 
   useEffect(() => {
@@ -534,16 +525,14 @@ export function useComments(
         queryKey: queryKeys.comments.all,
       });
 
-      let targetUserName = "Unknown user";
+      let targetUserName = 'Unknown user';
       let targetUserProfileImageUrl: string | null = null;
 
       for (const [, queryData] of commentQueries) {
         if (!queryData?.pages) continue;
 
         for (const page of queryData.pages) {
-          const matchedComment = page.data.content.find(
-            (item) => item.authorId === targetUserId,
-          );
+          const matchedComment = page.data.content.find((item) => item.authorId === targetUserId);
 
           if (!matchedComment) continue;
 
@@ -552,7 +541,7 @@ export function useComments(
           break;
         }
 
-        if (targetUserName !== "Unknown user") {
+        if (targetUserName !== 'Unknown user') {
           break;
         }
       }
@@ -570,12 +559,12 @@ export function useComments(
       return true;
     } catch (error: unknown) {
       if (isBanApiError(error)) {
-        if (error.code === "UNAUTHORIZED") {
+        if (error.code === 'UNAUTHORIZED') {
           redirectToGoogleLogin();
           return false;
         }
 
-        if (error.code === "CONFLICT") {
+        if (error.code === 'CONFLICT') {
           updateCommentAuthorInAllCommentCaches(targetUserId, (item) => ({
             ...item,
             isBanned: true,
@@ -584,20 +573,18 @@ export function useComments(
           return true;
         }
 
-        onErrorMessage?.(error.message || "사용자 차단에 실패했습니다.");
+        onErrorMessage?.(error.message || '사용자 차단에 실패했습니다.');
         return false;
       }
 
-      onErrorMessage?.("사용자 차단에 실패했습니다.");
+      onErrorMessage?.('사용자 차단에 실패했습니다.');
       return false;
     } finally {
-      setBanningCommentAuthorId((currentId) =>
-        currentId === targetUserId ? null : currentId,
-      );
+      setBanningCommentAuthorId((currentId) => (currentId === targetUserId ? null : currentId));
     }
   };
 
-  const handleCommentReaction = async (commentId: string, target: "like" | "dislike") => {
+  const handleCommentReaction = async (commentId: string, target: 'like' | 'dislike') => {
     if (!user) {
       redirectToGoogleLogin();
       return;
@@ -648,11 +635,11 @@ export function useComments(
   };
 
   const handleLikeComment = (commentId: string) => {
-    void handleCommentReaction(commentId, "like");
+    void handleCommentReaction(commentId, 'like');
   };
 
   const handleDislikeComment = (commentId: string) => {
-    void handleCommentReaction(commentId, "dislike");
+    void handleCommentReaction(commentId, 'dislike');
   };
 
   return {

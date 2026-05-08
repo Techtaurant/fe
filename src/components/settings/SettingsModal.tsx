@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import AppModal from "../common/AppModal";
-import SettingsPanel from "./SettingsPanel";
+import AppModal from '../common/AppModal';
+import SettingsPanel from './SettingsPanel';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -10,11 +10,7 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   return (
-    <AppModal
-      isOpen={isOpen}
-      onClose={onClose}
-      panelClassName="w-full max-w-[660px]"
-    >
+    <AppModal isOpen={isOpen} onClose={onClose} panelClassName="w-full max-w-[660px]">
       <SettingsPanel onClose={onClose} />
     </AppModal>
   );

@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { ReactNode, useMemo } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import rehypeRaw from "rehype-raw";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import { ALLOWED_HTML_TAGS } from "../constants/markdownAllowedHtml";
+import { ReactNode, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import remarkGfm from 'remark-gfm';
+
+import { ALLOWED_HTML_TAGS } from '../constants/markdownAllowedHtml';
 
 export interface TableOfContentsHeading {
   id: string;
@@ -21,16 +22,16 @@ interface MarkdownRendererProps {
 
 function normalizeHeadingText(text: string): string {
   return text
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/[*~]/g, "")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\s+/g, " ")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/[*~]/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -39,11 +40,11 @@ function slugifyHeadingText(text: string): string {
 
   return normalizedText
     .toLowerCase()
-    .replace(/_/g, "-")
-    .replace(/\s+/g, "-")
-    .replace(/[^\p{L}\p{N}-]+/gu, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+    .replace(/_/g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/[^\p{L}\p{N}-]+/gu, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function createHeadingId(text: string, counts: Map<string, number>): string {
@@ -59,27 +60,27 @@ function createHeadingId(text: string, counts: Map<string, number>): string {
 }
 
 function extractTextFromReactNode(node: ReactNode): string {
-  if (typeof node === "string" || typeof node === "number") {
+  if (typeof node === 'string' || typeof node === 'number') {
     return String(node);
   }
 
   if (Array.isArray(node)) {
-    return node.map(extractTextFromReactNode).join("");
+    return node.map(extractTextFromReactNode).join('');
   }
 
-  if (node && typeof node === "object" && "props" in node) {
+  if (node && typeof node === 'object' && 'props' in node) {
     const children = (node as { props?: { children?: ReactNode } }).props?.children;
-    return children ? extractTextFromReactNode(children) : "";
+    return children ? extractTextFromReactNode(children) : '';
   }
 
-  return "";
+  return '';
 }
 
 export function extractTableOfContents(content: string): TableOfContentsHeading[] {
   const headingCounts = new Map<string, number>();
 
   return content
-    .split("\n")
+    .split('\n')
     .map((line) => line.match(/^(#{1,3})\s+(.+)$/))
     .filter((match): match is RegExpMatchArray => Boolean(match))
     .map((match) => {
@@ -104,30 +105,38 @@ const sanitizedSchema = {
   tagNames: ALLOWED_HTML_TAGS,
   protocols: {
     ...(defaultSchema.protocols ?? {}),
-    src: [...(defaultSchema.protocols?.src ?? []), "blob"],
+    src: [...(defaultSchema.protocols?.src ?? []), 'blob'],
   },
   attributes: {
-    a: ["href", "title", "target", "rel"],
-    abbr: ["title"],
-    bdo: ["dir"],
-    blockquote: ["cite"],
-    code: ["className"],
-    del: ["cite", "dateTime"],
-    details: ["open"],
-    q: ["cite"],
-    span: ["className", "title"],
-    time: ["dateTime"],
-    div: ["className", "title", ["align", "left", "center", "right"]],
-    p: [["align", "left", "center", "right"]],
-    pre: ["className"],
-    ol: ["start", "reversed", "type"],
-    table: ["width", ["align", "left", "center", "right"]],
-    th: ["colSpan", "rowSpan", "scope", "abbr", "width", "height", ["align", "left", "center", "right"]],
-    td: ["colSpan", "rowSpan", "headers", "width", "height", ["align", "left", "center", "right"]],
-    col: ["span", "width"],
-    colgroup: ["span", "width"],
-    img: ["src", "width", "height", "loading", ["align", "left", "center", "right"]],
-    source: ["src", "srcSet", "type", "media", "sizes", "width", "height"],
+    a: ['href', 'title', 'target', 'rel'],
+    abbr: ['title'],
+    bdo: ['dir'],
+    blockquote: ['cite'],
+    code: ['className'],
+    del: ['cite', 'dateTime'],
+    details: ['open'],
+    q: ['cite'],
+    span: ['className', 'title'],
+    time: ['dateTime'],
+    div: ['className', 'title', ['align', 'left', 'center', 'right']],
+    p: [['align', 'left', 'center', 'right']],
+    pre: ['className'],
+    ol: ['start', 'reversed', 'type'],
+    table: ['width', ['align', 'left', 'center', 'right']],
+    th: [
+      'colSpan',
+      'rowSpan',
+      'scope',
+      'abbr',
+      'width',
+      'height',
+      ['align', 'left', 'center', 'right'],
+    ],
+    td: ['colSpan', 'rowSpan', 'headers', 'width', 'height', ['align', 'left', 'center', 'right']],
+    col: ['span', 'width'],
+    colgroup: ['span', 'width'],
+    img: ['src', 'width', 'height', 'loading', ['align', 'left', 'center', 'right']],
+    source: ['src', 'srcSet', 'type', 'media', 'sizes', 'width', 'height'],
   },
 } as const;
 
@@ -137,10 +146,7 @@ const sanitizedSchema = {
  * - 코드 하이라이팅
  * - 지정한 HTML 태그만 허용하고 나머지는 제거
  */
-export default function MarkdownRenderer({
-  content,
-  resolveImageSrc,
-}: MarkdownRendererProps) {
+export default function MarkdownRenderer({ content, resolveImageSrc }: MarkdownRendererProps) {
   const tableOfContents = useMemo(() => extractTableOfContents(content), [content]);
   const headingIdsByText = useMemo(() => {
     const nextHeadingIds = new Map<string, string[]>();
@@ -168,7 +174,7 @@ export default function MarkdownRenderer({
       <ReactMarkdown
         components={{
           img: ({ src, alt, ...props }) => {
-            if (typeof src !== "string" || src.trim().length === 0) {
+            if (typeof src !== 'string' || src.trim().length === 0) {
               return null;
             }
 
@@ -177,7 +183,7 @@ export default function MarkdownRenderer({
               return null;
             }
 
-            return <img src={resolvedSrc} alt={alt ?? ""} {...props} />;
+            return <img src={resolvedSrc} alt={alt ?? ''} {...props} />;
           },
           h1: ({ children, ...props }) => {
             const id = getRenderedHeadingId(children);
@@ -341,11 +347,7 @@ export default function MarkdownRenderer({
         .markdown-content a:hover,
         .markdown-content a:focus-visible {
           color: var(--comment-submit-button-hover);
-          background-color: color-mix(
-            in srgb,
-            var(--color-blue-500) 12%,
-            transparent
-          );
+          background-color: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
         }
 
         .markdown-content a:focus-visible {

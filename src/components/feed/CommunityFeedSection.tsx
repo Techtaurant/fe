@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
-import { Post } from "../../types";
-import PostList from "../PostList";
-import FeedSkeleton from "../skeleton/FeedSkeleton";
+import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
+
+import { Post } from '../../types';
+import PostList from '../PostList';
+import FeedSkeleton from '../skeleton/FeedSkeleton';
 
 interface CommunityFeedSectionProps {
   posts: Post[];
@@ -27,10 +28,9 @@ export default function CommunityFeedSection({
   onReadStatusChange,
   currentUserId,
 }: CommunityFeedSectionProps) {
-  const t = useTranslations("CommunityFeed");
+  const t = useTranslations('CommunityFeed');
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
-  const showInitialSkeleton =
-    (isLoading || isLoadingMore) && posts.length === 0;
+  const showInitialSkeleton = (isLoading || isLoadingMore) && posts.length === 0;
   const showLoadMoreSkeleton = isLoadingMore && posts.length > 0;
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function CommunityFeedSection({
         if (!first?.isIntersecting) return;
         void onLoadMore();
       },
-      { rootMargin: "200px 0px" },
+      { rootMargin: '200px 0px' },
     );
 
     observer.observe(target);
@@ -69,13 +69,9 @@ export default function CommunityFeedSection({
             hideEmptyState={isLoading || isLoadingMore}
           />
           <div ref={loadMoreTriggerRef} className="h-2 w-full" />
-          {showLoadMoreSkeleton && (
-            <FeedSkeleton variant="company" count={2} loadMore />
-          )}
+          {showLoadMoreSkeleton && <FeedSkeleton variant="company" count={2} loadMore />}
           {!hasNext && !isLoading && !isLoadingMore && posts.length > 0 && (
-            <div className="py-4 text-center text-sm text-muted-foreground">
-              {t("reachedEnd")}
-            </div>
+            <div className="text-muted-foreground py-4 text-center text-sm">{t('reachedEnd')}</div>
           )}
         </>
       )}

@@ -1,5 +1,5 @@
-import { banUserRequest, fetchMyBansRequest, unbanUserRequest } from "./client";
-import { BanUserResponse, FetchMyBansResponse } from "./types";
+import { banUserRequest, fetchMyBansRequest, unbanUserRequest } from './client';
+import { BanUserResponse, FetchMyBansResponse } from './types';
 
 export async function banUser(targetUserId: string): Promise<BanUserResponse> {
   return banUserRequest(targetUserId);
@@ -13,5 +13,5 @@ export async function unbanUser(targetUserId: string): Promise<void> {
   return unbanUserRequest(targetUserId);
 }
 
-export * from "./types";
-export * from "./apiError";
+export * from './apiError';
+export * from './types';

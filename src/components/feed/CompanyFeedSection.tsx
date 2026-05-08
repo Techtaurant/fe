@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Post } from "../../types";
-import PostList from "../PostList";
-import FeedSkeleton from "../skeleton/FeedSkeleton";
+import { Post } from '../../types';
+import PostList from '../PostList';
+import FeedSkeleton from '../skeleton/FeedSkeleton';
 
 interface CompanyFeedSectionProps {
   posts: Post[];

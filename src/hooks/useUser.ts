@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+
 import { queryKeys } from '../lib/queryKeys';
 import { User } from '../types';
 import { httpClient } from '../utils/httpClient';
@@ -50,8 +51,7 @@ function toUser(value: unknown): User | null {
         ? ''
         : '';
   const role = typeof value.role === 'string' ? value.role : 'USER';
-  const followerCount =
-    typeof value.followerCount === 'number' ? value.followerCount : undefined;
+  const followerCount = typeof value.followerCount === 'number' ? value.followerCount : undefined;
   const followingCount =
     typeof value.followingCount === 'number' ? value.followingCount : undefined;
 
@@ -82,9 +82,7 @@ export function useUser(): UseUserResult {
       }
 
       const result: unknown = await response.json();
-      const userData = isMeResponse(result)
-        ? toUser(result.data)
-        : toUser(result);
+      const userData = isMeResponse(result) ? toUser(result.data) : toUser(result);
 
       if (!userData) {
         throw new Error('사용자 응답 형식이 올바르지 않습니다.');

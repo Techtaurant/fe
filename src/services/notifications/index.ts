@@ -2,28 +2,26 @@ import {
   fetchNotificationsRequest,
   fetchUnreadNotificationCountRequest,
   markNotificationsReadRequest,
-} from "./client";
+} from './client';
 import {
   FetchNotificationsRequest,
   FetchNotificationsResponse,
   FetchUnreadNotificationCountResponse,
   MarkNotificationsReadResponse,
-} from "./types";
+} from './types';
 
-function normalizeUnreadNotificationCount(
-  response: FetchUnreadNotificationCountResponse,
-): number {
+function normalizeUnreadNotificationCount(response: FetchUnreadNotificationCountResponse): number {
   const { data } = response;
 
-  if (typeof data === "number") {
+  if (typeof data === 'number') {
     return data;
   }
 
-  if (typeof data?.unreadCount === "number") {
+  if (typeof data?.unreadCount === 'number') {
     return data.unreadCount;
   }
 
-  if (typeof data?.count === "number") {
+  if (typeof data?.count === 'number') {
     return data.count;
   }
 
@@ -47,4 +45,4 @@ export async function markNotificationsRead(
   return markNotificationsReadRequest({ notificationIds });
 }
 
-export * from "./types";
+export * from './types';

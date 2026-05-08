@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { Link } from "../i18n/navigation";
-import { useTranslations } from "next-intl";
-import { FEED_MODES } from "../constants/feed";
-import { FeedMode } from "../types";
+import { useTranslations } from 'next-intl';
+
+import { FEED_MODES } from '../constants/feed';
+import { Link } from '../i18n/navigation';
+import { FeedMode } from '../types';
 
 interface MobileBottomNavProps {
   currentMode?: FeedMode;
@@ -18,29 +19,24 @@ export default function MobileBottomNav({
   onModeNavigate,
   onWritePost,
 }: MobileBottomNavProps) {
-  const t = useTranslations("BottomNav");
+  const t = useTranslations('BottomNav');
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[350] pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed right-0 bottom-0 left-0 z-[350] pb-[env(safe-area-inset-bottom)] md:hidden">
       <div className="w-full">
-        <div className="bg-background/95 backdrop-blur border-t border-border shadow-lg px-3 py-2">
-          <div className="mx-auto max-w-[520px] flex items-center justify-between">
+        <div className="bg-background/95 border-border border-t px-3 py-2 shadow-lg backdrop-blur">
+          <div className="mx-auto flex max-w-[520px] items-center justify-between">
             <button
               type="button"
               onClick={() => onModeNavigate(FEED_MODES.COMPANY)}
               className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
                 currentMode === FEED_MODES.COMPANY
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
-              aria-label={t("companyBlogs")}
+              aria-label={t('companyBlogs')}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -48,7 +44,7 @@ export default function MobileBottomNav({
                   d="M4 7a2 2 0 012-2h8a2 2 0 012 2v12H6a2 2 0 01-2-2V7zM16 9h2a2 2 0 012 2v8a2 2 0 01-2 2h-2V9z"
                 />
               </svg>
-              <span>{t("companyBlogs")}</span>
+              <span>{t('companyBlogs')}</span>
             </button>
 
             <button
@@ -56,17 +52,12 @@ export default function MobileBottomNav({
               onClick={() => onModeNavigate(FEED_MODES.USER)}
               className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
                 currentMode === FEED_MODES.USER
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
-              aria-label={t("community")}
+              aria-label={t('community')}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -74,22 +65,17 @@ export default function MobileBottomNav({
                   d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m14-8a4 4 0 10-8 0 4 4 0 008 0zm6 8v-2a4 4 0 00-3-3.87"
                 />
               </svg>
-              <span>{t("community")}</span>
+              <span>{t('community')}</span>
             </button>
 
             <button
               type="button"
               onClick={onWritePost}
               className="flex flex-col items-center px-2 py-1"
-              aria-label={t("newPost")}
+              aria-label={t('newPost')}
             >
-              <div className="w-11 h-11 rounded-full bg-comment-submit-button text-white flex items-center justify-center shadow-md transform-gpu transition-[transform,box-shadow,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-comment-submit-button-hover hover:shadow-xl hover:scale-105 active:scale-[0.97]">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+              <div className="bg-comment-submit-button hover:bg-comment-submit-button-hover flex h-11 w-11 transform-gpu items-center justify-center rounded-full text-white shadow-md transition-[transform,box-shadow,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:shadow-xl active:scale-[0.97]">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -102,15 +88,10 @@ export default function MobileBottomNav({
 
             <Link
               href="/search"
-              className="flex flex-col items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={t("search")}
+              className="text-muted-foreground hover:text-foreground flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors"
+              aria-label={t('search')}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -118,21 +99,16 @@ export default function MobileBottomNav({
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <span>{t("search")}</span>
+              <span>{t('search')}</span>
             </Link>
 
             <button
               type="button"
               onClick={onMyPostsClick}
-              className="flex flex-col items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={t("myPosts")}
+              className="text-muted-foreground hover:text-foreground flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors"
+              aria-label={t('myPosts')}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -140,7 +116,7 @@ export default function MobileBottomNav({
                   d="M16 4a2 2 0 012 2v12a2 2 0 01-2 2h-1l-1 3H9l-1-3H5a2 2 0 01-2-2V6a2 2 0 012-2h11zm-5.5 4a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"
                 />
               </svg>
-              <span>{t("myPosts")}</span>
+              <span>{t('myPosts')}</span>
             </button>
           </div>
         </div>

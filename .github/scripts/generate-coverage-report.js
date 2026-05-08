@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 const fs = require('fs');
-const path = require('path');
 
 /**
  * Type Coverage 결과를 분석하여 PR 코멘트용 마크다운 생성
@@ -26,17 +26,13 @@ function generateCoverageReport() {
   }
 
   // 현재 type-coverage.json 읽기
-  const coverageData = JSON.parse(
-    fs.readFileSync(currentCoveragePath, 'utf8')
-  );
+  const coverageData = JSON.parse(fs.readFileSync(currentCoveragePath, 'utf8'));
 
   // 이전 coverage 데이터 읽기 (있는 경우)
   let previousCoverageData = null;
   if (fs.existsSync(previousCoveragePath)) {
     try {
-      previousCoverageData = JSON.parse(
-        fs.readFileSync(previousCoveragePath, 'utf8')
-      );
+      previousCoverageData = JSON.parse(fs.readFileSync(previousCoveragePath, 'utf8'));
     } catch (error) {
       console.warn('⚠️  Warning: 이전 coverage 데이터를 읽을 수 없습니다:', error.message);
     }
@@ -97,7 +93,12 @@ function parseAnyUsages(detailText) {
 
   for (const line of lines) {
     // 빈 라인, npm 출력, 요약 라인 무시
-    if (!line.trim() || line.startsWith('>') || line.includes('type-coverage success') || line.match(/^\(\d+ \/ \d+\)/)) {
+    if (
+      !line.trim() ||
+      line.startsWith('>') ||
+      line.includes('type-coverage success') ||
+      line.match(/^\(\d+ \/ \d+\)/)
+    ) {
       continue;
     }
 
@@ -143,7 +144,7 @@ function analyzeChanges(previous, current, currentAnyUsages) {
   }
 
   // 새로 추가된 파일 (이전에 없던 파일)
-  const filesAdded = Object.keys(currentAnyUsages).filter(file => {
+  const filesAdded = Object.keys(currentAnyUsages).filter((file) => {
     // 간단하게 파일명으로 판단 (더 정확한 비교를 위해서는 파일별 데이터 필요)
     return currentFileAnyCounts[file] > 0;
   });
@@ -171,7 +172,16 @@ function analyzeChanges(previous, current, currentAnyUsages) {
 /**
  * PR 코멘트용 마크다운 생성
  */
-function generateMarkdown({ baseCoverage, prCoverage, diff, anyUsages, totalCount, correctCount, anyCount, changeAnalysis }) {
+function generateMarkdown({
+  baseCoverage,
+  prCoverage,
+  diff,
+  anyUsages,
+  totalCount,
+  correctCount,
+  anyCount,
+  changeAnalysis,
+}) {
   const diffEmoji = diff > 0 ? '📈' : diff < 0 ? '📉' : '➡️';
   const diffSign = diff > 0 ? '+' : '';
   const diffColor = diff > 0 ? '🟢' : diff < 0 ? '🔴' : '⚪';
@@ -205,9 +215,11 @@ ${statusEmoji} **${statusText}**
 
   // 이전 실행과의 비교 정보 추가
   if (changeAnalysis) {
-    const anyDiffEmoji = changeAnalysis.anyCountDiff < 0 ? '🟢' : changeAnalysis.anyCountDiff > 0 ? '🔴' : '⚪';
+    const anyDiffEmoji =
+      changeAnalysis.anyCountDiff < 0 ? '🟢' : changeAnalysis.anyCountDiff > 0 ? '🔴' : '⚪';
     const anyDiffSign = changeAnalysis.anyCountDiff > 0 ? '+' : '';
-    const coverageDiffEmoji = changeAnalysis.coverageDiff > 0 ? '📈' : changeAnalysis.coverageDiff < 0 ? '📉' : '➡️';
+    const coverageDiffEmoji =
+      changeAnalysis.coverageDiff > 0 ? '📈' : changeAnalysis.coverageDiff < 0 ? '📉' : '➡️';
     const coverageDiffSign = changeAnalysis.coverageDiff > 0 ? '+' : '';
 
     markdown += `### 📊 Changes from Previous Run

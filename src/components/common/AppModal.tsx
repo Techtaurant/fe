@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect } from 'react';
 
 interface AppModalProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface AppModalProps {
 }
 
 const DEFAULT_OVERLAY_CLASS_NAME =
-  "fixed inset-0 z-[500] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]";
+  'fixed inset-0 z-[500] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]';
 
 export default function AppModal({
   isOpen,
@@ -28,14 +28,14 @@ export default function AppModal({
     if (!isOpen || !closeOnEscape) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [closeOnEscape, isOpen, onClose]);
 

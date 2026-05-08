@@ -1,17 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+
+import { TAGS_CACHE_KEY, TAGS_ENDPOINT, TAGS_PAGE_SIZE, TAGS_TTL_MS } from '../constants/tags';
 import { queryKeys } from '../lib/queryKeys';
+import { parseTagCache, TagCachePayload } from '../schemas/tagCache';
 import { Tag } from '../types';
 import { httpClient } from '../utils/httpClient';
-import { parseTagCache, TagCachePayload } from '../schemas/tagCache';
-import {
-  TAGS_CACHE_KEY,
-  TAGS_TTL_MS,
-  TAGS_ENDPOINT,
-  TAGS_PAGE_SIZE,
-} from '../constants/tags';
 
 interface TagListResponse {
   status: number;
@@ -38,14 +34,14 @@ interface UseTagsOptions {
 }
 
 const readCache = (): TagCachePayload | null => {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem(TAGS_CACHE_KEY);
   if (!raw) return null;
   return parseTagCache(raw);
 };
 
 const writeCache = (tags: Tag[]) => {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   try {
     const payload: TagCachePayload = {
       tags,
@@ -65,10 +61,7 @@ const mapTags = (result: TagListResponse): Tag[] => {
   }));
 };
 
-export function useTags(
-  initialTags: Tag[] = [],
-  options?: UseTagsOptions,
-): UseTagsResult {
+export function useTags(initialTags: Tag[] = [], options?: UseTagsOptions): UseTagsResult {
   const fetchAll = options?.fetchAll ?? false;
   const queryClient = useQueryClient();
   const queryScope = fetchAll ? 'all' : 'page';
@@ -80,10 +73,9 @@ export function useTags(
       if (!fetchAll) {
         const searchParams = new URLSearchParams();
         searchParams.set('size', String(TAGS_PAGE_SIZE));
-        const response = await httpClient(
-          `${TAGS_ENDPOINT}?${searchParams.toString()}`,
-          { method: 'GET' },
-        );
+        const response = await httpClient(`${TAGS_ENDPOINT}?${searchParams.toString()}`, {
+          method: 'GET',
+        });
         if (!response.ok) {
           throw new Error(`Failed to fetch tags: ${response.status}`);
         }
@@ -106,10 +98,9 @@ export function useTags(
           searchParams.set('cursor', cursor);
         }
 
-        const response = await httpClient(
-          `${TAGS_ENDPOINT}?${searchParams.toString()}`,
-          { method: 'GET' },
-        );
+        const response = await httpClient(`${TAGS_ENDPOINT}?${searchParams.toString()}`, {
+          method: 'GET',
+        });
         if (!response.ok) {
           throw new Error(`Failed to fetch tags: ${response.status}`);
         }

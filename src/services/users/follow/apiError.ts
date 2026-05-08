@@ -1,9 +1,9 @@
 export type FollowApiErrorCode =
-  | "UNAUTHORIZED"
-  | "BAD_REQUEST"
-  | "NOT_FOUND"
-  | "CONFLICT"
-  | "HTTP_ERROR";
+  | 'UNAUTHORIZED'
+  | 'BAD_REQUEST'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'HTTP_ERROR';
 
 interface FollowApiErrorOptions {
   status: number;
@@ -17,7 +17,7 @@ export class FollowApiError extends Error {
 
   constructor(code: FollowApiErrorCode, options: FollowApiErrorOptions) {
     super(options.message || code);
-    this.name = "FollowApiError";
+    this.name = 'FollowApiError';
     this.code = code;
     this.status = options.status;
   }

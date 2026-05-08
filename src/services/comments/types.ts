@@ -25,7 +25,7 @@ export interface UpdateCommentRequest {
   content: string;
 }
 
-export type LikeStatus = "NONE" | "LIKE" | "DISLIKE";
+export type LikeStatus = 'NONE' | 'LIKE' | 'DISLIKE';
 
 export interface UpdateCommentLikeRequest {
   likeStatus: LikeStatus;
@@ -69,7 +69,7 @@ export interface ValidationErrorApiResponse {
   message?: string;
 }
 
-export type CommentSort = "LATEST" | "LIKE" | "REPLY";
+export type CommentSort = 'LATEST' | 'LIKE' | 'REPLY';
 
 export interface FetchCommentsRequest {
   postId: string;

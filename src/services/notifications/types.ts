@@ -1,10 +1,6 @@
-export type NotificationType =
-  | "POST_COMMENT"
-  | "COMMENT_REPLY"
-  | "FOLLOWER_POST"
-  | "FOLLOW";
+export type NotificationType = 'POST_COMMENT' | 'COMMENT_REPLY' | 'FOLLOWER_POST' | 'FOLLOW';
 
-export type NotificationTargetType = "USER" | "POST" | "COMMENT";
+export type NotificationTargetType = 'USER' | 'POST' | 'COMMENT';
 
 export interface NotificationArgument {
   targetType: NotificationTargetType;

@@ -1,18 +1,19 @@
-"use client";
+'use client';
 
-import { ReactNode, useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { useLocale, useTranslations } from "next-intl";
-import { MoreVertical, Pencil, ThumbsDown, ThumbsUp, Trash2, UserX } from "lucide-react";
-import { useRouter } from "../../i18n/navigation";
-import { Comment } from "../../types";
-import { buildUserPath } from "../../lib/userRoute";
-import { formatDisplayTime } from "../../utils";
+import { MoreVertical, Pencil, ThumbsDown, ThumbsUp, Trash2, UserX } from 'lucide-react';
+import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+
+import { useRouter } from '../../i18n/navigation';
+import { buildUserPath } from '../../lib/userRoute';
+import { Comment } from '../../types';
+import { formatDisplayTime } from '../../utils';
 import PostDetailConfirmDialog, {
   CANCEL_CONFIRM_BUTTON_CLASS_NAME,
   DELETE_CONFIRM_BUTTON_CLASS_NAME,
-} from "./PostDetailConfirmDialog";
-import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
+} from './PostDetailConfirmDialog';
+import PostDetailMenuItemButton from './PostDetailMenuItemButton';
 
 interface PostDetailCommentItemProps {
   comment: Comment;
@@ -49,13 +50,13 @@ export default function PostDetailCommentItem({
   compact = false,
   onShowError,
 }: PostDetailCommentItemProps) {
-  const t = useTranslations("PostDetail");
+  const t = useTranslations('PostDetail');
   const locale = useLocale();
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const editingTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [activeMenu, setActiveMenu] = useState(false);
-  const [editingValue, setEditingValue] = useState("");
+  const [editingValue, setEditingValue] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingActionsBelow, setIsEditingActionsBelow] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -66,7 +67,7 @@ export default function PostDetailCommentItem({
   const canOpenMenu = !comment.isDeleted && !isBannedComment && Boolean(currentUserId);
   const isOwnComment = currentUserId === comment.author.id;
   const commentReactionState =
-    comment.likeStatus === "LIKE" ? "like" : comment.likeStatus === "DISLIKE" ? "dislike" : "none";
+    comment.likeStatus === 'LIKE' ? 'like' : comment.likeStatus === 'DISLIKE' ? 'dislike' : 'none';
   const isReactionDisabled = comment.isDeleted || isBannedComment;
   const shouldShowInteractionRow = !comment.isDeleted && !isBannedComment;
   const hasAuthorPage = !isBannedComment && Boolean(comment.author.id);
@@ -77,7 +78,7 @@ export default function PostDetailCommentItem({
   };
 
   const resizeEditingTextarea = (textarea: HTMLTextAreaElement) => {
-    textarea.style.height = "auto";
+    textarea.style.height = 'auto';
     textarea.style.height = `${textarea.scrollHeight}px`;
     setIsEditingActionsBelow(textarea.scrollHeight > 40);
   };
@@ -98,14 +99,14 @@ export default function PostDetailCommentItem({
 
   const cancelEdit = () => {
     setIsEditing(false);
-    setEditingValue("");
+    setEditingValue('');
     setIsEditingActionsBelow(false);
   };
 
   const handleUpdate = async () => {
     const trimmed = editingValue.trim();
     if (!trimmed) {
-      onShowError?.(t("commentContentRequired"));
+      onShowError?.(t('commentContentRequired'));
       return;
     }
 
@@ -142,20 +143,20 @@ export default function PostDetailCommentItem({
       }
     };
 
-    window.addEventListener("mousedown", handleOutsideClick);
-    return () => window.removeEventListener("mousedown", handleOutsideClick);
+    window.addEventListener('mousedown', handleOutsideClick);
+    return () => window.removeEventListener('mousedown', handleOutsideClick);
   }, [activeMenu]);
 
   return (
-    <div className={compact ? "flex gap-2.5" : "flex gap-3"}>
+    <div className={compact ? 'flex gap-2.5' : 'flex gap-3'}>
       {hasAuthorPage ? (
         <button
           type="button"
           onClick={handleAuthorClick}
-          className={`relative rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center transition-all duration-150 hover:bg-muted/25 hover:brightness-95 ${
-            compact ? "w-7 h-7" : "w-[30px] h-[30px]"
+          className={`bg-muted hover:bg-muted/25 relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full transition-all duration-150 hover:brightness-95 ${
+            compact ? 'h-7 w-7' : 'h-[30px] w-[30px]'
           }`}
-          aria-label={`Go to ${comment.author.name || "author"} page`}
+          aria-label={`Go to ${comment.author.name || 'author'} page`}
         >
           {comment.author.profileImageUrl ? (
             <Image
@@ -165,19 +166,23 @@ export default function PostDetailCommentItem({
               className="object-cover"
             />
           ) : (
-            <span className={`${compact ? "text-xs" : "text-sm"} font-bold text-muted-foreground`}>
+            <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground font-bold`}>
               {comment.author.name.charAt(0)}
             </span>
           )}
         </button>
       ) : (
         <div
-          className={`relative rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center ${
-            compact ? "w-7 h-7" : "w-[30px] h-[30px]"
+          className={`bg-muted relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full ${
+            compact ? 'h-7 w-7' : 'h-[30px] w-[30px]'
           }`}
         >
           {isBannedComment ? (
-            <UserX className={compact ? "h-3.5 w-3.5 text-muted-foreground" : "h-4 w-4 text-muted-foreground"} />
+            <UserX
+              className={
+                compact ? 'text-muted-foreground h-3.5 w-3.5' : 'text-muted-foreground h-4 w-4'
+              }
+            />
           ) : comment.author.profileImageUrl ? (
             <Image
               src={comment.author.profileImageUrl}
@@ -186,32 +191,34 @@ export default function PostDetailCommentItem({
               className="object-cover"
             />
           ) : (
-            <span className={`${compact ? "text-xs" : "text-sm"} font-bold text-muted-foreground`}>
+            <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground font-bold`}>
               {comment.author.name.charAt(0)}
             </span>
           )}
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
-        <div className={`flex items-center justify-between gap-2 ${compact ? "mb-0.5" : "mb-1"}`}>
+      <div className="min-w-0 flex-1">
+        <div className={`flex items-center justify-between gap-2 ${compact ? 'mb-0.5' : 'mb-1'}`}>
           <div className="flex items-center gap-1.5">
             {hasAuthorPage ? (
               <button
                 type="button"
                 onClick={handleAuthorClick}
-                className={`font-semibold text-foreground hover:underline underline-offset-4 ${compact ? "text-xs" : "text-sm"}`}
-                aria-label={`Go to ${comment.author.name || "author"} page`}
+                className={`text-foreground font-semibold underline-offset-4 hover:underline ${compact ? 'text-xs' : 'text-sm'}`}
+                aria-label={`Go to ${comment.author.name || 'author'} page`}
               >
                 {comment.author.name}
               </button>
             ) : (
-              <span className={`font-semibold ${compact ? "text-xs" : "text-sm"} text-foreground`}>
-                {isBannedComment ? t("commentBannedAuthor") : comment.author.name}
+              <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'} text-foreground`}>
+                {isBannedComment ? t('commentBannedAuthor') : comment.author.name}
               </span>
             )}
-            {isPostAuthor ? <span className="comment-author-badge">{t("commentAuthorBadge")}</span> : null}
-            <span className={`${compact ? "text-[11px]" : "text-xs"} text-muted-foreground`}>
+            {isPostAuthor ? (
+              <span className="comment-author-badge">{t('commentAuthorBadge')}</span>
+            ) : null}
+            <span className={`${compact ? 'text-[11px]' : 'text-xs'} text-muted-foreground`}>
               {formatDisplayTime(comment.createdAt, locale)}
             </span>
           </div>
@@ -219,34 +226,36 @@ export default function PostDetailCommentItem({
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
-                aria-label={t("menuOpen")}
+                aria-label={t('menuOpen')}
                 onClick={() => setActiveMenu((prev) => !prev)}
-                className="p-1 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200"
+                className="text-muted-foreground hover:text-foreground rounded-full p-1 transition-colors duration-200"
                 disabled={Boolean(updatingCommentId || deletingCommentId)}
               >
-                <MoreVertical className="w-4 h-4" />
+                <MoreVertical className="h-4 w-4" />
               </button>
 
               {activeMenu ? (
-                <div className="absolute right-0 top-7 z-20 min-w-[120px] rounded-xl border border-border bg-background p-1 shadow-lg">
+                <div className="border-border bg-background absolute top-7 right-0 z-20 min-w-[120px] rounded-xl border p-1 shadow-lg">
                   {isOwnComment ? (
                     <>
                       <PostDetailMenuItemButton
                         onClick={beginEdit}
-                        icon={<Pencil className="w-3.5 h-3.5 text-foreground" />}
+                        icon={<Pencil className="text-foreground h-3.5 w-3.5" />}
                         disabled={Boolean(updatingCommentId || deletingCommentId)}
                       >
-                        {t("commentEdit")}
+                        {t('commentEdit')}
                       </PostDetailMenuItemButton>
                       <PostDetailMenuItemButton
                         onClick={() => {
                           setActiveMenu(false);
                           setIsDeleteDialogOpen(true);
                         }}
-                        icon={<Trash2 className="w-3.5 h-3.5 text-foreground" />}
-                        disabled={deletingCommentId === comment.id || updatingCommentId === comment.id}
+                        icon={<Trash2 className="text-foreground h-3.5 w-3.5" />}
+                        disabled={
+                          deletingCommentId === comment.id || updatingCommentId === comment.id
+                        }
                       >
-                        {t("commentDelete")}
+                        {t('commentDelete')}
                       </PostDetailMenuItemButton>
                     </>
                   ) : (
@@ -255,13 +264,13 @@ export default function PostDetailCommentItem({
                         setActiveMenu(false);
                         setIsBanDialogOpen(true);
                       }}
-                      icon={<UserX className="w-3.5 h-3.5 text-foreground" />}
+                      icon={<UserX className="text-foreground h-3.5 w-3.5" />}
                       disabled={
                         banningCommentAuthorId === comment.author.id ||
                         Boolean(updatingCommentId || deletingCommentId)
                       }
                     >
-                      {t("commentBan")}
+                      {t('commentBan')}
                     </PostDetailMenuItemButton>
                   )}
                 </div>
@@ -276,8 +285,8 @@ export default function PostDetailCommentItem({
               ref={editingTextareaRef}
               value={editingValue}
               onChange={(event) => setEditingValue(event.target.value)}
-              className={`w-full min-h-9 rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover focus:border-border ${
-                isEditingActionsBelow ? "pr-3" : "pr-24"
+              className={`border-border bg-background hover:bg-comment-input-hover focus:bg-comment-input-hover active:bg-comment-input-hover focus:border-border min-h-9 w-full resize-none rounded-xl border px-3 py-2 text-sm focus:outline-none ${
+                isEditingActionsBelow ? 'pr-3' : 'pr-24'
               }`}
               rows={1}
               onInput={(event) => {
@@ -288,17 +297,17 @@ export default function PostDetailCommentItem({
             <div
               className={
                 isEditingActionsBelow
-                  ? "mt-2 flex items-center justify-end gap-2"
-                  : "absolute right-2 top-[6px] flex items-center gap-2"
+                  ? 'mt-2 flex items-center justify-end gap-2'
+                  : 'absolute top-[6px] right-2 flex items-center gap-2'
               }
             >
               <button
                 type="button"
                 onClick={cancelEdit}
                 disabled={updatingCommentId === comment.id}
-                className="min-w-[37px] h-6 px-2 rounded-md border border-border text-[11px] leading-none font-semibold whitespace-nowrap flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="border-border text-muted-foreground hover:text-foreground hover:bg-muted/85 flex h-6 min-w-[37px] items-center justify-center rounded-md border px-2 text-[11px] leading-none font-semibold whitespace-nowrap transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {t("cancel")}
+                {t('cancel')}
               </button>
               <button
                 type="button"
@@ -306,41 +315,41 @@ export default function PostDetailCommentItem({
                   void handleUpdate();
                 }}
                 disabled={updatingCommentId === comment.id}
-                className="min-w-[37px] h-6 px-2 rounded-md text-[11px] leading-none font-bold whitespace-nowrap flex items-center justify-center save-action-button disabled:cursor-not-allowed disabled:opacity-60"
+                className="save-action-button flex h-6 min-w-[37px] items-center justify-center rounded-md px-2 text-[11px] leading-none font-bold whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {t("commentSave")}
+                {t('commentSave')}
               </button>
             </div>
           </div>
         ) : (
           <p
-            className={`whitespace-pre-wrap break-words leading-relaxed text-foreground ${
-              compact ? "text-xs" : "mb-2 text-sm"
+            className={`text-foreground leading-relaxed break-words whitespace-pre-wrap ${
+              compact ? 'text-xs' : 'mb-2 text-sm'
             }`}
           >
             {comment.isDeleted
-              ? t("commentDeleted")
+              ? t('commentDeleted')
               : isBannedComment
-                ? t("commentBannedContent")
+                ? t('commentBannedContent')
                 : comment.content}
           </p>
         )}
 
         {shouldShowInteractionRow ? (
-          <div className={`flex items-center ${compact ? "gap-3 mt-1.5" : "gap-4"}`}>
-            <div className="inline-flex items-center gap-1 rounded-full bg-muted/70 px-1.5 py-1 text-xs text-muted-foreground">
+          <div className={`flex items-center ${compact ? 'mt-1.5 gap-3' : 'gap-4'}`}>
+            <div className="bg-muted/70 text-muted-foreground inline-flex items-center gap-1 rounded-full px-1.5 py-1 text-xs">
               <button
                 type="button"
                 onClick={() => onLikeComment(comment.id)}
                 disabled={isReactionDisabled}
                 className={`rounded-full p-1 transition-colors ${
-                  commentReactionState === "like"
-                    ? "bg-red-500/15 text-red-600 hover:bg-red-500/20"
-                    : "hover:bg-muted hover:text-foreground"
+                  commentReactionState === 'like'
+                    ? 'bg-red-500/15 text-red-600 hover:bg-red-500/20'
+                    : 'hover:bg-muted hover:text-foreground'
                 } disabled:cursor-not-allowed disabled:opacity-60`}
-                aria-label={t("ariaLike")}
+                aria-label={t('ariaLike')}
               >
-                <ThumbsUp className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
+                <ThumbsUp className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
               </button>
               <span className="px-0.5 text-[11px] font-semibold">{comment.likeCount}</span>
               <button
@@ -348,13 +357,13 @@ export default function PostDetailCommentItem({
                 onClick={() => onDislikeComment(comment.id)}
                 disabled={isReactionDisabled}
                 className={`rounded-full p-1 transition-colors ${
-                  commentReactionState === "dislike"
-                    ? "bg-blue-500/15 text-blue-600 hover:bg-blue-500/20"
-                    : "hover:bg-muted hover:text-foreground"
+                  commentReactionState === 'dislike'
+                    ? 'bg-blue-500/15 text-blue-600 hover:bg-blue-500/20'
+                    : 'hover:bg-muted hover:text-foreground'
                 } disabled:cursor-not-allowed disabled:opacity-60`}
-                aria-label={t("ariaDislike")}
+                aria-label={t('ariaDislike')}
               >
-                <ThumbsDown className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
+                <ThumbsDown className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
               </button>
             </div>
             {extraActions}
@@ -366,10 +375,10 @@ export default function PostDetailCommentItem({
 
       <PostDetailConfirmDialog
         isOpen={isDeleteDialogOpen}
-        title={t("commentDeleteConfirm")}
-        description={t("deleteConfirmDescription")}
-        cancelLabel={t("close")}
-        confirmLabel={t("deleteConfirmAction")}
+        title={t('commentDeleteConfirm')}
+        description={t('deleteConfirmDescription')}
+        cancelLabel={t('close')}
+        confirmLabel={t('deleteConfirmAction')}
         onCancel={() => {
           setIsDeleteDialogOpen(false);
         }}
@@ -383,10 +392,10 @@ export default function PostDetailCommentItem({
 
       <PostDetailConfirmDialog
         isOpen={isBanDialogOpen}
-        title={t("commentBanConfirmTitle")}
-        description={t("reportConfirmDescription")}
-        cancelLabel={t("close")}
-        confirmLabel={t("reportConfirmAction")}
+        title={t('commentBanConfirmTitle')}
+        description={t('reportConfirmDescription')}
+        cancelLabel={t('close')}
+        confirmLabel={t('reportConfirmAction')}
         onCancel={() => {
           setIsBanDialogOpen(false);
         }}

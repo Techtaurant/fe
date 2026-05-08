@@ -1,9 +1,5 @@
-import { Comment } from "../../types";
-import {
-  CommentListResponse,
-  CreateCommentResponse,
-  UpdateCommentResponse,
-} from "./types";
+import { Comment } from '../../types';
+import { CommentListResponse, CreateCommentResponse, UpdateCommentResponse } from './types';
 
 interface CommentPayload {
   id: string;
@@ -13,7 +9,7 @@ interface CommentPayload {
   depth: number;
   isDeleted: boolean;
   isBanned?: boolean;
-  likeStatus?: "NONE" | "LIKE" | "DISLIKE";
+  likeStatus?: 'NONE' | 'LIKE' | 'DISLIKE';
   createdAt: string;
 }
 
@@ -29,13 +25,13 @@ function normalizeComment(
     author: {
       id: payload.authorId,
       name: payload.authorName,
-      email: "",
+      email: '',
       profileImageUrl,
-      role: "USER",
+      role: 'USER',
     },
     createdAt: payload.createdAt,
     likeCount: 0,
-    likeStatus: payload.likeStatus ?? "NONE",
+    likeStatus: payload.likeStatus ?? 'NONE',
     replyCount: 0,
     isDeleted: payload.isDeleted,
     isBanned: payload.isBanned ?? false,
@@ -51,13 +47,13 @@ export function mapCommentListItemToComment(item: CommentListResponse): Comment 
     author: {
       id: item.authorId,
       name: item.authorName,
-      email: "",
-      profileImageUrl: item.authorProfileImageUrl || "",
-      role: "USER",
+      email: '',
+      profileImageUrl: item.authorProfileImageUrl || '',
+      role: 'USER',
     },
     createdAt: item.createdAt,
     likeCount: item.likeCount,
-    likeStatus: item.likeStatus ?? "NONE",
+    likeStatus: item.likeStatus ?? 'NONE',
     replyCount: item.replyCount,
     isDeleted: item.isDeleted,
     isBanned: item.isBanned ?? false,
@@ -67,14 +63,14 @@ export function mapCommentListItemToComment(item: CommentListResponse): Comment 
 }
 
 export function mapCreatedCommentToComment(
-  payload: CreateCommentResponse["data"],
+  payload: CreateCommentResponse['data'],
   profileImageUrl: string,
 ): Comment {
   return normalizeComment(payload, profileImageUrl);
 }
 
 export function mapUpdatedCommentToComment(
-  payload: UpdateCommentResponse["data"],
+  payload: UpdateCommentResponse['data'],
   profileImageUrl: string,
 ): Comment {
   return normalizeComment(payload, profileImageUrl);

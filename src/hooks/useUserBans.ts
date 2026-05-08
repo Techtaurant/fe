@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "../lib/queryKeys";
-import { fetchMyBans, isBanApiError, unbanUser } from "../services/users/ban";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+
+import { queryKeys } from '../lib/queryKeys';
+import { fetchMyBans, isBanApiError, unbanUser } from '../services/users/ban';
 
 export function useUserBans(enabled: boolean) {
   const queryClient = useQueryClient();
@@ -55,7 +56,7 @@ export function useUserBans(enabled: boolean) {
       if (isBanApiError(error)) {
         return { ok: false as const, errorCode: error.code };
       }
-      return { ok: false as const, errorCode: "UNKNOWN" as const };
+      return { ok: false as const, errorCode: 'UNKNOWN' as const };
     }
   };
 

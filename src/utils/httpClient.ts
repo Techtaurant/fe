@@ -6,8 +6,7 @@
  */
 
 // API 베이스 URL (직접 백엔드 서버로 요청)
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 interface RefreshResponse {
   status: number;
@@ -15,11 +14,11 @@ interface RefreshResponse {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+  return typeof value === 'object' && value !== null;
 }
 
 function toError(value: unknown): Error {
-  return value instanceof Error ? value : new Error("UNKNOWN_ERROR");
+  return value instanceof Error ? value : new Error('UNKNOWN_ERROR');
 }
 
 // 토큰 갱신 중 플래그 (중복 갱신 방지)
@@ -53,24 +52,24 @@ const processQueue = (error: Error | null = null) => {
 export async function refreshTokens(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/open-api/auth/refresh`, {
-      method: "POST",
-      credentials: "include", // 쿠키에 있는 refreshToken 자동 포함
+      method: 'POST',
+      credentials: 'include', // 쿠키에 있는 refreshToken 자동 포함
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      throw new Error("토큰 갱신 실패");
+      throw new Error('토큰 갱신 실패');
     }
 
     const rawData: unknown = await response.json();
-    if (!isRecord(rawData) || typeof rawData.status !== "number") {
-      throw new Error("토큰 갱신 응답 형식 오류");
+    if (!isRecord(rawData) || typeof rawData.status !== 'number') {
+      throw new Error('토큰 갱신 응답 형식 오류');
     }
     const data: RefreshResponse = {
       status: rawData.status,
-      message: typeof rawData.message === "string" ? rawData.message : "",
+      message: typeof rawData.message === 'string' ? rawData.message : '',
     };
 
     // status 0이면 성공
@@ -78,9 +77,9 @@ export async function refreshTokens(): Promise<boolean> {
       return true;
     }
 
-    throw new Error(data.message || "토큰 갱신 실패");
+    throw new Error(data.message || '토큰 갱신 실패');
   } catch (error: unknown) {
-    console.error("토큰 갱신 에러:", error);
+    console.error('토큰 갱신 에러:', error);
     return false;
   }
 }
@@ -92,19 +91,16 @@ export async function refreshTokens(): Promise<boolean> {
  * @param options - fetch options
  * @returns {Promise<Response>} fetch Response
  */
-export async function httpClient(
-  url: string,
-  options: RequestInit = {},
-): Promise<Response> {
+export async function httpClient(url: string, options: RequestInit = {}): Promise<Response> {
   // 전체 URL 생성 (백엔드 서버로 직접 요청)
   const fullUrl = `${API_BASE_URL}${url}`;
 
   // 기본 옵션: 쿠키 포함
   const config: RequestInit = {
     ...options,
-    credentials: "include",
+    credentials: 'include',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options.headers,
     },
   };
@@ -148,12 +144,12 @@ export async function httpClient(
     const refreshSuccess = await refreshTokens();
 
     if (!refreshSuccess) {
-      processQueue(new Error("토큰 갱신 실패"));
+      processQueue(new Error('토큰 갱신 실패'));
       // 홈으로 리다이렉트
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
       }
-      throw new Error("토큰 갱신 실패");
+      throw new Error('토큰 갱신 실패');
     }
 
     // 갱신 성공 - 대기 중인 요청들 처리
@@ -174,7 +170,7 @@ export async function httpClient(
  * GET 요청
  */
 export async function httpGet<T>(url: string): Promise<T> {
-  const response = await httpClient(url, { method: "GET" });
+  const response = await httpClient(url, { method: 'GET' });
 
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -188,7 +184,7 @@ export async function httpGet<T>(url: string): Promise<T> {
  */
 export async function httpPost<T>(url: string, data?: unknown): Promise<T> {
   const response = await httpClient(url, {
-    method: "POST",
+    method: 'POST',
     body: data ? JSON.stringify(data) : undefined,
   });
 
@@ -204,7 +200,7 @@ export async function httpPost<T>(url: string, data?: unknown): Promise<T> {
  */
 export async function httpPut<T>(url: string, data?: unknown): Promise<T> {
   const response = await httpClient(url, {
-    method: "PUT",
+    method: 'PUT',
     body: data ? JSON.stringify(data) : undefined,
   });
 
@@ -219,7 +215,7 @@ export async function httpPut<T>(url: string, data?: unknown): Promise<T> {
  * DELETE 요청
  */
 export async function httpDelete<T>(url: string): Promise<T> {
-  const response = await httpClient(url, { method: "DELETE" });
+  const response = await httpClient(url, { method: 'DELETE' });
 
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);

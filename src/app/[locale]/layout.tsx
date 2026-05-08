@@ -1,7 +1,8 @@
-import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
-import { routing } from "@/i18n/routing";
+import { notFound } from 'next/navigation';
+import { hasLocale, NextIntlClientProvider } from 'next-intl';
+import type { ReactNode } from 'react';
+
+import { routing } from '@/i18n/routing';
 
 type Props = {
   children: ReactNode;
@@ -12,15 +13,11 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export async function generateMetadata({ params }: Omit<Props, "children">) {
+export async function generateMetadata({ params }: Omit<Props, 'children'>) {
   const { locale } = await params;
-  const currentLocale = hasLocale(routing.locales, locale)
-    ? locale
-    : routing.defaultLocale;
+  const currentLocale = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
 
-  const languagePathMap = Object.fromEntries(
-    routing.locales.map((loc) => [loc, `/${loc}`]),
-  );
+  const languagePathMap = Object.fromEntries(routing.locales.map((loc) => [loc, `/${loc}`]));
 
   return {
     alternates: {
@@ -37,7 +34,5 @@ export default async function LocaleLayout({ children, params }: Props) {
     notFound();
   }
 
-  return (
-    <NextIntlClientProvider>{children}</NextIntlClientProvider>
-  );
+  return <NextIntlClientProvider>{children}</NextIntlClientProvider>;
 }

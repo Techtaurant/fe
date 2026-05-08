@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import { type ActionSnackbarExtendedVariant } from "../components/ui/ActionSnackbar";
+import { useCallback, useEffect, useState } from 'react';
+
+import { type ActionSnackbarExtendedVariant } from '../components/ui/ActionSnackbar';
 
 export interface ActionSnackbarState {
   type: ActionSnackbarExtendedVariant;

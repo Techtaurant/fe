@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   InfiniteData,
@@ -6,17 +6,18 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-} from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
+} from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+
+import { queryKeys } from '../lib/queryKeys';
 import {
   fetchNotifications,
   FetchNotificationsResponse,
   fetchUnreadNotificationCount,
   markNotificationsRead,
   NotificationListItem,
-} from "../services/notifications";
-import { queryKeys } from "../lib/queryKeys";
+} from '../services/notifications';
 
 interface UseNotificationsOptions {
   enabled: boolean;
@@ -39,9 +40,7 @@ function mergeNotifications(pages: FetchNotificationsResponse[]): NotificationLi
 }
 
 function updateInfiniteNotifications(
-  current:
-    | InfiniteData<FetchNotificationsResponse, string | undefined>
-    | undefined,
+  current: InfiniteData<FetchNotificationsResponse, string | undefined> | undefined,
   updatedNotifications: NotificationListItem[],
 ): InfiniteData<FetchNotificationsResponse, string | undefined> | undefined {
   if (!current) {
@@ -77,7 +76,7 @@ export function useNotifications({
   listEnabled = true,
   size = 20,
 }: UseNotificationsOptions) {
-  const t = useTranslations("Header");
+  const t = useTranslations('Header');
   const queryClient = useQueryClient();
   const queryKey = queryKeys.notifications.list({ size });
   const unreadCountQueryKey = queryKeys.notifications.unreadCount();
@@ -116,16 +115,10 @@ export function useNotifications({
 
       queryClient.setQueryData<
         InfiniteData<FetchNotificationsResponse, string | undefined> | undefined
-      >(queryKey, (current) =>
-        updateInfiniteNotifications(current, updatedNotifications),
-      );
+      >(queryKey, (current) => updateInfiniteNotifications(current, updatedNotifications));
 
-      queryClient.setQueryData<number | undefined>(
-        unreadCountQueryKey,
-        (current) =>
-          typeof current === "number"
-            ? Math.max(0, current - updatedNotifications.length)
-            : current,
+      queryClient.setQueryData<number | undefined>(unreadCountQueryKey, (current) =>
+        typeof current === 'number' ? Math.max(0, current - updatedNotifications.length) : current,
       );
     },
   });
@@ -145,8 +138,7 @@ export function useNotifications({
     [unreadNotifications],
   );
 
-  const unreadCount =
-    unreadCountQuery.data ?? unreadNotifications.length;
+  const unreadCount = unreadCountQuery.data ?? unreadNotifications.length;
 
   const loadMore = useCallback(async () => {
     if (!query.hasNextPage || query.isFetchingNextPage) {
@@ -166,9 +158,7 @@ export function useNotifications({
 
   const markNotificationAsRead = useCallback(
     async (notificationId: string) => {
-      const target = notifications.find(
-        (notification) => notification.id === notificationId,
-      );
+      const target = notifications.find((notification) => notification.id === notificationId);
 
       if (!target || target.isRead) {
         return [];
@@ -182,14 +172,13 @@ export function useNotifications({
   const errorMessage = (() => {
     if (!query.error) return null;
 
-    const message =
-      query.error instanceof Error ? query.error.message : "UNKNOWN_ERROR";
+    const message = query.error instanceof Error ? query.error.message : 'UNKNOWN_ERROR';
 
-    if (message === "UNAUTHORIZED") {
-      return t("notificationsLoginRequired");
+    if (message === 'UNAUTHORIZED') {
+      return t('notificationsLoginRequired');
     }
 
-    return t("notificationsLoadFailed");
+    return t('notificationsLoadFailed');
   })();
 
   return {

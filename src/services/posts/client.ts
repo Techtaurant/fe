@@ -1,37 +1,33 @@
-import { httpClient } from "../../utils/httpClient";
-import {
-  CreatePostRequest,
-  CreatePostResponse,
-  UpdatePostRequest,
-} from "../../types";
+import { CreatePostRequest, CreatePostResponse, UpdatePostRequest } from '../../types';
+import { httpClient } from '../../utils/httpClient';
 import {
   DraftPostListResponse,
-  TogglePostReadLogResponse,
   PostDetailResponse,
   PostListPeriod,
-  UserPostListResponse,
   PostListResponse,
   PostListSort,
+  TogglePostReadLogResponse,
   UserCategoryResponse,
-} from "./types";
+  UserPostListResponse,
+} from './types';
 
 export async function createPostRequest(
   payload: CreatePostRequest,
   signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
-  const response = await httpClient("/api/posts", {
-    method: "POST",
+  const response = await httpClient('/api/posts', {
+    method: 'POST',
     body: JSON.stringify(payload),
     signal,
   });
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (response.status === 400) {
     const body = (await response.json().catch(() => null)) as CreatePostResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+    throw new Error(body?.message || 'BAD_REQUEST');
   }
 
   if (!response.ok) {
@@ -47,22 +43,22 @@ export async function updatePostRequest(
   signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
   const response = await httpClient(`/api/posts/${postId}`, {
-    method: "PATCH",
+    method: 'PATCH',
     body: JSON.stringify(payload),
     signal,
   });
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new Error('NOT_FOUND');
   }
 
   if (response.status === 400) {
     const body = (await response.json().catch(() => null)) as CreatePostResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+    throw new Error(body?.message || 'BAD_REQUEST');
   }
 
   if (!response.ok) {
@@ -82,31 +78,31 @@ export async function fetchCommunityPosts(params?: {
   tagIds?: string[];
 }): Promise<PostListResponse> {
   const searchParams = new URLSearchParams();
-  if (params?.cursor) searchParams.set("cursor", params.cursor);
-  searchParams.set("size", String(params?.size ?? 20));
-  searchParams.set("period", params?.period ?? "ALL");
-  searchParams.set("sort", params?.sort ?? "LATEST");
+  if (params?.cursor) searchParams.set('cursor', params.cursor);
+  searchParams.set('size', String(params?.size ?? 20));
+  searchParams.set('period', params?.period ?? 'ALL');
+  searchParams.set('sort', params?.sort ?? 'LATEST');
   if (params?.authorId) {
-    searchParams.set("authorId", params.authorId);
-    searchParams.set("author", params.authorId);
-    searchParams.set("userId", params.authorId);
+    searchParams.set('authorId', params.authorId);
+    searchParams.set('author', params.authorId);
+    searchParams.set('userId', params.authorId);
   }
   if (params?.categoryPath) {
-    searchParams.set("categoryPath", params.categoryPath);
+    searchParams.set('categoryPath', params.categoryPath);
   }
   if (params?.tagIds && params.tagIds.length > 0) {
     params.tagIds.forEach((tagId) => {
-      searchParams.append("tagIds", tagId);
+      searchParams.append('tagIds', tagId);
     });
   }
 
   const response = await httpClient(`/open-api/posts?${searchParams.toString()}`, {
-    method: "GET",
+    method: 'GET',
   });
 
   if (response.status === 400) {
     const body = (await response.json().catch(() => null)) as PostListResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+    throw new Error(body?.message || 'BAD_REQUEST');
   }
 
   if (!response.ok) {
@@ -125,24 +121,24 @@ export async function fetchUserPosts(params: {
   categoryId?: string;
 }): Promise<UserPostListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set("cursor", params.cursor);
-  searchParams.set("size", String(params.size ?? 20));
-  searchParams.set("period", params.period ?? "ALL");
-  searchParams.set("sort", params.sort ?? "LATEST");
+  if (params.cursor) searchParams.set('cursor', params.cursor);
+  searchParams.set('size', String(params.size ?? 20));
+  searchParams.set('period', params.period ?? 'ALL');
+  searchParams.set('sort', params.sort ?? 'LATEST');
   if (params.categoryId) {
-    searchParams.set("categoryId", params.categoryId);
+    searchParams.set('categoryId', params.categoryId);
   }
 
   const response = await httpClient(
     `/open-api/users/${params.userId}/posts?${searchParams.toString()}`,
     {
-      method: "GET",
+      method: 'GET',
     },
   );
 
   if (response.status === 400) {
     const body = (await response.json().catch(() => null)) as UserPostListResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+    throw new Error(body?.message || 'BAD_REQUEST');
   }
 
   if (!response.ok) {
@@ -158,20 +154,20 @@ export async function fetchUserCategories(
 ): Promise<UserCategoryResponse> {
   const searchParams = new URLSearchParams();
   if (path) {
-    searchParams.set("path", path);
+    searchParams.set('path', path);
   }
 
   const query = searchParams.toString();
   const response = await httpClient(
-    `/open-api/users/${userId}/categories${query ? `?${query}` : ""}`,
+    `/open-api/users/${userId}/categories${query ? `?${query}` : ''}`,
     {
-      method: "GET",
+      method: 'GET',
     },
   );
 
   if (response.status === 400) {
     const body = (await response.json().catch(() => null)) as UserCategoryResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+    throw new Error(body?.message || 'BAD_REQUEST');
   }
 
   if (!response.ok) {
@@ -183,11 +179,11 @@ export async function fetchUserCategories(
 
 export async function fetchPostDetail(postId: string): Promise<PostDetailResponse> {
   const response = await httpClient(`/open-api/posts/${postId}`, {
-    method: "GET",
+    method: 'GET',
   });
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new Error('NOT_FOUND');
   }
 
   if (!response.ok) {
@@ -202,16 +198,16 @@ export async function fetchDraftPosts(params?: {
   size?: number;
 }): Promise<DraftPostListResponse> {
   const searchParams = new URLSearchParams();
-  if (params && params.cursor !== undefined) searchParams.set("cursor", params.cursor);
-  searchParams.set("size", String(params?.size ?? 20));
+  if (params && params.cursor !== undefined) searchParams.set('cursor', params.cursor);
+  searchParams.set('size', String(params?.size ?? 20));
 
   const query = searchParams.toString();
-  const response = await httpClient(`/api/posts/drafts${query ? `?${query}` : ""}`, {
-    method: "GET",
+  const response = await httpClient(`/api/posts/drafts${query ? `?${query}` : ''}`, {
+    method: 'GET',
   });
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (!response.ok) {
@@ -223,15 +219,15 @@ export async function fetchDraftPosts(params?: {
 
 export async function fetchDraftDetail(postId: string): Promise<PostDetailResponse> {
   const response = await httpClient(`/api/posts/drafts/${postId}`, {
-    method: "GET",
+    method: 'GET',
   });
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new Error('NOT_FOUND');
   }
 
   if (!response.ok) {
@@ -246,25 +242,25 @@ export async function togglePostReadLog(
   payload: { isRead: boolean },
 ): Promise<TogglePostReadLogResponse> {
   const response = await httpClient(`/api/posts/${postId}/read-logs`, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(payload),
   });
 
   if (response.status === 400) {
     const body = (await response.json().catch(() => null)) as TogglePostReadLogResponse | null;
-    throw new Error(body?.message || "BAD_REQUEST");
+    throw new Error(body?.message || 'BAD_REQUEST');
   }
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (response.status === 403) {
-    throw new Error("FORBIDDEN");
+    throw new Error('FORBIDDEN');
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new Error('NOT_FOUND');
   }
 
   if (!response.ok) {
@@ -276,27 +272,27 @@ export async function togglePostReadLog(
 
 export async function setPostLike(
   postId: string,
-  likeStatus: "NONE" | "LIKE" | "DISLIKE",
+  likeStatus: 'NONE' | 'LIKE' | 'DISLIKE',
 ): Promise<{ status: number; message: string }> {
   const response = await httpClient(`/api/posts/${postId}/like`, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify({ likeStatus }),
   });
 
   if (response.status === 400) {
-    throw new Error("BAD_REQUEST");
+    throw new Error('BAD_REQUEST');
   }
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (response.status === 403) {
-    throw new Error("FORBIDDEN");
+    throw new Error('FORBIDDEN');
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new Error('NOT_FOUND');
   }
 
   if (!response.ok) {
@@ -306,23 +302,21 @@ export async function setPostLike(
   return (await response.json()) as { status: number; message: string };
 }
 
-export async function deletePostRequest(
-  postId: string,
-): Promise<void> {
+export async function deletePostRequest(postId: string): Promise<void> {
   const response = await httpClient(`/api/posts/${postId}`, {
-    method: "DELETE",
+    method: 'DELETE',
   });
 
   if (response.status === 401) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   if (response.status === 403) {
-    throw new Error("FORBIDDEN");
+    throw new Error('FORBIDDEN');
   }
 
   if (response.status === 404) {
-    throw new Error("NOT_FOUND");
+    throw new Error('NOT_FOUND');
   }
 
   if (!response.ok) {

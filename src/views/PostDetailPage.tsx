@@ -1,36 +1,36 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { useRouter } from "../i18n/navigation";
-import Header from "../components/Header";
-import PostDetail from "../components/PostDetail";
-import ActionSnackbar from "../components/ui/ActionSnackbar";
-import { useActionSnackbar } from "../hooks/useActionSnackbar";
-import { useComments } from "../hooks/useComments";
-import { usePostDetail } from "../hooks/usePostDetail";
-import { useUser } from "../hooks/useUser";
-import { buildUserPath } from "../lib/userRoute";
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
+import Header from '../components/Header';
+import PostDetail from '../components/PostDetail';
+import ActionSnackbar from '../components/ui/ActionSnackbar';
+import { useActionSnackbar } from '../hooks/useActionSnackbar';
+import { useComments } from '../hooks/useComments';
+import { usePostDetail } from '../hooks/usePostDetail';
+import { useUser } from '../hooks/useUser';
+import { useRouter } from '../i18n/navigation';
+import { buildUserPath } from '../lib/userRoute';
 
 export default function PostDetailPage() {
-  const t = useTranslations("PostDetailPage");
-  const userPageT = useTranslations("UserPage");
+  const t = useTranslations('PostDetailPage');
+  const userPageT = useTranslations('UserPage');
   const params = useParams();
   const router = useRouter();
-  const routePostId = typeof params.postId === "string" ? params.postId : null;
+  const routePostId = typeof params.postId === 'string' ? params.postId : null;
   const routeSlug = params.slug;
-  const slugPostId = Array.isArray(routeSlug) && routeSlug.length > 0
-    ? routeSlug[routeSlug.length - 1]
-    : null;
-  const postId = routePostId ?? slugPostId ?? "";
+  const slugPostId =
+    Array.isArray(routeSlug) && routeSlug.length > 0 ? routeSlug[routeSlug.length - 1] : null;
+  const postId = routePostId ?? slugPostId ?? '';
   const { user } = useUser();
   const [isRedirectingAfterBlock, setIsRedirectingAfterBlock] = useState(false);
   const { snackbar, showSnackbar } = useActionSnackbar();
   const showErrorSnackbar = (message: string) => {
-    showSnackbar({ type: "error", message });
+    showSnackbar({ type: 'error', message });
   };
-  const showSnackbarMessage = (message: string, type: "error" | "success" = "error") => {
+  const showSnackbarMessage = (message: string, type: 'error' | 'success' = 'error') => {
     showSnackbar({ type, message });
   };
 
@@ -76,26 +76,26 @@ export default function PostDetailPage() {
     handleBanCommentAuthor,
     handleLikeComment,
     handleDislikeComment,
-  } = useComments(postId, () => {
-    setPost((current) => {
-      if (!current) return current;
-      return {
-        ...current,
-        commentCount: (current.commentCount || 0) + 1,
-      };
-    });
-  }, showErrorSnackbar);
+  } = useComments(
+    postId,
+    () => {
+      setPost((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          commentCount: (current.commentCount || 0) + 1,
+        };
+      });
+    },
+    showErrorSnackbar,
+  );
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header
-          onMenuClick={() => {}}
-          currentMode={currentMode}
-          onModeChange={() => {}}
-        />
+      <div className="bg-background min-h-screen">
+        <Header onMenuClick={() => {}} currentMode={currentMode} onModeChange={() => {}} />
         <div className="flex items-center justify-center py-20">
-          <p className="text-lg text-muted-foreground">{t("loading")}</p>
+          <p className="text-muted-foreground text-lg">{t('loading')}</p>
         </div>
       </div>
     );
@@ -104,30 +104,20 @@ export default function PostDetailPage() {
   if (errorMessage || !post) {
     if (isRedirectingAfterBlock) {
       return (
-        <div className="min-h-screen bg-background">
-          <Header
-            onMenuClick={() => {}}
-            currentMode={currentMode}
-            onModeChange={() => {}}
-          />
+        <div className="bg-background min-h-screen">
+          <Header onMenuClick={() => {}} currentMode={currentMode} onModeChange={() => {}} />
           <div className="flex items-center justify-center py-20">
-            <p className="text-lg text-muted-foreground">{t("loading")}</p>
+            <p className="text-muted-foreground text-lg">{t('loading')}</p>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="min-h-screen bg-background">
-        <Header
-          onMenuClick={() => {}}
-          currentMode={currentMode}
-          onModeChange={() => {}}
-        />
+      <div className="bg-background min-h-screen">
+        <Header onMenuClick={() => {}} currentMode={currentMode} onModeChange={() => {}} />
         <div className="flex items-center justify-center py-20">
-          <p className="text-lg text-muted-foreground">
-            {errorMessage || t("notFound")}
-          </p>
+          <p className="text-muted-foreground text-lg">{errorMessage || t('notFound')}</p>
         </div>
       </div>
     );
@@ -140,17 +130,17 @@ export default function PostDetailPage() {
     <>
       <ActionSnackbar
         isOpen={Boolean(snackbar)}
-        variant={snackbar?.type ?? "error"}
+        variant={snackbar?.type ?? 'error'}
         message={
           snackbar?.message
             ? snackbar.message
             : snackbar
-              ? snackbar.type === "followed"
-                ? userPageT("actions.followedWithName", { name: snackbar.name ?? "" })
-                : snackbar.type === "unfollowed"
-                  ? userPageT("actions.unfollowedWithName", { name: snackbar.name ?? "" })
-                  : ""
-            : ""
+              ? snackbar.type === 'followed'
+                ? userPageT('actions.followedWithName', { name: snackbar.name ?? '' })
+                : snackbar.type === 'unfollowed'
+                  ? userPageT('actions.unfollowedWithName', { name: snackbar.name ?? '' })
+                  : ''
+              : ''
         }
       />
 
@@ -167,10 +157,12 @@ export default function PostDetailPage() {
         createCommentFieldErrors={createCommentFieldErrors}
         currentUserId={user?.id ?? null}
         onBack={() => router.back()}
-        onEdit={() => router.push({
-          pathname: "/post/write",
-          query: { postId: post.id },
-        })}
+        onEdit={() =>
+          router.push({
+            pathname: '/post/write',
+            query: { postId: post.id },
+          })
+        }
         onCategoryClick={
           authorId && authorCategoryPath
             ? () => {
@@ -193,8 +185,8 @@ export default function PostDetailPage() {
           const deleted = await handleDelete();
           if (deleted) {
             router.replace({
-              pathname: "/",
-              query: { mode: "user" },
+              pathname: '/',
+              query: { mode: 'user' },
             });
             router.refresh();
           }
@@ -206,13 +198,13 @@ export default function PostDetailPage() {
           if (result.ok && authorId) {
             router.replace({
               pathname: buildUserPath(authorId),
-              query: { blocked: "1" },
+              query: { blocked: '1' },
             });
             return;
           }
 
           if (result.errorMessage) {
-            showSnackbar({ type: "error", message: result.errorMessage });
+            showSnackbar({ type: 'error', message: result.errorMessage });
           }
 
           setIsRedirectingAfterBlock(false);
@@ -224,13 +216,13 @@ export default function PostDetailPage() {
           }
 
           if (!result.ok) {
-            if (result.reason === "unauthorized") {
+            if (result.reason === 'unauthorized') {
               return;
             }
 
             showSnackbar({
-              type: "error",
-              message: result.message || t("loadFailed"),
+              type: 'error',
+              message: result.message || t('loadFailed'),
             });
             return;
           }

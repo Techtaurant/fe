@@ -1,43 +1,41 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useUser } from "./useUser";
-import { redirectToOAuthLogin } from "../lib/authRedirect";
-import { FEED_MODES } from "../constants/feed";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
+
+import { FEED_MODES } from '../constants/feed';
+import { redirectToOAuthLogin } from '../lib/authRedirect';
+import { queryKeys } from '../lib/queryKeys';
 import {
   deletePost,
   fetchPostDetailWithMeta,
-  updatePostReadLog,
   updatePost,
   updatePostLike,
-} from "../services/posts";
-import { isBanApiError } from "../services/users/ban";
-import {
-  fetchUserFollowings,
-  isFollowApiError,
-} from "../services/users/follow";
-import { useUserBlockActions } from "./useUserBlockActions";
-import { type ToggleFollowResult, useFollowActions } from "./useFollowActions";
-import { FeedMode, Post } from "../types";
-import { queryKeys } from "../lib/queryKeys";
+  updatePostReadLog,
+} from '../services/posts';
+import { isBanApiError } from '../services/users/ban';
+import { fetchUserFollowings, isFollowApiError } from '../services/users/follow';
+import { FeedMode, Post } from '../types';
 import {
   calculateNextLikeCount,
   inferReactionFromServer,
   resolveReactionState,
-} from "../utils/reactionCounter";
+} from '../utils/reactionCounter';
+import { type ToggleFollowResult, useFollowActions } from './useFollowActions';
+import { useUser } from './useUser';
+import { useUserBlockActions } from './useUserBlockActions';
 
 type PostDetailQueryData = {
   post: Post;
 };
 
-type ReactionState = "like" | "dislike" | "none";
+type ReactionState = 'like' | 'dislike' | 'none';
 export function usePostDetail(
   postId: string,
-  onNotifyMessage?: (message: string, type?: "error" | "success") => void,
+  onNotifyMessage?: (message: string, type?: 'error' | 'success') => void,
 ) {
-  const t = useTranslations("PostDetailPage");
+  const t = useTranslations('PostDetailPage');
   const queryClient = useQueryClient();
   const { user } = useUser();
   const currentMode: FeedMode = FEED_MODES.USER;
@@ -50,7 +48,7 @@ export function usePostDetail(
   } | null>(null);
 
   const getStoredReaction = (id: string): ReactionState | null => {
-    if (typeof window === "undefined") return null;
+    if (typeof window === 'undefined') return null;
     if (!userId) {
       return null;
     }
@@ -58,7 +56,7 @@ export function usePostDetail(
     const storageKey = `post:${id}:reaction:${userId}`;
     try {
       const value = window.localStorage.getItem(storageKey);
-      if (value === "like" || value === "dislike" || value === "none") {
+      if (value === 'like' || value === 'dislike' || value === 'none') {
         return value;
       }
       return null;
@@ -67,27 +65,27 @@ export function usePostDetail(
     }
   };
 
-  const setStoredReaction = useCallback((id: string, value: ReactionState) => {
-    if (typeof window === "undefined") return;
-    if (!userId) {
-      return;
-    }
+  const setStoredReaction = useCallback(
+    (id: string, value: ReactionState) => {
+      if (typeof window === 'undefined') return;
+      if (!userId) {
+        return;
+      }
 
-    const storageKey = `post:${id}:reaction:${userId}`;
-    try {
-      window.localStorage.setItem(storageKey, value);
-    } catch {
-      // ignore storage errors
-    }
-  }, [userId]);
+      const storageKey = `post:${id}:reaction:${userId}`;
+      try {
+        window.localStorage.setItem(storageKey, value);
+      } catch {
+        // ignore storage errors
+      }
+    },
+    [userId],
+  );
 
   const setStoredReactionState = useCallback(
     (id: string, value: ReactionState) => {
       setStoredReaction(id, value);
-      queryClient.setQueryData<ReactionState>(
-        ["post-reaction", id, userId ?? "guest"],
-        value,
-      );
+      queryClient.setQueryData<ReactionState>(['post-reaction', id, userId ?? 'guest'], value);
     },
     [queryClient, setStoredReaction, userId],
   );
@@ -95,25 +93,18 @@ export function usePostDetail(
   const detailQueryKey = queryKeys.posts.detail(postId);
 
   const setLikeStatusInCache = (nextReaction: ReactionState, nextLikeCount: number) => {
-    queryClient.setQueryData<PostDetailQueryData>(
-      detailQueryKey,
-      (current) => {
-        if (!current) return current;
-        return {
-          ...current,
-          post: {
-            ...current.post,
-            likeCount: nextLikeCount,
-            likeStatus:
-              nextReaction === "none"
-                ? "NONE"
-                : nextReaction === "like"
-                  ? "LIKE"
-                  : "DISLIKE",
-          },
-        };
-      },
-    );
+    queryClient.setQueryData<PostDetailQueryData>(detailQueryKey, (current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        post: {
+          ...current.post,
+          likeCount: nextLikeCount,
+          likeStatus:
+            nextReaction === 'none' ? 'NONE' : nextReaction === 'like' ? 'LIKE' : 'DISLIKE',
+        },
+      };
+    });
   };
 
   const detailQuery = useQuery({
@@ -122,12 +113,12 @@ export function usePostDetail(
     enabled: Boolean(postId),
   });
   const myFollowingsQuery = useQuery({
-    queryKey: queryKeys.user.followings(userId ?? ""),
-    queryFn: () => fetchUserFollowings(userId ?? ""),
+    queryKey: queryKeys.user.followings(userId ?? ''),
+    queryFn: () => fetchUserFollowings(userId ?? ''),
     enabled: Boolean(userId),
   });
   const storedReactionQuery = useQuery({
-    queryKey: ["post-reaction", postId, userId ?? "guest"],
+    queryKey: ['post-reaction', postId, userId ?? 'guest'],
     queryFn: async (): Promise<ReactionState | null> => getStoredReaction(postId),
     initialData: getStoredReaction(postId),
     staleTime: Infinity,
@@ -142,22 +133,16 @@ export function usePostDetail(
     const nextReaction = inferReactionFromServer({
       likeStatus: detailQuery.data.post.likeStatus,
     });
-    if (nextReaction !== "none") {
+    if (nextReaction !== 'none') {
       setStoredReactionState(postId, nextReaction);
       return;
     }
 
     const existingStoredReaction = storedReactionQuery.data;
     if (existingStoredReaction == null) {
-      setStoredReactionState(postId, "none");
+      setStoredReactionState(postId, 'none');
     }
-  }, [
-    detailQuery.data,
-    postId,
-    setStoredReactionState,
-    storedReactionQuery.data,
-    userId,
-  ]);
+  }, [detailQuery.data, postId, setStoredReactionState, storedReactionQuery.data, userId]);
 
   const setPost = useCallback(
     (updater: (current: Post | null) => Post | null) => {
@@ -177,23 +162,22 @@ export function usePostDetail(
   );
 
   const likeMutation = useMutation({
-    mutationFn: (likeStatus: "NONE" | "LIKE" | "DISLIKE") =>
-      updatePostLike(postId, likeStatus),
+    mutationFn: (likeStatus: 'NONE' | 'LIKE' | 'DISLIKE') => updatePostLike(postId, likeStatus),
   });
   const visibilityMutation = useMutation({
-    mutationFn: (status: "PUBLISHED" | "PRIVATE") => updatePost(postId, { status }),
+    mutationFn: (status: 'PUBLISHED' | 'PRIVATE') => updatePost(postId, { status }),
   });
   const deleteMutation = useMutation({
     mutationFn: () => deletePost(postId),
   });
 
-  const handleReaction = async (target: "like" | "dislike") => {
+  const handleReaction = async (target: 'like' | 'dislike') => {
     if (!user) {
       redirectToOAuthLogin();
       return;
     }
 
-    const nextReaction: ReactionState = reactionState === target ? "none" : target;
+    const nextReaction: ReactionState = reactionState === target ? 'none' : target;
     const previousReaction: ReactionState = reactionState;
     const cachedDetail = queryClient.getQueryData<PostDetailQueryData>(detailQueryKey);
     const previousLikeCount = cachedDetail?.post?.likeCount ?? 0;
@@ -203,11 +187,7 @@ export function usePostDetail(
       nextReaction,
     });
     const likeStatus =
-      nextReaction === "none"
-        ? "NONE"
-        : nextReaction === "like"
-          ? "LIKE"
-          : "DISLIKE";
+      nextReaction === 'none' ? 'NONE' : nextReaction === 'like' ? 'LIKE' : 'DISLIKE';
 
     try {
       if (cachedDetail) {
@@ -225,25 +205,25 @@ export function usePostDetail(
       setReactionOverride({ postId, value: previousReaction });
       setStoredReactionState(postId, previousReaction);
 
-      const message = error instanceof Error ? error.message : "UNKNOWN";
-      if (message === "UNAUTHORIZED") {
+      const message = error instanceof Error ? error.message : 'UNKNOWN';
+      if (message === 'UNAUTHORIZED') {
         redirectToOAuthLogin();
         return;
       }
-      if (message === "NOT_FOUND") {
-        onNotifyMessage?.(t("notFound"), "error");
+      if (message === 'NOT_FOUND') {
+        onNotifyMessage?.(t('notFound'), 'error');
         return;
       }
-      onNotifyMessage?.(t("reactionFailed"), "error");
+      onNotifyMessage?.(t('reactionFailed'), 'error');
     }
   };
 
   const handleLike = () => {
-    void handleReaction("like");
+    void handleReaction('like');
   };
 
   const handleDislike = () => {
-    void handleReaction("dislike");
+    void handleReaction('dislike');
   };
 
   const handleToggleRead = async () => {
@@ -255,9 +235,7 @@ export function usePostDetail(
     const currentPost = detailQuery.data?.post;
     if (!currentPost) return;
 
-    const isOwner = Boolean(
-      currentPost.author?.id && user.id && currentPost.author.id === user.id,
-    );
+    const isOwner = Boolean(currentPost.author?.id && user.id && currentPost.author.id === user.id);
     if (isOwner) return;
 
     const nextRead = !currentPost.isRead;
@@ -282,25 +260,25 @@ export function usePostDetail(
         };
       });
 
-      const message = error instanceof Error ? error.message : "UNKNOWN";
-      if (message === "UNAUTHORIZED") {
+      const message = error instanceof Error ? error.message : 'UNKNOWN';
+      if (message === 'UNAUTHORIZED') {
         redirectToOAuthLogin();
         return;
       }
-      if (message === "NOT_FOUND") {
-        onNotifyMessage?.(t("notFound"), "error");
+      if (message === 'NOT_FOUND') {
+        onNotifyMessage?.(t('notFound'), 'error');
         return;
       }
-      onNotifyMessage?.(t("markReadFailed"), "error");
+      onNotifyMessage?.(t('markReadFailed'), 'error');
     }
   };
 
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      onNotifyMessage?.(t("linkCopied"), "success");
+      onNotifyMessage?.(t('linkCopied'), 'success');
     } catch {
-      onNotifyMessage?.(t("copyFailed"), "error");
+      onNotifyMessage?.(t('copyFailed'), 'error');
     }
   };
 
@@ -317,12 +295,10 @@ export function usePostDetail(
     const currentPost = detailQuery.data?.post;
     if (!currentPost) return;
 
-    const isOwner = Boolean(
-      user.id && currentPost.author?.id && user.id === currentPost.author.id,
-    );
+    const isOwner = Boolean(user.id && currentPost.author?.id && user.id === currentPost.author.id);
     if (!isOwner) return;
 
-    const nextStatus = currentPost.status === "PRIVATE" ? "PUBLISHED" : "PRIVATE";
+    const nextStatus = currentPost.status === 'PRIVATE' ? 'PUBLISHED' : 'PRIVATE';
 
     try {
       await visibilityMutation.mutateAsync(nextStatus);
@@ -335,19 +311,19 @@ export function usePostDetail(
           : current,
       );
       await queryClient.invalidateQueries({
-        queryKey: [...queryKeys.posts.all, "community"] as const,
+        queryKey: [...queryKeys.posts.all, 'community'] as const,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "UNKNOWN";
-      if (message === "UNAUTHORIZED") {
+      const message = error instanceof Error ? error.message : 'UNKNOWN';
+      if (message === 'UNAUTHORIZED') {
         redirectToSignIn();
         return;
       }
-      if (message === "NOT_FOUND") {
-        onNotifyMessage?.(t("notFound"), "error");
+      if (message === 'NOT_FOUND') {
+        onNotifyMessage?.(t('notFound'), 'error');
         return;
       }
-      onNotifyMessage?.(t("visibilityChangeFailed"), "error");
+      onNotifyMessage?.(t('visibilityChangeFailed'), 'error');
     }
   };
 
@@ -360,32 +336,30 @@ export function usePostDetail(
     const currentPost = detailQuery.data?.post;
     if (!currentPost) return false;
 
-    const isOwner = Boolean(
-      user.id && currentPost.author?.id && user.id === currentPost.author.id,
-    );
+    const isOwner = Boolean(user.id && currentPost.author?.id && user.id === currentPost.author.id);
     if (!isOwner) return false;
 
     try {
       await deleteMutation.mutateAsync();
       queryClient.removeQueries({ queryKey: queryKeys.posts.all });
       queryClient.removeQueries({ queryKey: detailQueryKey });
-      onNotifyMessage?.(t("deleted"), "success");
+      onNotifyMessage?.(t('deleted'), 'success');
       return true;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "UNKNOWN";
-      if (message === "UNAUTHORIZED") {
+      const message = error instanceof Error ? error.message : 'UNKNOWN';
+      if (message === 'UNAUTHORIZED') {
         redirectToSignIn();
         return false;
       }
-      if (message === "FORBIDDEN") {
-        onNotifyMessage?.(t("deleteForbidden"), "error");
+      if (message === 'FORBIDDEN') {
+        onNotifyMessage?.(t('deleteForbidden'), 'error');
         return false;
       }
-      if (message === "NOT_FOUND") {
-        onNotifyMessage?.(t("notFound"), "error");
+      if (message === 'NOT_FOUND') {
+        onNotifyMessage?.(t('notFound'), 'error');
         return false;
       }
-      onNotifyMessage?.(t("deleteFailed"), "error");
+      onNotifyMessage?.(t('deleteFailed'), 'error');
       return false;
     }
   };
@@ -404,21 +378,21 @@ export function usePostDetail(
 
     try {
       const result = await blockUser(targetUserId);
-      if (result === "blocked" || result === "alreadyBlocked") {
+      if (result === 'blocked' || result === 'alreadyBlocked') {
         void queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       }
       return { ok: true };
     } catch (error: unknown) {
       if (isBanApiError(error)) {
-        if (error.code === "UNAUTHORIZED") {
+        if (error.code === 'UNAUTHORIZED') {
           redirectToSignIn();
           return { ok: false };
         }
 
-        return { ok: false, errorMessage: error.message || t("reportFailed") };
+        return { ok: false, errorMessage: error.message || t('reportFailed') };
       }
 
-      return { ok: false, errorMessage: t("reportFailed") };
+      return { ok: false, errorMessage: t('reportFailed') };
     }
   };
 
@@ -445,25 +419,25 @@ export function usePostDetail(
         actorUserId: user.id,
         targetUserId,
         isCurrentlyFollowing: isAlreadyFollowing,
-        targetUserName: currentPost.author?.name ?? "",
-        fallbackName: currentPost.author?.name ?? "",
+        targetUserName: currentPost.author?.name ?? '',
+        fallbackName: currentPost.author?.name ?? '',
       });
 
       if (!result.ok) {
-        if (result.reason === "unauthorized") {
+        if (result.reason === 'unauthorized') {
           redirectToSignIn();
           return null;
         }
 
-        if (result.reason === "self") {
+        if (result.reason === 'self') {
           return null;
         }
 
-        if (result.reason === "api") {
+        if (result.reason === 'api') {
           return result;
         }
 
-        return { ok: false, reason: "unknown", message: t("loadFailed") };
+        return { ok: false, reason: 'unknown', message: t('loadFailed') };
       }
 
       return {
@@ -471,14 +445,14 @@ export function usePostDetail(
       };
     } catch (error: unknown) {
       if (isFollowApiError(error)) {
-        if (error.code === "UNAUTHORIZED") {
+        if (error.code === 'UNAUTHORIZED') {
           redirectToSignIn();
-          return { ok: false, reason: "unauthorized", code: error.code };
+          return { ok: false, reason: 'unauthorized', code: error.code };
         }
-        return { ok: false, reason: "api", message: error.message, code: error.code };
+        return { ok: false, reason: 'api', message: error.message, code: error.code };
       }
 
-      return { ok: false, reason: "unknown", message: t("loadFailed") };
+      return { ok: false, reason: 'unknown', message: t('loadFailed') };
     }
   };
 
@@ -487,9 +461,8 @@ export function usePostDetail(
         likeStatus: detailQuery.data.post.likeStatus,
       })
     : null;
-  const storedReaction: ReactionState = storedReactionQuery.data ?? "none";
-  const overriddenReaction =
-    reactionOverride?.postId === postId ? reactionOverride.value : null;
+  const storedReaction: ReactionState = storedReactionQuery.data ?? 'none';
+  const overriddenReaction = reactionOverride?.postId === postId ? reactionOverride.value : null;
   const reactionState: ReactionState = resolveReactionState({
     override: overriddenReaction,
     serverReaction,
@@ -497,22 +470,22 @@ export function usePostDetail(
   });
   const post = detailQuery.data?.post ?? null;
   const isFollowingAuthor = Boolean(
-    post?.author?.id && myFollowingsQuery.data?.data.some((item) => item.userId === post.author?.id),
+    post?.author?.id &&
+    myFollowingsQuery.data?.data.some((item) => item.userId === post.author?.id),
   );
   const isLoading = detailQuery.isPending;
   const isRead = Boolean(user) && Boolean(post?.isRead);
   const errorMessage = (() => {
     if (!postId) {
-      return t("notFound");
+      return t('notFound');
     }
 
     if (!detailQuery.error) return null;
-    const message =
-      detailQuery.error instanceof Error ? detailQuery.error.message : "UNKNOWN";
-    if (message === "NOT_FOUND") {
-      return t("notFound");
+    const message = detailQuery.error instanceof Error ? detailQuery.error.message : 'UNKNOWN';
+    if (message === 'NOT_FOUND') {
+      return t('notFound');
     }
-    return t("loadFailed");
+    return t('loadFailed');
   })();
 
   return {

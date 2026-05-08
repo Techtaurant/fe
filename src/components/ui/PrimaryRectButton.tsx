@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { type ButtonHTMLAttributes, type ReactNode } from "react";
+import { type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 interface PrimaryRectButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
@@ -9,15 +9,15 @@ interface PrimaryRectButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 export default function PrimaryRectButton({
   children,
   className,
-  type = "button",
+  type = 'button',
   ...props
 }: PrimaryRectButtonProps) {
   const mergedClassName = [
-    "btn-rect btn-primary-surface text-[#FFFFFF] [&_*]:text-[#FFFFFF] transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed",
+    'btn-rect btn-primary-surface text-[#FFFFFF] [&_*]:text-[#FFFFFF] transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed',
     className,
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   return (
     <button type={type} className={mergedClassName} {...props}>

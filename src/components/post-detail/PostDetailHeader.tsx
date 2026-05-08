@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { ArrowLeft, Globe, Lock, Pencil, Trash2, UserX } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "../../i18n/navigation";
-import { Post } from "../../types";
-import { formatDisplayTime } from "../../utils";
-import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
-import UnblockActionButton from "../ui/UnblockActionButton";
+import { ArrowLeft, Globe, Lock, Pencil, Trash2, UserX } from 'lucide-react';
+import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
+
+import { useRouter } from '../../i18n/navigation';
+import { Post } from '../../types';
+import { formatDisplayTime } from '../../utils';
+import UnblockActionButton from '../ui/UnblockActionButton';
+import PostDetailMenuItemButton from './PostDetailMenuItemButton';
 
 function buildTagRoute(tagId: string): string {
   return `/?mode=user&tagIds=${encodeURIComponent(tagId)}`;
@@ -45,7 +46,7 @@ export default function PostDetailHeader({
   isVisibilityUpdating,
   onAuthorClick,
 }: PostDetailHeaderProps) {
-  const t = useTranslations("PostDetail");
+  const t = useTranslations('PostDetail');
   const locale = useLocale();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -61,12 +62,12 @@ export default function PostDetailHeader({
       }
     };
 
-    window.addEventListener("mousedown", handleOutsideClick);
-    return () => window.removeEventListener("mousedown", handleOutsideClick);
+    window.addEventListener('mousedown', handleOutsideClick);
+    return () => window.removeEventListener('mousedown', handleOutsideClick);
   }, [isMenuOpen]);
 
   const menuButtonClassName =
-    "p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200";
+    'p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors duration-200';
   const categoryLabel = post.categoryPath?.trim();
   const hasAuthorClick = Boolean(onAuthorClick && post.author?.id);
   const hasCategoryClick = Boolean(onCategoryClick && categoryLabel);
@@ -87,10 +88,10 @@ export default function PostDetailHeader({
     <header className="mb-8">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 mb-6"
+        className="text-muted-foreground hover:text-foreground mb-6 flex items-center gap-2 transition-colors duration-200"
       >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">{t("back")}</span>
+        <ArrowLeft className="h-5 w-5" />
+        <span className="text-sm font-medium">{t('back')}</span>
       </button>
 
       {categoryLabel ? (
@@ -98,33 +99,31 @@ export default function PostDetailHeader({
           <button
             type="button"
             onClick={handleCategoryClick}
-            className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/90 hover:text-foreground"
+            className="bg-muted text-muted-foreground hover:bg-muted/90 hover:text-foreground mb-3 inline-flex max-w-full rounded-full px-3 py-1 text-sm font-medium transition-colors duration-200"
           >
             <span className="truncate">{categoryLabel}</span>
           </button>
         ) : (
-          <div className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+          <div className="bg-muted text-muted-foreground mb-3 inline-flex max-w-full rounded-full px-3 py-1 text-sm font-medium">
             <span className="truncate">{categoryLabel}</span>
           </div>
         )
       ) : null}
 
-      <h1 className="text-2xl md:text-4xl font-bold text-foreground leading-tight mb-6">
+      <h1 className="text-foreground mb-6 text-2xl leading-tight font-bold md:text-4xl">
         {post.title}
       </h1>
 
-      <div className="flex items-center gap-3 mb-1">
+      <div className="mb-1 flex items-center gap-3">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={hasAuthorClick ? handleAuthorClick : undefined}
-            aria-label={
-              hasAuthorClick ? `Go to ${post.author?.name ?? "user"} page` : undefined
-            }
-            className={`relative h-6 w-6 rounded-full overflow-hidden bg-muted inline-flex items-center justify-center transition-all duration-150 ${
+            aria-label={hasAuthorClick ? `Go to ${post.author?.name ?? 'user'} page` : undefined}
+            className={`bg-muted relative inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-full transition-all duration-150 ${
               hasAuthorClick
-                ? "cursor-pointer hover:bg-muted/25 hover:brightness-95"
-                : "cursor-default"
+                ? 'hover:bg-muted/25 cursor-pointer hover:brightness-95'
+                : 'cursor-default'
             }`}
           >
             {post.author?.profileImageUrl ? (
@@ -135,50 +134,45 @@ export default function PostDetailHeader({
                 className="object-cover"
               />
             ) : (
-              <span className="text-sm font-bold text-muted-foreground">
-                {post.author?.name.charAt(0) || "?"}
+              <span className="text-muted-foreground text-sm font-bold">
+                {post.author?.name.charAt(0) || '?'}
               </span>
             )}
           </button>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
             {hasAuthorClick ? (
               <button
                 type="button"
                 onClick={handleAuthorClick}
-                className="font-medium text-foreground text-left hover:underline underline-offset-4"
-                aria-label={`Go to ${post.author?.name ?? "user"} page`}
+                className="text-foreground text-left font-medium underline-offset-4 hover:underline"
+                aria-label={`Go to ${post.author?.name ?? 'user'} page`}
               >
                 {post.author?.name}
               </button>
             ) : (
-              <span className="font-medium text-foreground">{post.author?.name}</span>
+              <span className="text-foreground font-medium">{post.author?.name}</span>
             )}
 
             <span>•</span>
             <span>{formatDisplayTime(post.publishedAt, locale)}</span>
 
-            {post.status === "PRIVATE" && (
-              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
-                {t("privateBadge")}
+            {post.status === 'PRIVATE' && (
+              <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] leading-none font-semibold text-gray-700 dark:border-gray-400/40 dark:bg-gray-200/20 dark:text-gray-100">
+                {t('privateBadge')}
               </span>
             )}
           </div>
         </div>
 
-        <div className="ml-auto relative flex items-center gap-2" ref={menuRef}>
+        <div className="relative ml-auto flex items-center gap-2" ref={menuRef}>
           <button
             type="button"
-            aria-label={t("menuOpen")}
+            aria-label={t('menuOpen')}
             onClick={() => setIsMenuOpen((prev) => !prev)}
             className={menuButtonClassName}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -188,17 +182,17 @@ export default function PostDetailHeader({
             </svg>
           </button>
 
-          {!isOwner && (
-            isFollowingAuthor ? (
+          {!isOwner &&
+            (isFollowingAuthor ? (
               <button
                 type="button"
                 onClick={async () => {
                   await onFollowAuthor();
                 }}
                 disabled={isFollowingUpdating}
-                className="h-[34px] rounded-md bg-[#F3F4F5] px-4 text-sm font-medium text-[#303949] transition-colors hover:bg-[#EBECEF] dark:bg-[#2C2C36] dark:text-[#E6E6E7] dark:hover:bg-[#353540] disabled:opacity-60"
+                className="h-[34px] rounded-md bg-[#F3F4F5] px-4 text-sm font-medium text-[#303949] transition-colors hover:bg-[#EBECEF] disabled:opacity-60 dark:bg-[#2C2C36] dark:text-[#E6E6E7] dark:hover:bg-[#353540]"
               >
-                {t("following")}
+                {t('following')}
               </button>
             ) : (
               <UnblockActionButton
@@ -208,13 +202,12 @@ export default function PostDetailHeader({
                 }}
                 disabled={isFollowingUpdating}
               >
-                {t("follow")}
+                {t('follow')}
               </UnblockActionButton>
-            )
-          )}
+            ))}
 
           {isMenuOpen && (
-            <div className="absolute right-0 top-12 z-20 min-w-[120px] rounded-xl border border-border bg-background p-1 shadow-lg">
+            <div className="border-border bg-background absolute top-12 right-0 z-20 min-w-[120px] rounded-xl border p-1 shadow-lg">
               {isOwner ? (
                 <>
                   <PostDetailMenuItemButton
@@ -222,9 +215,9 @@ export default function PostDetailHeader({
                       setIsMenuOpen(false);
                       onEdit();
                     }}
-                    icon={<Pencil className="h-3.5 w-3.5 text-foreground" />}
+                    icon={<Pencil className="text-foreground h-3.5 w-3.5" />}
                   >
-                    {t("menuEdit")}
+                    {t('menuEdit')}
                   </PostDetailMenuItemButton>
 
                   <PostDetailMenuItemButton
@@ -232,9 +225,9 @@ export default function PostDetailHeader({
                       setIsMenuOpen(false);
                       onRequestDelete();
                     }}
-                    icon={<Trash2 className="h-3.5 w-3.5 text-foreground" />}
+                    icon={<Trash2 className="text-foreground h-3.5 w-3.5" />}
                   >
-                    {t("menuDelete")}
+                    {t('menuDelete')}
                   </PostDetailMenuItemButton>
 
                   <PostDetailMenuItemButton
@@ -243,17 +236,15 @@ export default function PostDetailHeader({
                       await onToggleVisibility();
                     }}
                     icon={
-                      post.status === "PRIVATE" ? (
-                        <Globe className="h-3.5 w-3.5 text-foreground" />
+                      post.status === 'PRIVATE' ? (
+                        <Globe className="text-foreground h-3.5 w-3.5" />
                       ) : (
-                        <Lock className="h-3.5 w-3.5 text-foreground" />
+                        <Lock className="text-foreground h-3.5 w-3.5" />
                       )
                     }
                     disabled={isVisibilityUpdating}
                   >
-                    {post.status === "PRIVATE"
-                      ? t("menuToggleToPublic")
-                      : t("menuToggleToPrivate")}
+                    {post.status === 'PRIVATE' ? t('menuToggleToPublic') : t('menuToggleToPrivate')}
                   </PostDetailMenuItemButton>
                 </>
               ) : (
@@ -262,9 +253,9 @@ export default function PostDetailHeader({
                     setIsMenuOpen(false);
                     onRequestReport();
                   }}
-                  icon={<UserX className="h-3.5 w-3.5 text-foreground" />}
+                  icon={<UserX className="text-foreground h-3.5 w-3.5" />}
                 >
-                  {t("menuReport")}
+                  {t('menuReport')}
                 </PostDetailMenuItemButton>
               )}
             </div>
@@ -273,12 +264,12 @@ export default function PostDetailHeader({
       </div>
 
       {post.tags?.length ? (
-        <div className="flex flex-wrap gap-2 mt-2.5">
+        <div className="mt-2.5 flex flex-wrap gap-2">
           {post.tags?.map((tag) => (
             <button
               type="button"
               key={tag.id}
-              className="px-2.5 py-1 rounded-full bg-muted/85 text-sm font-semibold text-blue-500 hover:bg-muted/30 hover:text-blue-400 cursor-pointer transition-colors duration-200"
+              className="bg-muted/85 hover:bg-muted/30 cursor-pointer rounded-full px-2.5 py-1 text-sm font-semibold text-blue-500 transition-colors duration-200 hover:text-blue-400"
               onClick={() => {
                 router.push(buildTagRoute(tag.id));
               }}

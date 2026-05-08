@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo } from "react";
-import { useTranslations } from "next-intl";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchCommentReplies } from "../../services/comments";
-import { resolveFetchCommentsError } from "../../services/comments/errors";
-import { mapCommentListItemToComment } from "../../services/comments/mappers";
-import { CommentSort } from "../../services/comments/types";
-import { queryKeys } from "../../lib/queryKeys";
-import PostDetailCommentItem from "./PostDetailCommentItem";
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useEffect, useMemo } from 'react';
+
+import { queryKeys } from '../../lib/queryKeys';
+import { fetchCommentReplies } from '../../services/comments';
+import { resolveFetchCommentsError } from '../../services/comments/errors';
+import { mapCommentListItemToComment } from '../../services/comments/mappers';
+import { CommentSort } from '../../services/comments/types';
+import PostDetailCommentItem from './PostDetailCommentItem';
 
 interface PostDetailCommentRepliesProps {
   parentCommentId: string;
@@ -43,8 +44,8 @@ export default function PostDetailCommentReplies({
   banningCommentAuthorId,
   onShowError,
 }: PostDetailCommentRepliesProps) {
-  const t = useTranslations("PostDetail");
-  const repliesSort: CommentSort = parentSort === "LIKE" ? "LIKE" : "LATEST";
+  const t = useTranslations('PostDetail');
+  const repliesSort: CommentSort = parentSort === 'LIKE' ? 'LIKE' : 'LATEST';
 
   const repliesQuery = useInfiniteQuery({
     queryKey: queryKeys.comments.replies({
@@ -80,9 +81,9 @@ export default function PostDetailCommentReplies({
   );
 
   return (
-    <div className="mt-3 ml-10 border-l border-border/70 pl-4 space-y-3">
+    <div className="border-border/70 mt-3 ml-10 space-y-3 border-l pl-4">
       {repliesQuery.isPending && replies.length === 0 ? (
-        <p className="text-xs text-muted-foreground py-1">{t("loadingReplies")}</p>
+        <p className="text-muted-foreground py-1 text-xs">{t('loadingReplies')}</p>
       ) : replies.length > 0 ? (
         replies.map((reply) => {
           return (
@@ -105,7 +106,7 @@ export default function PostDetailCommentReplies({
           );
         })
       ) : (
-        <p className="text-xs text-muted-foreground py-1">{t("noReplies")}</p>
+        <p className="text-muted-foreground py-1 text-xs">{t('noReplies')}</p>
       )}
 
       {repliesQuery.hasNextPage ? (
@@ -117,13 +118,12 @@ export default function PostDetailCommentReplies({
               void repliesQuery.fetchNextPage();
             }}
             disabled={repliesQuery.isFetchingNextPage}
-            className="px-3 py-1.5 rounded-full border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/85 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+            className="border-border text-muted-foreground hover:text-foreground hover:bg-muted/85 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {repliesQuery.isFetchingNextPage ? t("loadingMore") : t("loadMoreReplies")}
+            {repliesQuery.isFetchingNextPage ? t('loadingMore') : t('loadMoreReplies')}
           </button>
         </div>
       ) : null}
-
     </div>
   );
 }

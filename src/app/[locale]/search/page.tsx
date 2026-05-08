@@ -1,1 +1,1 @@
-export { default } from "@/views/SearchPage";
+export { default } from '@/views/SearchPage';

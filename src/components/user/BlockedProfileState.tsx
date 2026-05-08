@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import { User, X } from "lucide-react";
-import UnblockActionButton from "../ui/UnblockActionButton";
+import { User, X } from 'lucide-react';
+
+import UnblockActionButton from '../ui/UnblockActionButton';
 
 interface BlockedProfileStateProps {
   onUnblock: () => void;
@@ -23,7 +24,7 @@ export default function BlockedProfileState({
       <div className="flex w-full max-w-[520px] flex-col items-center text-center">
         <span className="relative inline-flex h-[30px] w-[34px] items-center justify-center text-[#A8B0BC]">
           <User className="h-[30px] w-[30px]" />
-          <X className="absolute right-0 top-0 h-3 w-3 text-[#A8B0BC]" />
+          <X className="absolute top-0 right-0 h-3 w-3 text-[#A8B0BC]" />
         </span>
         <p className="mt-6 text-[15px] font-bold tracking-[-0.02em] text-[#687385]">{title}</p>
         <p className="mt-3 text-[14px] leading-snug text-[#687385]">{description}</p>
