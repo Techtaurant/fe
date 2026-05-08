@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { ChevronRight, X } from "lucide-react";
@@ -22,7 +21,6 @@ type SettingsTab = "general" | "management";
 
 interface SettingsPanelProps {
   onClose?: () => void;
-  onProfileEditOpenChange?: (isOpen: boolean) => void;
 }
 
 function ThemePreview({ mode, isActive }: { mode: ThemeMode; isActive: boolean }) {
@@ -75,10 +73,7 @@ function ThemePreview({ mode, isActive }: { mode: ThemeMode; isActive: boolean }
   );
 }
 
-export default function SettingsPanel({
-  onClose,
-  onProfileEditOpenChange,
-}: SettingsPanelProps) {
+export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const t = useTranslations("SettingsPage");
   const tTheme = useTranslations("Theme");
   const locale = useLocale();
@@ -120,16 +115,6 @@ export default function SettingsPanel({
   );
 
   const activeTabTitle = activeTab === "general" ? t("tabs.general") : t("tabs.management");
-  const profileEditPortalElement =
-    typeof document === "undefined" ? null : document.body;
-
-  useEffect(() => {
-    onProfileEditOpenChange?.(isProfileEditModalOpen);
-
-    return () => {
-      onProfileEditOpenChange?.(false);
-    };
-  }, [isProfileEditModalOpen, onProfileEditOpenChange]);
 
   const handleUnbanUser = async (targetUserId: string) => {
     const result = await unbanByUserId(targetUserId);
@@ -324,16 +309,14 @@ export default function SettingsPanel({
           onClose={() => setIsBlockedAccountsModalOpen(false)}
           onUnban={handleUnbanUser}
         />
-      </div>
-      {user && isProfileEditModalOpen && profileEditPortalElement &&
-        createPortal(
+        {user ? (
           <ProfileEditModal
             isOpen={isProfileEditModalOpen}
             user={user}
             onClose={() => setIsProfileEditModalOpen(false)}
-          />,
-          profileEditPortalElement,
-        )}
+          />
+        ) : null}
+      </div>
     </>
   );
 }
