@@ -7,25 +7,42 @@ const settingsPanelSource = readFileSync(
   "utf8",
 );
 
-test("settings management profile row opens the profile edit modal", () => {
+const settingsModalSource = readFileSync(
+  new URL("./SettingsModal.tsx", import.meta.url),
+  "utf8",
+);
+
+test("settings management profile row opens the profile edit modal through a body portal", () => {
   assert.match(
     settingsPanelSource,
     /import ProfileEditModal from "\.\.\/user\/ProfileEditModal";/,
   );
   assert.match(
     settingsPanelSource,
-    /const \[isProfileEditModalOpen, setIsProfileEditModalOpen\] = useState\(false\);/,
+    /import \{ createPortal \} from "react-dom";/,
   );
   assert.match(
     settingsPanelSource,
-    /onClick=\{\(\) => setIsProfileEditModalOpen\(true\)\}/,
+    /document\.body/,
   );
   assert.match(
     settingsPanelSource,
-    /aria-label=\{`\$\{t\("management\.profile"\)\} \$\{t\("management\.edit"\)\}`\}/,
+    /user && isProfileEditModalOpen && [a-zA-Z]+ &&\s*createPortal\(/,
   );
+  assert.doesNotMatch(settingsPanelSource, /\{user \? \(\s*<ProfileEditModal/);
+});
+
+test("settings modal keeps parent dismissal disabled while profile editor is open", () => {
   assert.match(
     settingsPanelSource,
-    /<ProfileEditModal\s+isOpen=\{isProfileEditModalOpen\}\s+user=\{user\}\s+onClose=\{\(\) => setIsProfileEditModalOpen\(false\)\}/m,
+    /onProfileEditOpenChange\?\.\(isProfileEditModalOpen\);/,
+  );
+  assert.match(
+    settingsModalSource,
+    /closeOnBackdrop=\{!isProfileEditModalOpen\}/,
+  );
+  assert.match(
+    settingsModalSource,
+    /closeOnEscape=\{!isProfileEditModalOpen\}/,
   );
 });

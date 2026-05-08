@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { ChevronRight, X } from "lucide-react";
@@ -21,6 +22,7 @@ type SettingsTab = "general" | "management";
 
 interface SettingsPanelProps {
   onClose?: () => void;
+  onProfileEditOpenChange?: (isOpen: boolean) => void;
 }
 
 function ThemePreview({ mode, isActive }: { mode: ThemeMode; isActive: boolean }) {
@@ -73,7 +75,10 @@ function ThemePreview({ mode, isActive }: { mode: ThemeMode; isActive: boolean }
   );
 }
 
-export default function SettingsPanel({ onClose }: SettingsPanelProps) {
+export default function SettingsPanel({
+  onClose,
+  onProfileEditOpenChange,
+}: SettingsPanelProps) {
   const t = useTranslations("SettingsPage");
   const tTheme = useTranslations("Theme");
   const locale = useLocale();
@@ -115,6 +120,16 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   );
 
   const activeTabTitle = activeTab === "general" ? t("tabs.general") : t("tabs.management");
+  const profileEditPortalElement =
+    typeof document === "undefined" ? null : document.body;
+
+  useEffect(() => {
+    onProfileEditOpenChange?.(isProfileEditModalOpen);
+
+    return () => {
+      onProfileEditOpenChange?.(false);
+    };
+  }, [isProfileEditModalOpen, onProfileEditOpenChange]);
 
   const handleUnbanUser = async (targetUserId: string) => {
     const result = await unbanByUserId(targetUserId);
@@ -309,14 +324,16 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
           onClose={() => setIsBlockedAccountsModalOpen(false)}
           onUnban={handleUnbanUser}
         />
-        {user ? (
+      </div>
+      {user && isProfileEditModalOpen && profileEditPortalElement &&
+        createPortal(
           <ProfileEditModal
             isOpen={isProfileEditModalOpen}
             user={user}
             onClose={() => setIsProfileEditModalOpen(false)}
-          />
-        ) : null}
-      </div>
+          />,
+          profileEditPortalElement,
+        )}
     </>
   );
 }
