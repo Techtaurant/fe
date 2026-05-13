@@ -19,8 +19,6 @@ import UserFollowListModal, {
   FollowListTab,
 } from "../components/user/UserFollowListModal";
 import CommunityFeedSection from "../components/feed/CommunityFeedSection";
-import { FEED_MODES } from "../constants/feed";
-import { FeedMode } from "../types";
 import { PostListPeriod, PostListSort, UserCategory } from "../services/posts/types";
 import { fetchMyBans, isBanApiError } from "../services/users/ban";
 import {
@@ -259,7 +257,6 @@ function UserDetailPageContent() {
   const userId = typeof params.id === "string" ? params.id : "";
   const isBlockedIntent = searchParams.get("blocked") === "1";
   const requestedCategoryPath = searchParams.get("categoryPath")?.trim() || null;
-  const [currentMode, setCurrentMode] = useState<FeedMode>(FEED_MODES.USER);
 
   const [period, setPeriod] = useState<PostListPeriod>("ALL");
   const [sort, setSort] = useState<PostListSort>("LATEST");
@@ -700,8 +697,6 @@ function UserDetailPageContent() {
   return (
     <div className="min-h-screen bg-background">
       <Header
-        currentMode={currentMode}
-        onModeChange={setCurrentMode}
         onMenuClick={() => setIsMobileCategorySidebarOpen(true)}
       />
 

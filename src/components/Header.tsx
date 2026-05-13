@@ -11,8 +11,6 @@ import { useUser } from "../hooks/useUser";
 import { buildLogoutUrl, redirectToOAuthLogin } from "../lib/authRedirect";
 import { queryKeys } from "../lib/queryKeys";
 import { buildUserPath } from "../lib/userRoute";
-import { FEED_MODES } from "../constants/feed";
-import { FeedMode } from "../types";
 import MobileBottomNav from "./BottomNav";
 import NotificationDropdown from "./header/NotificationDropdown";
 import PrimaryRectButton from "./ui/PrimaryRectButton";
@@ -21,14 +19,10 @@ import SettingsModal from "./settings/SettingsModal";
 
 interface HeaderProps {
   onMenuClick?: () => void;
-  currentMode?: FeedMode;
-  onModeChange?: (mode: FeedMode) => void;
 }
 
 export default function Header({
   onMenuClick,
-  currentMode = FEED_MODES.COMPANY,
-  onModeChange,
 }: HeaderProps) {
   const t = useTranslations("Header");
   const pathname = usePathname();
@@ -75,14 +69,6 @@ export default function Header({
     router.push({
       pathname: "/search",
       query: { q: trimmedQuery },
-    });
-  };
-
-  const handleModeNavigate = (mode: FeedMode) => {
-    onModeChange?.(mode);
-    router.push({
-      pathname: "/",
-      query: { mode },
     });
   };
 
@@ -143,7 +129,6 @@ export default function Header({
       return;
     }
 
-    onModeChange?.(FEED_MODES.USER);
     router.push(buildUserPath(user.id));
   };
 
@@ -185,31 +170,6 @@ export default function Header({
             Techtaurant
           </h1>
 
-          {/* Mode Switcher (Desktop) */}
-          <div className="hidden md:flex items-center gap-1">
-            <button
-              onClick={() => handleModeNavigate(FEED_MODES.COMPANY)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
-                ${
-                  currentMode === FEED_MODES.COMPANY
-                    ? "text-foreground bg-muted"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-            >
-              {t("companyBlogs")}
-            </button>
-            <button
-              onClick={() => handleModeNavigate(FEED_MODES.USER)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
-                ${
-                  currentMode === FEED_MODES.USER
-                    ? "text-foreground bg-muted"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-            >
-              {t("community")}
-            </button>
-          </div>
         </div>
 
         {/* Search Bar (데스크탑만) */}
@@ -340,9 +300,7 @@ export default function Header({
       </div>
 
       <MobileBottomNav
-        currentMode={currentMode}
         onMyPostsClick={handleMyPostsClick}
-        onModeNavigate={handleModeNavigate}
         onWritePost={handleWritePostClick}
       />
 

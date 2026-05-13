@@ -11,7 +11,7 @@ import PostDetailMenuItemButton from "./PostDetailMenuItemButton";
 import UnblockActionButton from "../ui/UnblockActionButton";
 
 function buildTagRoute(tagId: string): string {
-  return `/?mode=user&tagIds=${encodeURIComponent(tagId)}`;
+  return `/?tagIds=${encodeURIComponent(tagId)}`;
 }
 
 interface PostDetailHeaderProps {

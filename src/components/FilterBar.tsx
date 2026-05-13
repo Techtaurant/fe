@@ -27,10 +27,10 @@ export default function FilterBar({ filterState, onFilterChange }: FilterBarProp
   ];
 
   const sortOptions: { label: string; value: SortOption }[] = [
-    { label: t('sort.latest'), value: 'latest' },
-    { label: t('sort.comments'), value: 'comments' },
     { label: t('sort.views'), value: 'views' },
     { label: t('sort.likes'), value: 'likes' },
+    { label: t('sort.latest'), value: 'latest' },
+    { label: t('sort.comments'), value: 'comments' },
   ];
 
   return (

@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
-import { FEED_MODES } from "../constants/feed";
 import { useDraftPosts } from "../hooks/useDraftPosts";
 import { useUser } from "../hooks/useUser";
 
@@ -58,8 +57,6 @@ export default function DraftPostsPage() {
     <div className="min-h-screen bg-background">
       <Header
         onMenuClick={() => {}}
-        currentMode={FEED_MODES.USER}
-        onModeChange={() => {}}
       />
 
       <main className="mx-auto w-full max-w-4xl px-4 py-6 md:py-8">

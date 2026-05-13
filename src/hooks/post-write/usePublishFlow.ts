@@ -181,10 +181,7 @@ export function usePublishFlow({
         setSuccess(tPublish("published"));
       }
 
-      router.push({
-        pathname: "/",
-        query: { mode: "user" },
-      });
+      router.push("/");
     },
     onError: (saveError, variables) => {
       const message = saveError instanceof Error ? saveError.message : "UNKNOWN";
