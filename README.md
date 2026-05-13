@@ -491,7 +491,7 @@ Access-Control-Allow-Credentials: true
 
 **CORS policy 에러**:
 ```
-Access to fetch at 'http://localhost:8080/api/users/me' from origin 
+Access to fetch at 'http://localhost:8080/api/users/me' from origin
 'http://localhost:3000' has been blocked by CORS policy
 ```
 
