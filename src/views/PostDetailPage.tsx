@@ -39,7 +39,6 @@ export default function PostDetailPage() {
     setPost,
     reactionState,
     isRead,
-    currentMode,
     isLoading,
     errorMessage,
     handleLike,
@@ -91,8 +90,6 @@ export default function PostDetailPage() {
       <div className="min-h-screen bg-background">
         <Header
           onMenuClick={() => {}}
-          currentMode={currentMode}
-          onModeChange={() => {}}
         />
         <div className="flex items-center justify-center py-20">
           <p className="text-lg text-muted-foreground">{t("loading")}</p>
@@ -107,8 +104,6 @@ export default function PostDetailPage() {
         <div className="min-h-screen bg-background">
           <Header
             onMenuClick={() => {}}
-            currentMode={currentMode}
-            onModeChange={() => {}}
           />
           <div className="flex items-center justify-center py-20">
             <p className="text-lg text-muted-foreground">{t("loading")}</p>
@@ -121,8 +116,6 @@ export default function PostDetailPage() {
       <div className="min-h-screen bg-background">
         <Header
           onMenuClick={() => {}}
-          currentMode={currentMode}
-          onModeChange={() => {}}
         />
         <div className="flex items-center justify-center py-20">
           <p className="text-lg text-muted-foreground">
@@ -159,7 +152,6 @@ export default function PostDetailPage() {
         comments={comments}
         isRead={isRead}
         reactionState={reactionState}
-        currentMode={currentMode}
         isCommentsLoading={isCommentsLoading}
         commentsHasNext={commentsHasNext}
         isCommentsLoadingMore={isCommentsLoadingMore}
@@ -192,10 +184,7 @@ export default function PostDetailPage() {
         onDelete={async () => {
           const deleted = await handleDelete();
           if (deleted) {
-            router.replace({
-              pathname: "/",
-              query: { mode: "user" },
-            });
+            router.replace("/");
             router.refresh();
           }
           return deleted;

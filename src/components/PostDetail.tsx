@@ -16,7 +16,7 @@ import PostDetailConfirmDialog, {
 } from "./post-detail/PostDetailConfirmDialog";
 import PostDetailHeader from "./post-detail/PostDetailHeader";
 import PostDetailTableOfContents from "./post-detail/PostDetailTableOfContents";
-import { Comment, FeedMode, Post } from "../types";
+import { Comment, Post } from "../types";
 import { CommentSort } from "../services/comments/types";
 import { ValidationErrors } from "../services/comments/apiError";
 
@@ -32,7 +32,6 @@ interface PostDetailProps {
   comments: Comment[];
   isRead: boolean;
   reactionState: "like" | "dislike" | "none";
-  currentMode: FeedMode;
   isCommentsLoading: boolean;
   commentsHasNext: boolean;
   isCommentsLoadingMore: boolean;
@@ -76,7 +75,6 @@ export default function PostDetail({
   comments,
   isRead,
   reactionState,
-  currentMode,
   isCommentsLoading,
   commentsHasNext,
   isCommentsLoadingMore,
@@ -174,8 +172,6 @@ export default function PostDetail({
     <div className="min-h-screen bg-background">
       <Header
         onMenuClick={() => {}}
-        currentMode={currentMode}
-        onModeChange={() => {}}
       />
 
       <main className="mx-auto px-4 pt-8 pb-[calc(max(18rem,100vh)+env(safe-area-inset-bottom))] md:px-6 md:pt-12 md:pb-[calc(max(24rem,100vh)+env(safe-area-inset-bottom))]">

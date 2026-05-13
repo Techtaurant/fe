@@ -2,22 +2,26 @@
 
 import { useMemo, useState } from "react";
 import { FEED_MODES } from "../constants/feed";
-import { FeedMode, FilterState, Post } from "../types";
+import { DateRange, FeedMode, FilterState, Post, SortOption } from "../types";
 import { PostListPeriod, PostListSort } from "../services/posts/types";
 
 interface UseFeedFiltersArgs {
   initialMode: FeedMode;
   initialSelectedTags?: string[];
+  initialDateRange?: DateRange;
+  initialSortBy?: SortOption;
 }
 
 export function useFeedFilters({
   initialMode,
   initialSelectedTags = [],
+  initialDateRange = "all",
+  initialSortBy = "latest",
 }: UseFeedFiltersArgs) {
   const [filterState, setFilterState] = useState<FilterState>({
     mode: initialMode,
-    dateRange: "all",
-    sortBy: "latest",
+    dateRange: initialDateRange,
+    sortBy: initialSortBy,
     searchUser: "",
     hideReadPosts: false,
     selectedTags: Array.from(new Set(initialSelectedTags.map((id) => id.toLowerCase()))),

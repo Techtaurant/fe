@@ -4,6 +4,7 @@ import { InfiniteData, QueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "../../i18n/navigation";
 import { redirectToOAuthLogin } from "../../lib/authRedirect";
+import { buildCommunityPostPath } from "../../lib/communityPostRoute";
 import { createPost, updatePost } from "../../services/posts";
 import { queryKeys } from "../../lib/queryKeys";
 import { DraftPostListResult } from "../../services/posts/types";
@@ -181,10 +182,11 @@ export function usePublishFlow({
         setSuccess(tPublish("published"));
       }
 
-      router.push({
-        pathname: "/",
-        query: { mode: "user" },
-      });
+      router.push(buildCommunityPostPath({
+        fallbackName: result.data.authorName,
+        categoryPath: result.data.categoryPath,
+        postId: result.data.id,
+      }));
     },
     onError: (saveError, variables) => {
       const message = saveError instanceof Error ? saveError.message : "UNKNOWN";

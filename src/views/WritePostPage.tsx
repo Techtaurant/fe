@@ -262,10 +262,7 @@ function WritePostPageContent() {
               isPublishActionDisabled={isPublishActionDisabled}
               draftCountLabel={draftBootstrap.draftCountLabel}
               showDraftActions={!isPostEditMode}
-              onGoBack={() => router.push({
-                pathname: "/",
-                query: { mode: "user" },
-              })}
+              onGoBack={() => router.push("/")}
               onSaveDraft={() => void publishFlow.handleSubmit("DRAFT")}
               onOpenPublishModal={publishFlow.openPublishModal}
               onGoDraftList={() => router.push("/post/drafts")}

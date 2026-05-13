@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useUser } from "./useUser";
 import { redirectToOAuthLogin } from "../lib/authRedirect";
-import { FEED_MODES } from "../constants/feed";
 import {
   deletePost,
   fetchPostDetailWithMeta,
@@ -20,7 +19,7 @@ import {
 } from "../services/users/follow";
 import { useUserBlockActions } from "./useUserBlockActions";
 import { type ToggleFollowResult, useFollowActions } from "./useFollowActions";
-import { FeedMode, Post } from "../types";
+import { Post } from "../types";
 import { queryKeys } from "../lib/queryKeys";
 import {
   calculateNextLikeCount,
@@ -40,7 +39,6 @@ export function usePostDetail(
   const t = useTranslations("PostDetailPage");
   const queryClient = useQueryClient();
   const { user } = useUser();
-  const currentMode: FeedMode = FEED_MODES.USER;
   const userId = user?.id ?? null;
   const { blockUser, isBlocking: isReporting } = useUserBlockActions(userId);
   const { toggleFollow, isPending: isFollowingUpdating } = useFollowActions();
@@ -520,7 +518,6 @@ export function usePostDetail(
     setPost,
     reactionState,
     isRead,
-    currentMode,
     isLoading,
     errorMessage,
     handleLike,

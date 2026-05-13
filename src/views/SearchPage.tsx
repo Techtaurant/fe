@@ -7,8 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "../i18n/navigation";
 import Header from "../components/Header";
 import PostCard from "../components/PostCard";
-import { FEED_MODES } from "../constants/feed";
-import { FeedMode, Post } from "../types";
+import { Post } from "../types";
 import { DUMMY_COMPANY_POSTS } from "../data/dummyData";
 import { fetchCommunityPostList } from "../services/posts";
 
@@ -70,7 +69,6 @@ function SearchPageContent() {
 
   const [inputValue, setInputValue] = useState(initialQuery);
   const [committedQuery, setCommittedQuery] = useState(initialQuery);
-  const [mode, setMode] = useState<FeedMode>(FEED_MODES.COMPANY);
 
   useEffect(() => {
     setInputValue(initialQuery);
@@ -108,7 +106,7 @@ function SearchPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header currentMode={mode} onModeChange={setMode} />
+      <Header />
       <div className="max-w-[800px] mx-auto px-4 md:px-6 py-6">
         <form onSubmit={handleSubmit} className="mb-6">
           <div className="relative">

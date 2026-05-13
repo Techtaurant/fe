@@ -71,7 +71,7 @@ function sanitizePostPreview(rawContent: string): string {
 }
 
 function buildTagRoute(tagId: string): string {
-  return `/?mode=user&tagIds=${encodeURIComponent(tagId)}`;
+  return `/?tagIds=${encodeURIComponent(tagId)}`;
 }
 
 export default function PostCard({

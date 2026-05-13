@@ -1,64 +1,34 @@
 "use client";
 
-import { Link } from "../i18n/navigation";
+import { Link, usePathname } from "../i18n/navigation";
 import { useTranslations } from "next-intl";
-import { FEED_MODES } from "../constants/feed";
-import { FeedMode } from "../types";
 
 interface MobileBottomNavProps {
-  currentMode?: FeedMode;
   onMyPostsClick: () => void;
-  onModeNavigate: (mode: FeedMode) => void;
   onWritePost: () => void;
 }
 
 export default function MobileBottomNav({
-  currentMode = FEED_MODES.COMPANY,
   onMyPostsClick,
-  onModeNavigate,
   onWritePost,
 }: MobileBottomNavProps) {
   const t = useTranslations("BottomNav");
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[350] pb-[env(safe-area-inset-bottom)]">
       <div className="w-full">
         <div className="bg-background/95 backdrop-blur border-t border-border shadow-lg px-3 py-2">
           <div className="mx-auto max-w-[520px] flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => onModeNavigate(FEED_MODES.COMPANY)}
+            <Link
+              href="/"
               className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
-                currentMode === FEED_MODES.COMPANY
+                isHome
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              aria-label={t("companyBlogs")}
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 7a2 2 0 012-2h8a2 2 0 012 2v12H6a2 2 0 01-2-2V7zM16 9h2a2 2 0 012 2v8a2 2 0 01-2 2h-2V9z"
-                />
-              </svg>
-              <span>{t("companyBlogs")}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onModeNavigate(FEED_MODES.USER)}
-              className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
-                currentMode === FEED_MODES.USER
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              aria-current={isHome ? "page" : undefined}
               aria-label={t("community")}
             >
               <svg
@@ -75,7 +45,7 @@ export default function MobileBottomNav({
                 />
               </svg>
               <span>{t("community")}</span>
-            </button>
+            </Link>
 
             <button
               type="button"
