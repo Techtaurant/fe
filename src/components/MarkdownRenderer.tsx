@@ -1,12 +1,13 @@
 "use client";
 
-import { ReactNode, useMemo } from "react";
+import { isValidElement, ReactElement, ReactNode, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { ALLOWED_HTML_TAGS } from "../constants/markdownAllowedHtml";
+import MermaidBlock from "./MermaidBlock";
 
 export interface TableOfContentsHeading {
   id: string;
@@ -56,6 +57,22 @@ function createHeadingId(text: string, counts: Map<string, number>): string {
   }
 
   return `${normalizedText}-${currentCount + 1}`;
+}
+
+const MERMAID_LANGUAGE_CLASS_PATTERN = /(?:^|\s)language-mermaid(?:\s|$)/;
+
+function findFirstReactElement(node: ReactNode): ReactElement | null {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = findFirstReactElement(child);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+
+  return isValidElement(node) ? node : null;
 }
 
 function extractTextFromReactNode(node: ReactNode): string {
@@ -167,6 +184,25 @@ export default function MarkdownRenderer({
     <div className="markdown-content">
       <ReactMarkdown
         components={{
+          pre: ({ children, ...props }) => {
+            const codeElement = findFirstReactElement(children);
+            const codeClassName =
+              codeElement && typeof codeElement.props === "object" && codeElement.props !== null
+                ? (codeElement.props as { className?: unknown }).className
+                : undefined;
+
+            if (
+              codeElement &&
+              typeof codeClassName === "string" &&
+              MERMAID_LANGUAGE_CLASS_PATTERN.test(codeClassName)
+            ) {
+              const codeChildren = (codeElement.props as { children?: ReactNode }).children;
+              const rawCode = extractTextFromReactNode(codeChildren);
+              return <MermaidBlock code={rawCode} />;
+            }
+
+            return <pre {...props}>{children}</pre>;
+          },
           img: ({ src, alt, ...props }) => {
             if (typeof src !== "string" || src.trim().length === 0) {
               return null;
@@ -313,6 +349,63 @@ export default function MarkdownRenderer({
           background: transparent;
           padding: 0;
           font-family: var(--font-app-mono);
+        }
+
+        /* Mermaid 다이어그램 블록 */
+        .markdown-content .mermaid-block {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin: 1.5rem 0;
+          padding: 1rem;
+          background-color: var(--background);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          overflow-x: auto;
+        }
+
+        .markdown-content .mermaid-block svg {
+          max-width: 100%;
+          height: auto;
+        }
+
+        .markdown-content .mermaid-block-loading {
+          display: block;
+          color: var(--muted-foreground);
+          font-family: var(--font-app-mono);
+          font-size: 0.875rem;
+        }
+
+        .markdown-content .mermaid-block-loading pre {
+          background: transparent;
+          color: inherit;
+          padding: 0;
+          margin: 0;
+        }
+
+        .markdown-content .mermaid-block-error {
+          display: block;
+          background-color: color-mix(in srgb, var(--destructive, #ef4444) 8%, transparent);
+          border-color: color-mix(in srgb, var(--destructive, #ef4444) 40%, var(--border));
+          color: var(--foreground);
+        }
+
+        .markdown-content .mermaid-block-error-title {
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+          color: var(--destructive, #ef4444);
+        }
+
+        .markdown-content .mermaid-block-error-message {
+          font-size: 0.875rem;
+          margin-bottom: 0.75rem;
+          color: var(--muted-foreground);
+        }
+
+        .markdown-content .mermaid-block-source {
+          margin: 0;
+          background-color: var(--muted);
+          color: var(--foreground);
         }
 
         /* 인용문 */
