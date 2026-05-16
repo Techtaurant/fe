@@ -148,6 +148,15 @@ const sanitizedSchema = {
   },
 } as const;
 
+const codeHighlightOptions = {
+  aliases: {
+    javascript: ["js", "jsx"],
+    typescript: ["ts", "tsx"],
+    bash: ["sh", "zsh", "terminal", "console"],
+    plaintext: ["text", "txt", "plain"],
+  },
+} as const;
+
 /**
  * 마크다운을 화이트리스트 기반으로 렌더링하는 컴포넌트
  * - GitHub Flavored Markdown 지원
@@ -244,7 +253,11 @@ export default function MarkdownRenderer({
           },
         }}
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizedSchema], rehypeHighlight]}
+        rehypePlugins={[
+          rehypeRaw,
+          [rehypeSanitize, sanitizedSchema],
+          [rehypeHighlight, codeHighlightOptions],
+        ]}
       >
         {content}
       </ReactMarkdown>
@@ -486,44 +499,96 @@ export default function MarkdownRenderer({
         }
 
         /* highlight.js 코드 하이라이팅 - VS Code Dark+ 스타일 */
-        .hljs-keyword {
+        .markdown-content pre code.hljs,
+        .markdown-content code.hljs {
+          display: block;
+          overflow-x: auto;
+          color: #d4d4d4;
+          background: transparent;
+        }
+
+        .hljs {
+          color: #d4d4d4;
+        }
+        .hljs-keyword,
+        .hljs-selector-tag,
+        .hljs-doctag {
           color: #569cd6;
         }
-        .hljs-string {
+        .hljs-string,
+        .hljs-regexp,
+        .hljs-template-variable {
           color: #ce9178;
         }
-        .hljs-number {
+        .hljs-number,
+        .hljs-symbol,
+        .hljs-bullet {
           color: #b5cea8;
         }
-        .hljs-comment {
+        .hljs-comment,
+        .hljs-quote {
           color: #6a9955;
         }
-        .hljs-function {
+        .hljs-function,
+        .hljs-title.function_ {
           color: #dcdcaa;
         }
-        .hljs-class {
+        .hljs-class,
+        .hljs-title.class_,
+        .hljs-section {
           color: #4ec9b0;
         }
-        .hljs-variable {
+        .hljs-variable,
+        .hljs-variable.language_,
+        .hljs-property {
           color: #9cdcfe;
         }
-        .hljs-built_in {
+        .hljs-built_in,
+        .hljs-name,
+        .hljs-tag {
           color: #4fc1ff;
         }
-        .hljs-attr {
+        .hljs-attr,
+        .hljs-attribute {
           color: #9cdcfe;
         }
-        .hljs-params {
-          color: #9cdcfe;
-        }
+        .hljs-params,
         .hljs-title {
-          color: #dcdcaa;
+          color: #9cdcfe;
         }
-        .hljs-literal {
+        .hljs-literal,
+        .hljs-meta,
+        .hljs-meta .hljs-keyword {
           color: #569cd6;
         }
-        .hljs-type {
+        .hljs-type,
+        .hljs-selector-id,
+        .hljs-selector-class,
+        .hljs-selector-attr,
+        .hljs-selector-pseudo {
           color: #4ec9b0;
+        }
+        .hljs-selector-tag {
+          color: #d7ba7d;
+        }
+        .hljs-subst,
+        .hljs-punctuation,
+        .hljs-operator {
+          color: #d4d4d4;
+        }
+        .hljs-addition {
+          color: #b5cea8;
+          background-color: rgba(46, 160, 67, 0.18);
+        }
+        .hljs-deletion {
+          color: #ce9178;
+          background-color: rgba(248, 81, 73, 0.18);
+        }
+        .hljs-emphasis {
+          font-style: italic;
+        }
+        .hljs-strong {
+          font-weight: 700;
         }
       `}</style>
     </div>

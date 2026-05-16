@@ -48,3 +48,74 @@ test("markdown links show hover and keyboard focus states", () => {
     /\.markdown-content a:focus-visible\s*\{\s*outline:\s*2px solid var\(--color-blue-500\);\s*outline-offset:\s*2px;/m,
   );
 });
+
+test("code blocks keep highlight.js output readable", () => {
+  const codeBlockRuleMatch = markdownRendererSource.match(
+    /\.markdown-content pre code\.hljs,\s*\.markdown-content code\.hljs\s*\{(?<body>[\s\S]*?)\n\s*\}/m,
+  );
+
+  assert.ok(
+    codeBlockRuleMatch?.groups?.body,
+    "highlight.js code block CSS rule should exist",
+  );
+  assert.match(codeBlockRuleMatch.groups.body, /display:\s*block;/);
+  assert.match(codeBlockRuleMatch.groups.body, /overflow-x:\s*auto;/);
+  assert.match(codeBlockRuleMatch.groups.body, /background:\s*transparent;/);
+});
+
+test("code highlighting registers common markdown fence aliases", () => {
+  assert.match(
+    markdownRendererSource,
+    /javascript:\s*\["js",\s*"jsx"\]/,
+    "javascript aliases should support js and jsx fences",
+  );
+  assert.match(
+    markdownRendererSource,
+    /typescript:\s*\["ts",\s*"tsx"\]/,
+    "typescript aliases should support ts and tsx fences",
+  );
+  assert.match(
+    markdownRendererSource,
+    /\[rehypeHighlight,\s*codeHighlightOptions\]/,
+    "rehype-highlight should receive the alias options",
+  );
+});
+
+test("code highlighting covers common language token classes", () => {
+  [
+    ".hljs-keyword",
+    ".hljs-string",
+    ".hljs-number",
+    ".hljs-comment",
+    ".hljs-function",
+    ".hljs-title.function_",
+    ".hljs-class",
+    ".hljs-title.class_",
+    ".hljs-variable",
+    ".hljs-property",
+    ".hljs-built_in",
+    ".hljs-name",
+    ".hljs-tag",
+    ".hljs-attr",
+    ".hljs-attribute",
+    ".hljs-params",
+    ".hljs-literal",
+    ".hljs-meta",
+    ".hljs-type",
+    ".hljs-selector-id",
+    ".hljs-selector-class",
+    ".hljs-selector-attr",
+    ".hljs-selector-pseudo",
+    ".hljs-subst",
+    ".hljs-punctuation",
+    ".hljs-operator",
+    ".hljs-addition",
+    ".hljs-deletion",
+  ].forEach((selector) => {
+    assert.match(
+      markdownRendererSource,
+      new RegExp(escapeRegExp(selector)),
+      `${selector} should have an explicit markdown code highlight style`,
+    );
+  });
+});
