@@ -38,3 +38,17 @@ test("decoder also supports numeric and hexadecimal html entities", () => {
   );
   assert.match(mermaidBlockSource, /String\.fromCodePoint\(codePoint\)/);
 });
+
+test("decoder validates numeric html entities before converting code points", () => {
+  assert.match(mermaidBlockSource, /const MAX_UNICODE_CODE_POINT = 0x10ffff;/);
+  assert.match(mermaidBlockSource, /Number\.isInteger\(codePoint\)/);
+  assert.match(mermaidBlockSource, /codePoint > MAX_UNICODE_CODE_POINT/);
+
+  const guardedDecodes =
+    mermaidBlockSource.match(/decodeCodePointEntity\(codePoint, match\)/g) ?? [];
+  assert.equal(
+    guardedDecodes.length,
+    2,
+    "decimal and hexadecimal entities should both use the guarded decoder",
+  );
+});

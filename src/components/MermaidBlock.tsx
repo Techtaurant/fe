@@ -16,6 +16,20 @@ const NAMED_HTML_ENTITY_MAP: Record<string, string> = {
   "&nbsp;": " ",
 };
 
+const MAX_UNICODE_CODE_POINT = 0x10ffff;
+
+function decodeCodePointEntity(codePoint: number, fallback: string): string {
+  if (
+    !Number.isInteger(codePoint) ||
+    codePoint < 0 ||
+    codePoint > MAX_UNICODE_CODE_POINT
+  ) {
+    return fallback;
+  }
+
+  return String.fromCodePoint(codePoint);
+}
+
 /**
  * mermaid 입력은 마크다운 렌더링 파이프라인에서 HTML 엔티티로 치환되어 들어올 수 있다.
  * `--&gt;` 같은 토큰이 그대로 파서로 전달되면 mermaid가 실패하므로,
@@ -28,12 +42,12 @@ function decodeMermaidEntities(input: string): string {
     (match, decimalCode?: string, hexCode?: string) => {
       if (decimalCode) {
         const codePoint = Number.parseInt(decimalCode, 10);
-        return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+        return decodeCodePointEntity(codePoint, match);
       }
 
       if (hexCode) {
         const codePoint = Number.parseInt(hexCode, 16);
-        return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+        return decodeCodePointEntity(codePoint, match);
       }
 
       return NAMED_HTML_ENTITY_MAP[match] ?? match;
