@@ -431,6 +431,20 @@ export default function MarkdownRenderer({
           font-style: italic;
         }
 
+        .markdown-content blockquote p {
+          margin-bottom: 0.5rem;
+        }
+
+        .markdown-content blockquote p:last-child,
+        .markdown-content blockquote > :last-child {
+          margin-bottom: 0;
+        }
+
+        .markdown-content blockquote blockquote {
+          margin: 0.5rem 0;
+          border-left-color: var(--muted-foreground);
+        }
+
         /* 링크 */
         .markdown-content a {
           color: var(--color-blue-500);

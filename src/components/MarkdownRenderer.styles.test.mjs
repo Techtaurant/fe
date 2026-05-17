@@ -49,6 +49,22 @@ test("markdown links show hover and keyboard focus states", () => {
   );
 });
 
+test("markdown blockquotes keep consecutive and nested quotes grouped", () => {
+  const blockquoteRuleBody = getCssRuleBody(".markdown-content blockquote");
+  const blockquoteParagraphRuleBody = getCssRuleBody(".markdown-content blockquote p");
+  const nestedBlockquoteRuleBody = getCssRuleBody(".markdown-content blockquote blockquote");
+
+  assert.match(blockquoteRuleBody, /border-left:\s*4px solid var\(--border\);/);
+  assert.match(blockquoteRuleBody, /padding-left:\s*1rem;/);
+  assert.match(blockquoteParagraphRuleBody, /margin-bottom:\s*0\.5rem;/);
+  assert.match(
+    markdownRendererSource,
+    /\.markdown-content blockquote p:last-child,\s*\.markdown-content blockquote > :last-child\s*\{(?<body>[\s\S]*?)margin-bottom:\s*0;/m,
+  );
+  assert.match(nestedBlockquoteRuleBody, /margin:\s*0\.5rem 0;/);
+  assert.match(nestedBlockquoteRuleBody, /border-left-color:\s*var\(--muted-foreground\);/);
+});
+
 test("code blocks keep highlight.js output readable", () => {
   const codeBlockRuleMatch = markdownRendererSource.match(
     /\.markdown-content pre code\.hljs,\s*\.markdown-content code\.hljs\s*\{(?<body>[\s\S]*?)\n\s*\}/m,
