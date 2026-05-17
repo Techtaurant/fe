@@ -76,6 +76,16 @@ test("code highlighting registers common markdown fence aliases", () => {
   );
   assert.match(
     markdownRendererSource,
+    /bash:\s*\["sh",\s*"zsh"\]/,
+    "bash aliases should support shell command fences without terminal transcripts",
+  );
+  assert.match(
+    markdownRendererSource,
+    /shell:\s*\["terminal",\s*"console"\]/,
+    "shell aliases should preserve terminal transcript fences",
+  );
+  assert.match(
+    markdownRendererSource,
     /\[rehypeHighlight,\s*codeHighlightOptions\]/,
     "rehype-highlight should receive the alias options",
   );

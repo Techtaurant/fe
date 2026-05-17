@@ -152,7 +152,8 @@ const codeHighlightOptions = {
   aliases: {
     javascript: ["js", "jsx"],
     typescript: ["ts", "tsx"],
-    bash: ["sh", "zsh", "terminal", "console"],
+    bash: ["sh", "zsh"],
+    shell: ["terminal", "console"],
     plaintext: ["text", "txt", "plain"],
   },
 } as const;
