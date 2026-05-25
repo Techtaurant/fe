@@ -33,11 +33,26 @@ test("mermaid block uses decoded code for rendering, error fallback, and loading
 
 test("mermaid block renders diagrams directly in normal and expanded views", () => {
   assert.match(mermaidBlockSource, /if \(svg\) \{/);
+  assert.match(mermaidBlockSource, /function MermaidRenderedDiagram/);
+  assert.match(mermaidBlockSource, /role="img"/);
+  assert.match(mermaidBlockSource, /aria-label="Mermaid diagram"/);
   assert.match(mermaidBlockSource, /className="mermaid-block-content"/);
   assert.match(mermaidBlockSource, /className="mermaid-block-expanded-content"/);
   const svgInsertions =
     mermaidBlockSource.match(/dangerouslySetInnerHTML=\{\{ __html: svg \}\}/g) ?? [];
-  assert.equal(svgInsertions.length, 2, "normal and expanded views should render the SVG");
+  assert.equal(
+    svgInsertions.length,
+    1,
+    "normal and expanded views should share one accessible SVG insertion helper",
+  );
+  assert.match(
+    mermaidBlockSource,
+    /\{!isExpanded && \(\s*<MermaidRenderedDiagram className="mermaid-block-content" svg=\{svg\} \/>/,
+  );
+  assert.match(
+    mermaidBlockSource,
+    /<MermaidRenderedDiagram\s+className="mermaid-block-expanded-content"\s+svg=\{svg\}\s+style=\{expandedDiagramStyle\}/,
+  );
   assert.doesNotMatch(mermaidBlockSource, /createMermaidViewerDocument/);
   assert.doesNotMatch(mermaidBlockSource, /srcDoc=/);
   assert.doesNotMatch(mermaidBlockSource, /sandbox=/);

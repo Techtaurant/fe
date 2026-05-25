@@ -2,6 +2,7 @@
 
 import { Maximize2, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
 import {
+  type CSSProperties,
   type MouseEvent,
   useCallback,
   useEffect,
@@ -19,6 +20,12 @@ interface MermaidBlockProps {
 interface MermaidDialogPosition {
   x: number;
   y: number;
+}
+
+interface MermaidRenderedDiagramProps {
+  className: string;
+  svg: string;
+  style?: CSSProperties;
 }
 
 const NAMED_HTML_ENTITY_MAP: Record<string, string> = {
@@ -110,6 +117,22 @@ function decodeMermaidEntities(input: string): string {
 
       return NAMED_HTML_ENTITY_MAP[match] ?? match;
     },
+  );
+}
+
+function MermaidRenderedDiagram({
+  className,
+  svg,
+  style,
+}: MermaidRenderedDiagramProps) {
+  return (
+    <div
+      className={className}
+      role="img"
+      aria-label="Mermaid diagram"
+      style={style}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
   );
 }
 
@@ -430,10 +453,9 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
           >
             <Maximize2 aria-hidden="true" size={16} />
           </button>
-          <div
-            className="mermaid-block-content"
-            dangerouslySetInnerHTML={{ __html: svg }}
-          />
+          {!isExpanded && (
+            <MermaidRenderedDiagram className="mermaid-block-content" svg={svg} />
+          )}
         </div>
 
         {isExpanded && (
@@ -501,10 +523,10 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
               onMouseUp={stopExpandedViewDrag}
               onMouseLeave={stopExpandedViewDrag}
             >
-              <div
+              <MermaidRenderedDiagram
                 className="mermaid-block-expanded-content"
+                svg={svg}
                 style={expandedDiagramStyle}
-                dangerouslySetInnerHTML={{ __html: svg }}
               />
             </div>
           </div>
