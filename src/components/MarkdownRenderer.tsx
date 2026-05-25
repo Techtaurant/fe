@@ -61,8 +61,10 @@ function createHeadingId(text: string, counts: Map<string, number>): string {
 
 const MERMAID_LANGUAGE_CLASS_PATTERN = /(?:^|\s)language-mermaid(?:\s|$)/;
 const BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN =
-  /^([ \t]*)((?:&(?:gt|#62|#x3e);[ \t]*)+)/gim;
+  /^( {0,3})((?:&(?:gt|#62|#x3e);[ \t]*)+)(.*)$/i;
 const BLOCKQUOTE_MARKER_ENTITY_PATTERN = /&(?:gt|#62|#x3e);/gi;
+const FENCED_CODE_BLOCK_PATTERN = /^ {0,3}(?:`{3,}|~{3,})/;
+const MARKDOWN_LINE_SEPARATOR_PATTERN = /(\r?\n)/;
 
 function findFirstReactElement(node: ReactNode): ReactElement | null {
   if (Array.isArray(node)) {
@@ -95,12 +97,43 @@ function extractTextFromReactNode(node: ReactNode): string {
   return "";
 }
 
+function restoreBlockquoteMarkerEntities(line: string): string {
+  const match = line.match(BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN);
+  if (!match) {
+    return line;
+  }
+
+  const [, indentation, markerSequence, rest] = match;
+  const hasMarkerSeparator = rest.length === 0 || /[ \t]$/.test(markerSequence);
+  if (!hasMarkerSeparator) {
+    return line;
+  }
+
+  return `${indentation}${markerSequence.replace(BLOCKQUOTE_MARKER_ENTITY_PATTERN, ">")}${rest}`;
+}
+
 function normalizeMarkdownSyntaxEntities(content: string): string {
-  return content.replace(
-    BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN,
-    (_match, indentation: string, markerSequence: string) =>
-      `${indentation}${markerSequence.replace(BLOCKQUOTE_MARKER_ENTITY_PATTERN, ">")}`,
-  );
+  let isInFencedCodeBlock = false;
+
+  return content
+    .split(MARKDOWN_LINE_SEPARATOR_PATTERN)
+    .map((line) => {
+      if (line === "\n" || line === "\r\n") {
+        return line;
+      }
+
+      if (FENCED_CODE_BLOCK_PATTERN.test(line)) {
+        isInFencedCodeBlock = !isInFencedCodeBlock;
+        return line;
+      }
+
+      if (isInFencedCodeBlock) {
+        return line;
+      }
+
+      return restoreBlockquoteMarkerEntities(line);
+    })
+    .join("");
 }
 
 export function extractTableOfContents(content: string): TableOfContentsHeading[] {
@@ -421,7 +454,8 @@ export default function MarkdownRenderer({
         }
 
         .markdown-content .mermaid-block-expand-button,
-        .markdown-content .mermaid-block-close-button {
+        .markdown-content .mermaid-block-close-button,
+        .markdown-content .mermaid-block-zoom-button {
           position: absolute;
           z-index: 1;
           display: inline-flex;
@@ -446,14 +480,17 @@ export default function MarkdownRenderer({
 
         .markdown-content .mermaid-block-expand-button:hover,
         .markdown-content .mermaid-block-close-button:hover,
+        .markdown-content .mermaid-block-zoom-button:hover,
         .markdown-content .mermaid-block-expand-button:focus-visible,
-        .markdown-content .mermaid-block-close-button:focus-visible {
+        .markdown-content .mermaid-block-close-button:focus-visible,
+        .markdown-content .mermaid-block-zoom-button:focus-visible {
           background-color: var(--muted);
           color: var(--foreground);
         }
 
         .markdown-content .mermaid-block-expand-button:focus-visible,
-        .markdown-content .mermaid-block-close-button:focus-visible {
+        .markdown-content .mermaid-block-close-button:focus-visible,
+        .markdown-content .mermaid-block-zoom-button:focus-visible {
           outline: 2px solid var(--color-blue-500);
           outline-offset: 2px;
         }
@@ -462,8 +499,49 @@ export default function MarkdownRenderer({
           position: fixed;
           inset: 0;
           z-index: 80;
-          padding: 3.5rem 1rem 1rem;
+          padding: 4.25rem 1rem 1rem;
           background-color: color-mix(in srgb, var(--background) 96%, black 4%);
+        }
+
+        .markdown-content .mermaid-block-expanded-toolbar {
+          position: absolute;
+          top: 1rem;
+          left: 1rem;
+          z-index: 1;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.25rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background-color: color-mix(in srgb, var(--background) 94%, transparent);
+          box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+        }
+
+        .markdown-content .mermaid-block-zoom-button {
+          position: static;
+          flex: 0 0 auto;
+          box-shadow: none;
+          background-color: transparent;
+        }
+
+        .markdown-content .mermaid-block-zoom-button:disabled {
+          cursor: not-allowed;
+          opacity: 0.45;
+        }
+
+        .markdown-content .mermaid-block-zoom-button:disabled:hover {
+          background-color: transparent;
+        }
+
+        .markdown-content .mermaid-block-zoom-value {
+          min-width: 3.25rem;
+          color: var(--foreground);
+          font-size: 0.75rem;
+          font-weight: 600;
+          font-variant-numeric: tabular-nums;
+          line-height: 2rem;
+          text-align: center;
         }
 
         .markdown-content .mermaid-block-close-button {

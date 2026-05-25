@@ -68,11 +68,17 @@ test("markdown blockquotes keep consecutive and nested quotes grouped", () => {
 test("markdown renderer restores encoded blockquote markers before parsing", () => {
   assert.match(markdownRendererSource, /const BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN =/);
   assert.match(markdownRendererSource, /const BLOCKQUOTE_MARKER_ENTITY_PATTERN =/);
+  assert.match(markdownRendererSource, /const FENCED_CODE_BLOCK_PATTERN =/);
+  assert.match(markdownRendererSource, /function restoreBlockquoteMarkerEntities\(line: string\): string/);
   assert.match(markdownRendererSource, /function normalizeMarkdownSyntaxEntities\(content: string\): string/);
   assert.match(
     markdownRendererSource,
-    /markerSequence\.replace\(BLOCKQUOTE_MARKER_ENTITY_PATTERN,\s*">"\)/,
+    /markerSequence\.replace\(BLOCKQUOTE_MARKER_ENTITY_PATTERN,\s*">"\)\}\$\{rest\}/,
   );
+  assert.match(markdownRendererSource, /let isInFencedCodeBlock = false;/);
+  assert.match(markdownRendererSource, /FENCED_CODE_BLOCK_PATTERN\.test\(line\)/);
+  assert.match(markdownRendererSource, /isInFencedCodeBlock = !isInFencedCodeBlock;/);
+  assert.match(markdownRendererSource, /if \(isInFencedCodeBlock\)/);
   assert.match(markdownRendererSource, /\{normalizedContent\}/);
 });
 
@@ -83,7 +89,10 @@ test("mermaid iframe viewers have expandable styles", () => {
     ".markdown-content .mermaid-block-frame",
     ".markdown-content .mermaid-block-expand-button",
     ".markdown-content .mermaid-block-expanded",
+    ".markdown-content .mermaid-block-expanded-toolbar",
     ".markdown-content .mermaid-block-expanded-frame",
+    ".markdown-content .mermaid-block-zoom-button",
+    ".markdown-content .mermaid-block-zoom-value",
   ].forEach((selector) => {
     assert.match(
       markdownRendererSource,

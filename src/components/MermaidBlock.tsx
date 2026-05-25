@@ -1,6 +1,6 @@
 "use client";
 
-import { Maximize2, X } from "lucide-react";
+import { Maximize2, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 
@@ -18,6 +18,32 @@ const NAMED_HTML_ENTITY_MAP: Record<string, string> = {
 };
 
 const MAX_UNICODE_CODE_POINT = 0x10ffff;
+const MERMAID_DIALOG_DEFAULT_ZOOM = 1;
+const MERMAID_DIALOG_MIN_ZOOM = 0.5;
+const MERMAID_DIALOG_MAX_ZOOM = 3;
+const MERMAID_DIALOG_ZOOM_STEP = 0.25;
+const FOCUSABLE_DIALOG_ELEMENT_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "iframe",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(", ");
+
+function clampMermaidDialogZoom(zoom: number): number {
+  return Math.min(
+    MERMAID_DIALOG_MAX_ZOOM,
+    Math.max(MERMAID_DIALOG_MIN_ZOOM, zoom),
+  );
+}
+
+function getFocusableDialogElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(FOCUSABLE_DIALOG_ELEMENT_SELECTOR),
+  );
+}
 
 function decodeCodePointEntity(codePoint: number, fallback: string): string {
   if (
@@ -56,7 +82,12 @@ function decodeMermaidEntities(input: string): string {
   );
 }
 
-function createMermaidViewerDocument(svg: string): string {
+function createMermaidViewerDocument(
+  svg: string,
+  zoom = MERMAID_DIALOG_DEFAULT_ZOOM,
+): string {
+  const safeZoom = clampMermaidDialogZoom(zoom);
+
   return `<!doctype html>
 <html>
   <head>
@@ -86,9 +117,21 @@ function createMermaidViewerDocument(svg: string): string {
         overflow: auto;
       }
 
-      svg {
+      .mermaid-viewer-content {
         display: block;
         flex: 0 0 auto;
+        zoom: ${safeZoom};
+      }
+
+      @supports not (zoom: 1) {
+        .mermaid-viewer-content {
+          transform: scale(${safeZoom});
+          transform-origin: top center;
+        }
+      }
+
+      svg {
+        display: block;
         width: auto;
         max-width: none;
         height: auto;
@@ -96,7 +139,7 @@ function createMermaidViewerDocument(svg: string): string {
     </style>
   </head>
   <body>
-    ${svg}
+    <div class="mermaid-viewer-content">${svg}</div>
   </body>
 </html>`;
 }
@@ -117,12 +160,46 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
   const [svg, setSvg] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedZoom, setExpandedZoom] = useState(MERMAID_DIALOG_DEFAULT_ZOOM);
+  const expandedDialogRef = useRef<HTMLDivElement | null>(null);
   const renderTokenRef = useRef(0);
   const decodedCode = useMemo(() => decodeMermaidEntities(code), [code]);
   const viewerDocument = useMemo(
     () => (svg ? createMermaidViewerDocument(svg) : null),
     [svg],
   );
+  const expandedViewerDocument = useMemo(
+    () => (svg ? createMermaidViewerDocument(svg, expandedZoom) : null),
+    [expandedZoom, svg],
+  );
+  const expandedZoomPercent = Math.round(expandedZoom * 100);
+  const canZoomOut = expandedZoom > MERMAID_DIALOG_MIN_ZOOM;
+  const canZoomIn = expandedZoom < MERMAID_DIALOG_MAX_ZOOM;
+
+  const openExpandedView = () => {
+    setExpandedZoom(MERMAID_DIALOG_DEFAULT_ZOOM);
+    setIsExpanded(true);
+  };
+
+  const closeExpandedView = () => {
+    setIsExpanded(false);
+  };
+
+  const zoomOutExpandedView = () => {
+    setExpandedZoom((currentZoom) =>
+      clampMermaidDialogZoom(currentZoom - MERMAID_DIALOG_ZOOM_STEP),
+    );
+  };
+
+  const zoomInExpandedView = () => {
+    setExpandedZoom((currentZoom) =>
+      clampMermaidDialogZoom(currentZoom + MERMAID_DIALOG_ZOOM_STEP),
+    );
+  };
+
+  const resetExpandedViewZoom = () => {
+    setExpandedZoom(MERMAID_DIALOG_DEFAULT_ZOOM);
+  };
 
   useEffect(() => {
     const trimmedCode = decodedCode.trim();
@@ -180,14 +257,68 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
       return;
     }
 
+    const previouslyFocusedElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const focusFrame = window.requestAnimationFrame(() => {
+      const dialogElement = expandedDialogRef.current;
+      if (!dialogElement) {
+        return;
+      }
+
+      const firstFocusableElement = getFocusableDialogElements(dialogElement)[0];
+      (firstFocusableElement ?? dialogElement).focus();
+    });
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsExpanded(false);
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const dialogElement = expandedDialogRef.current;
+      if (!dialogElement) {
+        return;
+      }
+
+      const focusableElements = getFocusableDialogElements(dialogElement);
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialogElement.focus();
+        return;
+      }
+
+      const firstFocusableElement = focusableElements[0];
+      const lastFocusableElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (
+        event.shiftKey &&
+        (activeElement === firstFocusableElement ||
+          !dialogElement.contains(activeElement))
+      ) {
+        event.preventDefault();
+        lastFocusableElement.focus();
+        return;
+      }
+
+      if (!event.shiftKey && activeElement === lastFocusableElement) {
+        event.preventDefault();
+        firstFocusableElement.focus();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedElement?.focus();
+    };
   }, [isExpanded]);
 
   useEffect(() => {
@@ -216,7 +347,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
             type="button"
             className="mermaid-block-expand-button"
             aria-label="Mermaid diagram expand"
-            onClick={() => setIsExpanded(true)}
+            onClick={openExpandedView}
           >
             <Maximize2 aria-hidden="true" size={16} />
           </button>
@@ -224,23 +355,60 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
             title="Mermaid diagram"
             role="presentation"
             className="render-viewer mermaid-block-frame"
-            sandbox="allow-scripts allow-same-origin"
+            sandbox=""
             srcDoc={viewerDocument}
           />
         </div>
 
-        {isExpanded && (
+        {isExpanded && expandedViewerDocument && (
           <div
+            ref={expandedDialogRef}
             className="mermaid-block-expanded"
             role="dialog"
             aria-modal="true"
             aria-label="Mermaid diagram expanded view"
+            tabIndex={-1}
           >
+            <div
+              className="mermaid-block-expanded-toolbar"
+              role="toolbar"
+              aria-label="Mermaid diagram zoom controls"
+            >
+              <button
+                type="button"
+                className="mermaid-block-zoom-button"
+                aria-label="Mermaid diagram zoom out"
+                disabled={!canZoomOut}
+                onClick={zoomOutExpandedView}
+              >
+                <ZoomOut aria-hidden="true" size={18} />
+              </button>
+              <span className="mermaid-block-zoom-value" aria-live="polite">
+                {expandedZoomPercent}%
+              </span>
+              <button
+                type="button"
+                className="mermaid-block-zoom-button"
+                aria-label="Mermaid diagram zoom in"
+                disabled={!canZoomIn}
+                onClick={zoomInExpandedView}
+              >
+                <ZoomIn aria-hidden="true" size={18} />
+              </button>
+              <button
+                type="button"
+                className="mermaid-block-zoom-button"
+                aria-label="Mermaid diagram zoom reset"
+                onClick={resetExpandedViewZoom}
+              >
+                <RotateCcw aria-hidden="true" size={18} />
+              </button>
+            </div>
             <button
               type="button"
               className="mermaid-block-close-button"
               aria-label="Mermaid diagram close"
-              onClick={() => setIsExpanded(false)}
+              onClick={closeExpandedView}
             >
               <X aria-hidden="true" size={18} />
             </button>
@@ -248,8 +416,8 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
               title="Mermaid diagram expanded"
               role="presentation"
               className="render-viewer mermaid-block-expanded-frame"
-              sandbox="allow-scripts allow-same-origin"
-              srcDoc={viewerDocument}
+              sandbox=""
+              srcDoc={expandedViewerDocument}
             />
           </div>
         )}
