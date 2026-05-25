@@ -65,6 +65,51 @@ test("markdown blockquotes keep consecutive and nested quotes grouped", () => {
   assert.match(nestedBlockquoteRuleBody, /border-left-color:\s*var\(--muted-foreground\);/);
 });
 
+test("markdown renderer restores encoded blockquote markers before parsing", () => {
+  assert.match(markdownRendererSource, /const BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN =/);
+  assert.match(markdownRendererSource, /const BLOCKQUOTE_MARKER_ENTITY_PATTERN =/);
+  assert.match(markdownRendererSource, /const FENCED_CODE_BLOCK_PATTERN =/);
+  assert.match(markdownRendererSource, /function restoreBlockquoteMarkerEntities\(line: string\): string/);
+  assert.match(markdownRendererSource, /function normalizeMarkdownSyntaxEntities\(content: string\): string/);
+  assert.match(
+    markdownRendererSource,
+    /markerSequence\.replace\(BLOCKQUOTE_MARKER_ENTITY_PATTERN,\s*">"\)\}\$\{rest\}/,
+  );
+  assert.match(markdownRendererSource, /let isInFencedCodeBlock = false;/);
+  assert.match(markdownRendererSource, /FENCED_CODE_BLOCK_PATTERN\.test\(line\)/);
+  assert.match(markdownRendererSource, /isInFencedCodeBlock = !isInFencedCodeBlock;/);
+  assert.match(markdownRendererSource, /if \(isInFencedCodeBlock\)/);
+  assert.match(markdownRendererSource, /\{normalizedContent\}/);
+});
+
+test("mermaid viewers have direct render and full-screen dialog styles", () => {
+  [
+    ".markdown-content .mermaid-block-viewer",
+    ".markdown-content .mermaid-block-content",
+    ".markdown-content .mermaid-block-expand-button",
+    ".markdown-content .mermaid-block-expanded",
+    ".markdown-content .mermaid-block-expanded-toolbar",
+    ".markdown-content .mermaid-block-expanded-canvas",
+    ".markdown-content .mermaid-block-expanded-canvas-dragging",
+    ".markdown-content .mermaid-block-expanded-content",
+    ".markdown-content .mermaid-block-zoom-button",
+    ".markdown-content .mermaid-block-zoom-value",
+  ].forEach((selector) => {
+    assert.match(
+      markdownRendererSource,
+      new RegExp(escapeRegExp(selector)),
+      `${selector} should have an explicit markdown mermaid viewer style`,
+    );
+  });
+
+  const expandedRuleBody = getCssRuleBody(".markdown-content .mermaid-block-expanded");
+  assert.match(expandedRuleBody, /position:\s*fixed;/);
+  assert.match(expandedRuleBody, /inset:\s*0;/);
+  assert.match(expandedRuleBody, /z-index:\s*1000;/);
+  assert.match(expandedRuleBody, /width:\s*100vw;/);
+  assert.match(expandedRuleBody, /height:\s*100dvh;/);
+});
+
 test("code blocks keep highlight.js output readable", () => {
   const codeBlockRuleMatch = markdownRendererSource.match(
     /\.markdown-content pre code\.hljs,\s*\.markdown-content code\.hljs\s*\{(?<body>[\s\S]*?)\n\s*\}/m,
