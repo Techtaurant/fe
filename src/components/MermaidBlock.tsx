@@ -1,11 +1,24 @@
 "use client";
 
 import { Maximize2, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTheme } from "./ThemeProvider";
 
 interface MermaidBlockProps {
   code: string;
+}
+
+interface MermaidDialogPosition {
+  x: number;
+  y: number;
 }
 
 const NAMED_HTML_ENTITY_MAP: Record<string, string> = {
@@ -18,14 +31,16 @@ const NAMED_HTML_ENTITY_MAP: Record<string, string> = {
 };
 
 const MAX_UNICODE_CODE_POINT = 0x10ffff;
-const MERMAID_DIALOG_DEFAULT_ZOOM = 1;
+const MERMAID_DIALOG_DEFAULT_ZOOM = 3;
 const MERMAID_DIALOG_MIN_ZOOM = 0.5;
-const MERMAID_DIALOG_MAX_ZOOM = 3;
-const MERMAID_DIALOG_ZOOM_STEP = 0.25;
+const MERMAID_DIALOG_MAX_ZOOM = 20;
+const MERMAID_DIALOG_ZOOM_STEP = 0.2;
+const MERMAID_DIALOG_WHEEL_ZOOM_STEP = 0.1;
+const MERMAID_DIALOG_PAN_STEP = 50;
+const MERMAID_DIALOG_DEFAULT_POSITION: MermaidDialogPosition = { x: 0, y: 0 };
 const FOCUSABLE_DIALOG_ELEMENT_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
-  "iframe",
   "input:not([disabled])",
   "select:not([disabled])",
   "textarea:not([disabled])",
@@ -37,6 +52,22 @@ function clampMermaidDialogZoom(zoom: number): number {
     MERMAID_DIALOG_MAX_ZOOM,
     Math.max(MERMAID_DIALOG_MIN_ZOOM, zoom),
   );
+}
+
+function getPannedMermaidDialogPosition(
+  position: MermaidDialogPosition,
+  direction: "up" | "down" | "left" | "right",
+): MermaidDialogPosition {
+  switch (direction) {
+    case "up":
+      return { ...position, y: position.y + MERMAID_DIALOG_PAN_STEP };
+    case "down":
+      return { ...position, y: position.y - MERMAID_DIALOG_PAN_STEP };
+    case "left":
+      return { ...position, x: position.x + MERMAID_DIALOG_PAN_STEP };
+    case "right":
+      return { ...position, x: position.x - MERMAID_DIALOG_PAN_STEP };
+  }
 }
 
 function getFocusableDialogElements(container: HTMLElement): HTMLElement[] {
@@ -82,68 +113,6 @@ function decodeMermaidEntities(input: string): string {
   );
 }
 
-function createMermaidViewerDocument(
-  svg: string,
-  zoom = MERMAID_DIALOG_DEFAULT_ZOOM,
-): string {
-  const safeZoom = clampMermaidDialogZoom(zoom);
-
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      :root {
-        color-scheme: light dark;
-        font-family: var(--font-app-mono, ui-monospace), SFMono-Regular, Menlo, monospace;
-      }
-
-      html,
-      body {
-        min-width: 100%;
-        min-height: 100%;
-        margin: 0;
-        background: transparent;
-      }
-
-      body {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        box-sizing: border-box;
-        width: max-content;
-        padding: 16px;
-        overflow: auto;
-      }
-
-      .mermaid-viewer-content {
-        display: block;
-        flex: 0 0 auto;
-        zoom: ${safeZoom};
-      }
-
-      @supports not (zoom: 1) {
-        .mermaid-viewer-content {
-          transform: scale(${safeZoom});
-          transform-origin: top center;
-        }
-      }
-
-      svg {
-        display: block;
-        width: auto;
-        max-width: none;
-        height: auto;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="mermaid-viewer-content">${svg}</div>
-  </body>
-</html>`;
-}
-
 /**
  * mermaid 코드 블록을 SVG 다이어그램으로 렌더링한다.
  * mermaid 모듈은 window 의존성이 있어 클라이언트에서만 동적으로 로드한다.
@@ -161,23 +130,34 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedZoom, setExpandedZoom] = useState(MERMAID_DIALOG_DEFAULT_ZOOM);
+  const [expandedPosition, setExpandedPosition] = useState<MermaidDialogPosition>(
+    MERMAID_DIALOG_DEFAULT_POSITION,
+  );
+  const [isExpandedDragging, setIsExpandedDragging] = useState(false);
+  const [expandedDragStart, setExpandedDragStart] = useState<MermaidDialogPosition>(
+    MERMAID_DIALOG_DEFAULT_POSITION,
+  );
   const expandedDialogRef = useRef<HTMLDivElement | null>(null);
+  const expandedViewerContainerRef = useRef<HTMLDivElement | null>(null);
   const renderTokenRef = useRef(0);
   const decodedCode = useMemo(() => decodeMermaidEntities(code), [code]);
-  const viewerDocument = useMemo(
-    () => (svg ? createMermaidViewerDocument(svg) : null),
-    [svg],
-  );
-  const expandedViewerDocument = useMemo(
-    () => (svg ? createMermaidViewerDocument(svg, expandedZoom) : null),
-    [expandedZoom, svg],
-  );
   const expandedZoomPercent = Math.round(expandedZoom * 100);
   const canZoomOut = expandedZoom > MERMAID_DIALOG_MIN_ZOOM;
   const canZoomIn = expandedZoom < MERMAID_DIALOG_MAX_ZOOM;
+  const expandedDiagramStyle = {
+    transform: `translate(${expandedPosition.x}px, ${expandedPosition.y}px) scale(${expandedZoom})`,
+    transformOrigin: "center",
+    transition: isExpandedDragging ? "none" : "transform 0.1s ease-out",
+  };
+
+  const resetExpandedView = useCallback(() => {
+    setExpandedZoom(MERMAID_DIALOG_DEFAULT_ZOOM);
+    setExpandedPosition(MERMAID_DIALOG_DEFAULT_POSITION);
+    setIsExpandedDragging(false);
+  }, []);
 
   const openExpandedView = () => {
-    setExpandedZoom(MERMAID_DIALOG_DEFAULT_ZOOM);
+    resetExpandedView();
     setIsExpanded(true);
   };
 
@@ -198,7 +178,35 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
   };
 
   const resetExpandedViewZoom = () => {
-    setExpandedZoom(MERMAID_DIALOG_DEFAULT_ZOOM);
+    resetExpandedView();
+  };
+
+  const startExpandedViewDrag = (event: MouseEvent<HTMLDivElement>) => {
+    if (!isExpanded || event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    setIsExpandedDragging(true);
+    setExpandedDragStart({
+      x: event.clientX - expandedPosition.x,
+      y: event.clientY - expandedPosition.y,
+    });
+  };
+
+  const moveExpandedViewDrag = (event: MouseEvent<HTMLDivElement>) => {
+    if (!isExpanded || !isExpandedDragging) {
+      return;
+    }
+
+    setExpandedPosition({
+      x: event.clientX - expandedDragStart.x,
+      y: event.clientY - expandedDragStart.y,
+    });
+  };
+
+  const stopExpandedViewDrag = () => {
+    setIsExpandedDragging(false);
   };
 
   useEffect(() => {
@@ -257,6 +265,14 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
       return;
     }
 
+    resetExpandedView();
+  }, [isExpanded, resetExpandedView]);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      return;
+    }
+
     const previouslyFocusedElement =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
@@ -275,6 +291,50 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
       if (event.key === "Escape") {
         setIsExpanded(false);
         return;
+      }
+
+      switch (event.key) {
+        case "ArrowUp":
+          event.preventDefault();
+          setExpandedPosition((position) =>
+            getPannedMermaidDialogPosition(position, "up"),
+          );
+          return;
+        case "ArrowDown":
+          event.preventDefault();
+          setExpandedPosition((position) =>
+            getPannedMermaidDialogPosition(position, "down"),
+          );
+          return;
+        case "ArrowLeft":
+          event.preventDefault();
+          setExpandedPosition((position) =>
+            getPannedMermaidDialogPosition(position, "left"),
+          );
+          return;
+        case "ArrowRight":
+          event.preventDefault();
+          setExpandedPosition((position) =>
+            getPannedMermaidDialogPosition(position, "right"),
+          );
+          return;
+        case "+":
+        case "=":
+          event.preventDefault();
+          setExpandedZoom((zoom) =>
+            clampMermaidDialogZoom(zoom + MERMAID_DIALOG_ZOOM_STEP),
+          );
+          return;
+        case "-":
+          event.preventDefault();
+          setExpandedZoom((zoom) =>
+            clampMermaidDialogZoom(zoom - MERMAID_DIALOG_ZOOM_STEP),
+          );
+          return;
+        case "0":
+          event.preventDefault();
+          resetExpandedView();
+          return;
       }
 
       if (event.key !== "Tab") {
@@ -319,6 +379,25 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
       document.removeEventListener("keydown", handleKeyDown);
       previouslyFocusedElement?.focus();
     };
+  }, [isExpanded, resetExpandedView]);
+
+  useEffect(() => {
+    const container = expandedViewerContainerRef.current;
+    if (!isExpanded || !container) {
+      return;
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const zoomDelta =
+        event.deltaY > 0
+          ? -MERMAID_DIALOG_WHEEL_ZOOM_STEP
+          : MERMAID_DIALOG_WHEEL_ZOOM_STEP;
+      setExpandedZoom((zoom) => clampMermaidDialogZoom(zoom + zoomDelta));
+    };
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
   }, [isExpanded]);
 
   useEffect(() => {
@@ -339,7 +418,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
     );
   }
 
-  if (viewerDocument) {
+  if (svg) {
     return (
       <>
         <div className="mermaid-block mermaid-block-viewer">
@@ -351,16 +430,13 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
           >
             <Maximize2 aria-hidden="true" size={16} />
           </button>
-          <iframe
-            title="Mermaid diagram"
-            role="presentation"
-            className="render-viewer mermaid-block-frame"
-            sandbox=""
-            srcDoc={viewerDocument}
+          <div
+            className="mermaid-block-content"
+            dangerouslySetInnerHTML={{ __html: svg }}
           />
         </div>
 
-        {isExpanded && expandedViewerDocument && (
+        {isExpanded && (
           <div
             ref={expandedDialogRef}
             className="mermaid-block-expanded"
@@ -412,13 +488,25 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
             >
               <X aria-hidden="true" size={18} />
             </button>
-            <iframe
-              title="Mermaid diagram expanded"
-              role="presentation"
-              className="render-viewer mermaid-block-expanded-frame"
-              sandbox=""
-              srcDoc={expandedViewerDocument}
-            />
+            <div
+              ref={expandedViewerContainerRef}
+              className={[
+                "mermaid-block-expanded-canvas",
+                isExpandedDragging ? "mermaid-block-expanded-canvas-dragging" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onMouseDown={startExpandedViewDrag}
+              onMouseMove={moveExpandedViewDrag}
+              onMouseUp={stopExpandedViewDrag}
+              onMouseLeave={stopExpandedViewDrag}
+            >
+              <div
+                className="mermaid-block-expanded-content"
+                style={expandedDiagramStyle}
+                dangerouslySetInnerHTML={{ __html: svg }}
+              />
+            </div>
           </div>
         )}
       </>
@@ -434,4 +522,4 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
   );
 }
 
-export { createMermaidViewerDocument, decodeMermaidEntities };
+export { decodeMermaidEntities };

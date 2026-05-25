@@ -31,21 +31,17 @@ test("mermaid block uses decoded code for rendering, error fallback, and loading
   assert.equal(decodedUsages.length, 2, "decodedCode should back both fallback panels");
 });
 
-test("mermaid block renders diagrams through sandboxed iframe viewers", () => {
-  assert.match(
-    mermaidBlockSource,
-    /function createMermaidViewerDocument\(\s*svg: string,\s*zoom = MERMAID_DIALOG_DEFAULT_ZOOM,\s*\): string/,
-  );
-  assert.match(mermaidBlockSource, /const viewerDocument = useMemo/);
-  assert.match(mermaidBlockSource, /const expandedViewerDocument = useMemo/);
-  assert.match(mermaidBlockSource, /className="render-viewer mermaid-block-frame"/);
-  assert.match(mermaidBlockSource, /className="render-viewer mermaid-block-expanded-frame"/);
-  assert.match(mermaidBlockSource, /sandbox=""/);
-  assert.doesNotMatch(mermaidBlockSource, /allow-same-origin/);
+test("mermaid block renders diagrams directly in normal and expanded views", () => {
+  assert.match(mermaidBlockSource, /if \(svg\) \{/);
+  assert.match(mermaidBlockSource, /className="mermaid-block-content"/);
+  assert.match(mermaidBlockSource, /className="mermaid-block-expanded-content"/);
+  const svgInsertions =
+    mermaidBlockSource.match(/dangerouslySetInnerHTML=\{\{ __html: svg \}\}/g) ?? [];
+  assert.equal(svgInsertions.length, 2, "normal and expanded views should render the SVG");
+  assert.doesNotMatch(mermaidBlockSource, /createMermaidViewerDocument/);
+  assert.doesNotMatch(mermaidBlockSource, /srcDoc=/);
+  assert.doesNotMatch(mermaidBlockSource, /sandbox=/);
   assert.doesNotMatch(mermaidBlockSource, /allow-scripts/);
-  assert.match(mermaidBlockSource, /srcDoc=\{viewerDocument\}/);
-  assert.match(mermaidBlockSource, /srcDoc=\{expandedViewerDocument\}/);
-  assert.doesNotMatch(mermaidBlockSource, /dangerouslySetInnerHTML=\{\{ __html: svg \}\}/);
 });
 
 test("mermaid block exposes an expanded viewer dialog", () => {
@@ -57,6 +53,7 @@ test("mermaid block exposes an expanded viewer dialog", () => {
   assert.match(mermaidBlockSource, /className="mermaid-block-expand-button"/);
   assert.match(mermaidBlockSource, /className="mermaid-block-expanded"/);
   assert.match(mermaidBlockSource, /className="mermaid-block-expanded-toolbar"/);
+  assert.match(mermaidBlockSource, /className=\{\[\s*"mermaid-block-expanded-canvas",/);
   assert.match(mermaidBlockSource, /aria-modal="true"/);
   assert.match(mermaidBlockSource, /tabIndex=\{-1\}/);
   assert.match(mermaidBlockSource, /role="toolbar"/);
@@ -74,17 +71,40 @@ test("expanded mermaid dialog traps focus and restores it on close", () => {
   assert.match(mermaidBlockSource, /previouslyFocusedElement\?\.focus\(\);/);
 });
 
-test("expanded mermaid dialog supports bounded zoom controls", () => {
-  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_DEFAULT_ZOOM = 1;/);
+test("expanded mermaid dialog supports fanplus-style pan and zoom controls", () => {
+  assert.match(mermaidBlockSource, /interface MermaidDialogPosition/);
+  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_DEFAULT_ZOOM = 3;/);
   assert.match(mermaidBlockSource, /const MERMAID_DIALOG_MIN_ZOOM = 0\.5;/);
-  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_MAX_ZOOM = 3;/);
-  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_ZOOM_STEP = 0\.25;/);
+  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_MAX_ZOOM = 20;/);
+  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_ZOOM_STEP = 0\.2;/);
+  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_WHEEL_ZOOM_STEP = 0\.1;/);
+  assert.match(mermaidBlockSource, /const MERMAID_DIALOG_PAN_STEP = 50;/);
+  assert.match(
+    mermaidBlockSource,
+    /const \[expandedPosition, setExpandedPosition\] = useState<MermaidDialogPosition>/,
+  );
+  assert.match(mermaidBlockSource, /const \[isExpandedDragging, setIsExpandedDragging\] = useState\(false\);/);
   assert.match(mermaidBlockSource, /function clampMermaidDialogZoom\(zoom: number\): number/);
+  assert.match(mermaidBlockSource, /function getPannedMermaidDialogPosition/);
+  assert.match(mermaidBlockSource, /const startExpandedViewDrag =/);
+  assert.match(mermaidBlockSource, /const moveExpandedViewDrag =/);
+  assert.match(mermaidBlockSource, /const stopExpandedViewDrag =/);
+  assert.match(mermaidBlockSource, /container\.addEventListener\("wheel", handleWheel, \{ passive: false \}\);/);
+  assert.match(mermaidBlockSource, /case "ArrowUp":/);
+  assert.match(mermaidBlockSource, /case "ArrowDown":/);
+  assert.match(mermaidBlockSource, /case "ArrowLeft":/);
+  assert.match(mermaidBlockSource, /case "ArrowRight":/);
+  assert.match(mermaidBlockSource, /case "\+":/);
+  assert.match(mermaidBlockSource, /case "-":/);
+  assert.match(mermaidBlockSource, /case "0":/);
   assert.match(mermaidBlockSource, /aria-label="Mermaid diagram zoom out"/);
   assert.match(mermaidBlockSource, /aria-label="Mermaid diagram zoom in"/);
   assert.match(mermaidBlockSource, /aria-label="Mermaid diagram zoom reset"/);
-  assert.match(mermaidBlockSource, /zoom: \$\{safeZoom\};/);
-  assert.match(mermaidBlockSource, /transform: scale\(\$\{safeZoom\}\);/);
+  assert.match(
+    mermaidBlockSource,
+    /transform: `translate\(\$\{expandedPosition\.x\}px, \$\{expandedPosition\.y\}px\) scale\(\$\{expandedZoom\}\)`/,
+  );
+  assert.match(mermaidBlockSource, /transition: isExpandedDragging \? "none" : "transform 0\.1s ease-out"/);
 });
 
 test("decoder also supports numeric and hexadecimal html entities", () => {

@@ -442,15 +442,14 @@ export default function MarkdownRenderer({
           overflow: hidden;
         }
 
-        .markdown-content .render-viewer {
-          display: block;
+        .markdown-content .mermaid-block-content {
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
           width: 100%;
-          border: 0;
-          background-color: var(--background);
-        }
-
-        .markdown-content .mermaid-block-frame {
           min-height: min(70vh, 36rem);
+          padding: 1rem;
+          overflow: auto;
         }
 
         .markdown-content .mermaid-block-expand-button,
@@ -498,7 +497,10 @@ export default function MarkdownRenderer({
         .markdown-content .mermaid-block-expanded {
           position: fixed;
           inset: 0;
-          z-index: 80;
+          z-index: 1000;
+          box-sizing: border-box;
+          width: 100vw;
+          height: 100dvh;
           padding: 4.25rem 1rem 1rem;
           background-color: color-mix(in srgb, var(--background) 96%, black 4%);
         }
@@ -549,11 +551,28 @@ export default function MarkdownRenderer({
           right: 1rem;
         }
 
-        .markdown-content .mermaid-block-expanded-frame {
+        .markdown-content .mermaid-block-expanded-canvas {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
           width: 100%;
           height: 100%;
+          overflow: hidden;
+          cursor: grab;
+          user-select: none;
           border: 1px solid var(--border);
           border-radius: 8px;
+          background-color: var(--background);
+        }
+
+        .markdown-content .mermaid-block-expanded-canvas-dragging {
+          cursor: grabbing;
+        }
+
+        .markdown-content .mermaid-block-expanded-content {
+          flex: 0 0 auto;
+          padding: 2rem;
         }
 
         .markdown-content .mermaid-block-loading {

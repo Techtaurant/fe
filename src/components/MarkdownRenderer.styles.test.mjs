@@ -82,15 +82,16 @@ test("markdown renderer restores encoded blockquote markers before parsing", () 
   assert.match(markdownRendererSource, /\{normalizedContent\}/);
 });
 
-test("mermaid iframe viewers have expandable styles", () => {
+test("mermaid viewers have direct render and full-screen dialog styles", () => {
   [
     ".markdown-content .mermaid-block-viewer",
-    ".markdown-content .render-viewer",
-    ".markdown-content .mermaid-block-frame",
+    ".markdown-content .mermaid-block-content",
     ".markdown-content .mermaid-block-expand-button",
     ".markdown-content .mermaid-block-expanded",
     ".markdown-content .mermaid-block-expanded-toolbar",
-    ".markdown-content .mermaid-block-expanded-frame",
+    ".markdown-content .mermaid-block-expanded-canvas",
+    ".markdown-content .mermaid-block-expanded-canvas-dragging",
+    ".markdown-content .mermaid-block-expanded-content",
     ".markdown-content .mermaid-block-zoom-button",
     ".markdown-content .mermaid-block-zoom-value",
   ].forEach((selector) => {
@@ -100,6 +101,13 @@ test("mermaid iframe viewers have expandable styles", () => {
       `${selector} should have an explicit markdown mermaid viewer style`,
     );
   });
+
+  const expandedRuleBody = getCssRuleBody(".markdown-content .mermaid-block-expanded");
+  assert.match(expandedRuleBody, /position:\s*fixed;/);
+  assert.match(expandedRuleBody, /inset:\s*0;/);
+  assert.match(expandedRuleBody, /z-index:\s*1000;/);
+  assert.match(expandedRuleBody, /width:\s*100vw;/);
+  assert.match(expandedRuleBody, /height:\s*100dvh;/);
 });
 
 test("code blocks keep highlight.js output readable", () => {
