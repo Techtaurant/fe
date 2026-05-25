@@ -60,6 +60,9 @@ function createHeadingId(text: string, counts: Map<string, number>): string {
 }
 
 const MERMAID_LANGUAGE_CLASS_PATTERN = /(?:^|\s)language-mermaid(?:\s|$)/;
+const BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN =
+  /^([ \t]*)((?:&(?:gt|#62|#x3e);[ \t]*)+)/gim;
+const BLOCKQUOTE_MARKER_ENTITY_PATTERN = /&(?:gt|#62|#x3e);/gi;
 
 function findFirstReactElement(node: ReactNode): ReactElement | null {
   if (Array.isArray(node)) {
@@ -92,10 +95,19 @@ function extractTextFromReactNode(node: ReactNode): string {
   return "";
 }
 
+function normalizeMarkdownSyntaxEntities(content: string): string {
+  return content.replace(
+    BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN,
+    (_match, indentation: string, markerSequence: string) =>
+      `${indentation}${markerSequence.replace(BLOCKQUOTE_MARKER_ENTITY_PATTERN, ">")}`,
+  );
+}
+
 export function extractTableOfContents(content: string): TableOfContentsHeading[] {
   const headingCounts = new Map<string, number>();
+  const normalizedContent = normalizeMarkdownSyntaxEntities(content);
 
-  return content
+  return normalizedContent
     .split("\n")
     .map((line) => line.match(/^(#{1,3})\s+(.+)$/))
     .filter((match): match is RegExpMatchArray => Boolean(match))
@@ -168,7 +180,14 @@ export default function MarkdownRenderer({
   content,
   resolveImageSrc,
 }: MarkdownRendererProps) {
-  const tableOfContents = useMemo(() => extractTableOfContents(content), [content]);
+  const normalizedContent = useMemo(
+    () => normalizeMarkdownSyntaxEntities(content),
+    [content],
+  );
+  const tableOfContents = useMemo(
+    () => extractTableOfContents(normalizedContent),
+    [normalizedContent],
+  );
   const headingIdsByText = useMemo(() => {
     const nextHeadingIds = new Map<string, string[]>();
 
@@ -260,7 +279,7 @@ export default function MarkdownRenderer({
           [rehypeHighlight, codeHighlightOptions],
         ]}
       >
-        {content}
+        {normalizedContent}
       </ReactMarkdown>
 
       {/* 마크다운 스타일 */}
@@ -381,6 +400,82 @@ export default function MarkdownRenderer({
         .markdown-content .mermaid-block svg {
           max-width: 100%;
           height: auto;
+        }
+
+        .markdown-content .mermaid-block-viewer {
+          position: relative;
+          display: block;
+          padding: 0;
+          overflow: hidden;
+        }
+
+        .markdown-content .render-viewer {
+          display: block;
+          width: 100%;
+          border: 0;
+          background-color: var(--background);
+        }
+
+        .markdown-content .mermaid-block-frame {
+          min-height: min(70vh, 36rem);
+        }
+
+        .markdown-content .mermaid-block-expand-button,
+        .markdown-content .mermaid-block-close-button {
+          position: absolute;
+          z-index: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 2rem;
+          height: 2rem;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          background-color: color-mix(in srgb, var(--background) 92%, transparent);
+          color: var(--foreground);
+          box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+          transition:
+            background-color 0.2s ease,
+            color 0.2s ease;
+        }
+
+        .markdown-content .mermaid-block-expand-button {
+          top: 0.75rem;
+          right: 0.75rem;
+        }
+
+        .markdown-content .mermaid-block-expand-button:hover,
+        .markdown-content .mermaid-block-close-button:hover,
+        .markdown-content .mermaid-block-expand-button:focus-visible,
+        .markdown-content .mermaid-block-close-button:focus-visible {
+          background-color: var(--muted);
+          color: var(--foreground);
+        }
+
+        .markdown-content .mermaid-block-expand-button:focus-visible,
+        .markdown-content .mermaid-block-close-button:focus-visible {
+          outline: 2px solid var(--color-blue-500);
+          outline-offset: 2px;
+        }
+
+        .markdown-content .mermaid-block-expanded {
+          position: fixed;
+          inset: 0;
+          z-index: 80;
+          padding: 3.5rem 1rem 1rem;
+          background-color: color-mix(in srgb, var(--background) 96%, black 4%);
+        }
+
+        .markdown-content .mermaid-block-close-button {
+          top: 1rem;
+          right: 1rem;
+        }
+
+        .markdown-content .mermaid-block-expanded-frame {
+          width: 100%;
+          height: 100%;
+          border: 1px solid var(--border);
+          border-radius: 8px;
         }
 
         .markdown-content .mermaid-block-loading {

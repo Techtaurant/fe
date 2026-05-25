@@ -31,6 +31,24 @@ test("mermaid block uses decoded code for rendering, error fallback, and loading
   assert.equal(decodedUsages.length, 2, "decodedCode should back both fallback panels");
 });
 
+test("mermaid block renders diagrams through sandboxed iframe viewers", () => {
+  assert.match(mermaidBlockSource, /function createMermaidViewerDocument\(svg: string\): string/);
+  assert.match(mermaidBlockSource, /const viewerDocument = useMemo/);
+  assert.match(mermaidBlockSource, /className="render-viewer mermaid-block-frame"/);
+  assert.match(mermaidBlockSource, /className="render-viewer mermaid-block-expanded-frame"/);
+  assert.match(mermaidBlockSource, /sandbox="allow-scripts allow-same-origin"/);
+  assert.match(mermaidBlockSource, /srcDoc=\{viewerDocument\}/);
+  assert.doesNotMatch(mermaidBlockSource, /dangerouslySetInnerHTML=\{\{ __html: svg \}\}/);
+});
+
+test("mermaid block exposes an expanded viewer dialog", () => {
+  assert.match(mermaidBlockSource, /const \[isExpanded, setIsExpanded\] = useState\(false\);/);
+  assert.match(mermaidBlockSource, /className="mermaid-block-expand-button"/);
+  assert.match(mermaidBlockSource, /className="mermaid-block-expanded"/);
+  assert.match(mermaidBlockSource, /aria-modal="true"/);
+  assert.match(mermaidBlockSource, /event\.key === "Escape"/);
+});
+
 test("decoder also supports numeric and hexadecimal html entities", () => {
   assert.match(
     mermaidBlockSource,

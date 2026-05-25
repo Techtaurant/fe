@@ -65,6 +65,34 @@ test("markdown blockquotes keep consecutive and nested quotes grouped", () => {
   assert.match(nestedBlockquoteRuleBody, /border-left-color:\s*var\(--muted-foreground\);/);
 });
 
+test("markdown renderer restores encoded blockquote markers before parsing", () => {
+  assert.match(markdownRendererSource, /const BLOCKQUOTE_MARKER_ENTITY_SEQUENCE_PATTERN =/);
+  assert.match(markdownRendererSource, /const BLOCKQUOTE_MARKER_ENTITY_PATTERN =/);
+  assert.match(markdownRendererSource, /function normalizeMarkdownSyntaxEntities\(content: string\): string/);
+  assert.match(
+    markdownRendererSource,
+    /markerSequence\.replace\(BLOCKQUOTE_MARKER_ENTITY_PATTERN,\s*">"\)/,
+  );
+  assert.match(markdownRendererSource, /\{normalizedContent\}/);
+});
+
+test("mermaid iframe viewers have expandable styles", () => {
+  [
+    ".markdown-content .mermaid-block-viewer",
+    ".markdown-content .render-viewer",
+    ".markdown-content .mermaid-block-frame",
+    ".markdown-content .mermaid-block-expand-button",
+    ".markdown-content .mermaid-block-expanded",
+    ".markdown-content .mermaid-block-expanded-frame",
+  ].forEach((selector) => {
+    assert.match(
+      markdownRendererSource,
+      new RegExp(escapeRegExp(selector)),
+      `${selector} should have an explicit markdown mermaid viewer style`,
+    );
+  });
+});
+
 test("code blocks keep highlight.js output readable", () => {
   const codeBlockRuleMatch = markdownRendererSource.match(
     /\.markdown-content pre code\.hljs,\s*\.markdown-content code\.hljs\s*\{(?<body>[\s\S]*?)\n\s*\}/m,

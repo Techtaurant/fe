@@ -1,5 +1,6 @@
 "use client";
 
+import { Maximize2, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 
@@ -55,6 +56,51 @@ function decodeMermaidEntities(input: string): string {
   );
 }
 
+function createMermaidViewerDocument(svg: string): string {
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: var(--font-app-mono, ui-monospace), SFMono-Regular, Menlo, monospace;
+      }
+
+      html,
+      body {
+        min-width: 100%;
+        min-height: 100%;
+        margin: 0;
+        background: transparent;
+      }
+
+      body {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        box-sizing: border-box;
+        width: max-content;
+        padding: 16px;
+        overflow: auto;
+      }
+
+      svg {
+        display: block;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: none;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    ${svg}
+  </body>
+</html>`;
+}
+
 /**
  * mermaid 코드 블록을 SVG 다이어그램으로 렌더링한다.
  * mermaid 모듈은 window 의존성이 있어 클라이언트에서만 동적으로 로드한다.
@@ -70,8 +116,13 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
   const isDarkTheme = resolvedTheme === "dark";
   const [svg, setSvg] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const renderTokenRef = useRef(0);
   const decodedCode = useMemo(() => decodeMermaidEntities(code), [code]);
+  const viewerDocument = useMemo(
+    () => (svg ? createMermaidViewerDocument(svg) : null),
+    [svg],
+  );
 
   useEffect(() => {
     const trimmedCode = decodedCode.trim();
@@ -124,6 +175,27 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
     };
   }, [decodedCode, isDarkTheme, sanitizedId]);
 
+  useEffect(() => {
+    if (!isExpanded) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isExpanded]);
+
+  useEffect(() => {
+    if (!svg) {
+      setIsExpanded(false);
+    }
+  }, [svg]);
+
   if (errorMessage) {
     return (
       <div className="mermaid-block mermaid-block-error" role="alert">
@@ -136,14 +208,52 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
     );
   }
 
-  if (svg) {
+  if (viewerDocument) {
     return (
-      <div
-        className="mermaid-block"
-        role="img"
-        aria-label="Mermaid diagram"
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+      <>
+        <div className="mermaid-block mermaid-block-viewer">
+          <button
+            type="button"
+            className="mermaid-block-expand-button"
+            aria-label="Mermaid diagram expand"
+            onClick={() => setIsExpanded(true)}
+          >
+            <Maximize2 aria-hidden="true" size={16} />
+          </button>
+          <iframe
+            title="Mermaid diagram"
+            role="presentation"
+            className="render-viewer mermaid-block-frame"
+            sandbox="allow-scripts allow-same-origin"
+            srcDoc={viewerDocument}
+          />
+        </div>
+
+        {isExpanded && (
+          <div
+            className="mermaid-block-expanded"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mermaid diagram expanded view"
+          >
+            <button
+              type="button"
+              className="mermaid-block-close-button"
+              aria-label="Mermaid diagram close"
+              onClick={() => setIsExpanded(false)}
+            >
+              <X aria-hidden="true" size={18} />
+            </button>
+            <iframe
+              title="Mermaid diagram expanded"
+              role="presentation"
+              className="render-viewer mermaid-block-expanded-frame"
+              sandbox="allow-scripts allow-same-origin"
+              srcDoc={viewerDocument}
+            />
+          </div>
+        )}
+      </>
     );
   }
 
@@ -156,4 +266,4 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
   );
 }
 
-export { decodeMermaidEntities };
+export { createMermaidViewerDocument, decodeMermaidEntities };
