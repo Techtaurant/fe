@@ -41,7 +41,7 @@ const implementationSteps = [
     description:
       "이 페이지에 설치·채널 선택·스크립트·cron 등록·검증 순서와 작업 위치를 남겼습니다.",
     evidence: "route /ko/projects/hermes-discord-helloworld-cron",
-    prLocation: "https://github.com/Techtaurant/fe/pull/TBD",
+    prLocation: "https://github.com/Techtaurant/fe/pull/157",
   },
 ];
 
