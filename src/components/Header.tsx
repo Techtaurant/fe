@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { FileText, LogOut, PenLine, Settings } from "lucide-react";
-import { usePathname, useRouter } from "../i18n/navigation";
+import { Link, usePathname, useRouter } from "../i18n/navigation";
 import { useUser } from "../hooks/useUser";
 import { buildLogoutUrl, redirectToOAuthLogin } from "../lib/authRedirect";
 import { queryKeys } from "../lib/queryKeys";
@@ -35,6 +35,7 @@ export default function Header({
   const { user, isLoading } = useUser();
   const isLoggedIn = !!user;
   const router = useRouter();
+  const isLinksPage = pathname.startsWith("/links");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -170,6 +171,22 @@ export default function Header({
             Techtaurant
           </h1>
 
+          <nav
+            className="hidden items-center md:flex"
+            aria-label={t("primaryNav")}
+          >
+            <Link
+              href="/links"
+              className={`border-b-2 px-1 py-1 text-sm font-semibold transition-colors ${
+                isLinksPage
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+              aria-current={isLinksPage ? "page" : undefined}
+            >
+              {t("links")}
+            </Link>
+          </nav>
         </div>
 
         {/* Search Bar (데스크탑만) */}

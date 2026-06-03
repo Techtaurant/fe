@@ -1,8 +1,10 @@
 {
   "Header": {
     "openMenu": "打开菜单",
+    "primaryNav": "主要导航",
     "companyBlogs": "企业博客",
     "community": "社区",
+    "links": "链接",
     "searchPlaceholder": "搜索",
     "writePost": "撰写",
     "profile": "个人资料",

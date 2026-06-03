@@ -1,8 +1,10 @@
 {
   "Header": {
     "openMenu": "メニューを開く",
+    "primaryNav": "主要ナビゲーション",
     "companyBlogs": "企業ブログ",
     "community": "コミュニティ",
+    "links": "リンク",
     "searchPlaceholder": "検索",
     "writePost": "投稿",
     "profile": "プロフィール",

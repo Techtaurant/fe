@@ -86,12 +86,12 @@ export async function fetchLinkReactionState(
   }
 
   const result = (await response.json()) as OpenLinkDetailResponse;
-  if (!isLinkLikeStatus(result.data.likeStatus)) {
-    throw new Error("MISSING_LIKE_STATUS");
-  }
+  const likeStatus = isLinkLikeStatus(result.data.likeStatus)
+    ? result.data.likeStatus
+    : "NONE";
 
   return {
-    likeStatus: result.data.likeStatus,
+    likeStatus,
     likeCount: normalizeCount(result.data.likeCount),
   };
 }

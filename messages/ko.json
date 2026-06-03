@@ -1,8 +1,10 @@
 {
   "Header": {
     "openMenu": "메뉴 열기",
+    "primaryNav": "주요 내비게이션",
     "companyBlogs": "기업 블로그",
     "community": "커뮤니티",
+    "links": "링크",
     "searchPlaceholder": "검색",
     "writePost": "글쓰기",
     "profile": "프로필",

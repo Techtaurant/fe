@@ -1,8 +1,10 @@
 {
   "Header": {
     "openMenu": "Open menu",
+    "primaryNav": "Primary navigation",
     "companyBlogs": "Company blogs",
     "community": "Community",
+    "links": "Links",
     "searchPlaceholder": "Search",
     "writePost": "Write",
     "profile": "Profile",
