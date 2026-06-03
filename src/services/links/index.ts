@@ -3,12 +3,17 @@ export {
   fetchOpenLinkDetail,
   fetchOpenLinks,
 } from "./server";
-export { createLinkViewLog, setLinkLike } from "./client";
+export {
+  createLinkViewLog,
+  fetchLinkReactionState,
+  setLinkLike,
+} from "./client";
 export type {
   FetchOpenLinksParams,
   LinkContent,
   LinkLikeStatus,
   LinkListResult,
   LinkMutationResponse,
+  LinkReactionState,
   LinkTag,
 } from "./types";

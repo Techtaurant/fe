@@ -1,5 +1,9 @@
 export type LinkLikeStatus = "LIKE" | "DISLIKE" | "NONE";
 
+export function isLinkLikeStatus(value: unknown): value is LinkLikeStatus {
+  return value === "LIKE" || value === "DISLIKE" || value === "NONE";
+}
+
 export interface LinkTag {
   id: string;
   name: string;
@@ -17,6 +21,7 @@ export interface LinkContent {
   updatedAt?: string;
   viewCount?: number;
   likeCount?: number;
+  likeStatus?: LinkLikeStatus;
 }
 
 export interface OpenLinkListResponse {
@@ -55,6 +60,11 @@ export interface LinkMutationResponse {
   message?: string;
 }
 
+export interface LinkReactionState {
+  likeStatus: LinkLikeStatus;
+  likeCount?: number;
+}
+
 export interface OpenLinkItem {
   id?: string;
   linkId?: string;
@@ -68,4 +78,5 @@ export interface OpenLinkItem {
   updatedAt?: string | null;
   viewCount?: number | null;
   likeCount?: number | null;
+  likeStatus?: LinkLikeStatus | null;
 }

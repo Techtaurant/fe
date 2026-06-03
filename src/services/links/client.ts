@@ -1,7 +1,17 @@
 "use client";
 
 import { httpClient } from "../../utils/httpClient";
-import { LinkLikeStatus, LinkMutationResponse } from "./types";
+import { isLinkLikeStatus } from "./types";
+import type {
+  LinkLikeStatus,
+  LinkMutationResponse,
+  LinkReactionState,
+  OpenLinkDetailResponse,
+} from "./types";
+
+function normalizeCount(value?: number | null): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
 
 export async function createLinkViewLog(
   linkId: string,
@@ -51,4 +61,37 @@ export async function setLinkLike(
   return (await response.json().catch(() => ({
     status: response.status,
   }))) as LinkMutationResponse;
+}
+
+export async function fetchLinkReactionState(
+  linkId: string,
+): Promise<LinkReactionState> {
+  const response = await httpClient(
+    `/open-api/links/${encodeURIComponent(linkId)}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  const result = (await response.json()) as OpenLinkDetailResponse;
+  if (!isLinkLikeStatus(result.data.likeStatus)) {
+    throw new Error("MISSING_LIKE_STATUS");
+  }
+
+  return {
+    likeStatus: result.data.likeStatus,
+    likeCount: normalizeCount(result.data.likeCount),
+  };
 }

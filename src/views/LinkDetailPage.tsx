@@ -42,6 +42,7 @@ export default async function LinkDetailPage({ params }: LinkDetailPageProps) {
           <LinkReactionBar
             linkId={link.id}
             initialLikeCount={link.likeCount}
+            initialLikeStatus={link.likeStatus}
           />
           <LinkOpenButton
             linkId={link.id}

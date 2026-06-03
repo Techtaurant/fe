@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useUser } from "../../hooks/useUser";
-import { setLinkLike } from "../../services/links/client";
-import { LinkLikeStatus } from "../../services/links/types";
+import { queryKeys } from "../../lib/queryKeys";
+import {
+  fetchLinkReactionState,
+  setLinkLike,
+} from "../../services/links/client";
+import type { LinkLikeStatus, LinkReactionState } from "../../services/links/types";
 
 interface LinkReactionBarProps {
   linkId: string;
   initialLikeCount?: number;
+  initialLikeStatus?: LinkLikeStatus;
 }
 
 function toReactionState(status: LinkLikeStatus): "like" | "dislike" | "none" {
@@ -35,17 +41,48 @@ function getNextLikeCount(
 export default function LinkReactionBar({
   linkId,
   initialLikeCount,
+  initialLikeStatus,
 }: LinkReactionBarProps) {
   const t = useTranslations("LinkDetail");
+  const queryClient = useQueryClient();
   const { user, isLoading } = useUser();
-  const [likeStatus, setLikeStatus] = useState<LinkLikeStatus>("NONE");
+  const reactionQueryKey = queryKeys.links.reaction(linkId);
+  const [likeStatus, setLikeStatus] = useState<LinkLikeStatus>(
+    initialLikeStatus ?? "NONE",
+  );
   const [likeCount, setLikeCount] = useState<number | undefined>(initialLikeCount);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+  const reactionQuery = useQuery({
+    queryKey: reactionQueryKey,
+    queryFn: () => fetchLinkReactionState(linkId),
+    enabled: Boolean(user),
+  });
+  const isReactionLoading =
+    Boolean(user) && (reactionQuery.isPending || reactionQuery.isFetching);
+  const isReactionUnavailable = Boolean(user) && reactionQuery.isError;
+  const statusMessage =
+    message ?? (isReactionUnavailable ? t("reactionFailed") : null);
   const reactionState = toReactionState(likeStatus);
 
+  useEffect(() => {
+    setLikeStatus(initialLikeStatus ?? "NONE");
+    setLikeCount(initialLikeCount);
+  }, [initialLikeCount, initialLikeStatus, linkId]);
+
+  useEffect(() => {
+    if (!reactionQuery.data) {
+      return;
+    }
+
+    setLikeStatus(reactionQuery.data.likeStatus);
+    if (reactionQuery.data.likeCount !== undefined) {
+      setLikeCount(reactionQuery.data.likeCount);
+    }
+  }, [reactionQuery.data]);
+
   const updateReaction = async (nextStatus: LinkLikeStatus) => {
-    if (isLoading || isPending) return;
+    if (isLoading || isPending || isReactionLoading || isReactionUnavailable) return;
 
     if (!user) {
       setMessage(t("loginRequired"));
@@ -64,6 +101,10 @@ export default function LinkReactionBar({
     setMessage(null);
     setLikeStatus(nextStatus);
     setLikeCount(optimisticCount);
+    queryClient.setQueryData<LinkReactionState>(reactionQueryKey, {
+      likeStatus: nextStatus,
+      likeCount: optimisticCount,
+    });
 
     try {
       await setLinkLike(linkId, nextStatus);
@@ -71,6 +112,10 @@ export default function LinkReactionBar({
     } catch (error) {
       setLikeStatus(previousStatus);
       setLikeCount(previousCount);
+      queryClient.setQueryData<LinkReactionState>(reactionQueryKey, {
+        likeStatus: previousStatus,
+        likeCount: previousCount,
+      });
       setMessage(
         error instanceof Error && error.message === "UNAUTHORIZED"
           ? t("loginRequired")
@@ -95,7 +140,9 @@ export default function LinkReactionBar({
         <button
           type="button"
           onClick={handleLike}
-          disabled={isPending || isLoading}
+          disabled={
+            isPending || isLoading || isReactionLoading || isReactionUnavailable
+          }
           className={`flex items-center gap-2 rounded-full px-3 py-1.5 transition-colors duration-200 ${
             reactionState === "like"
               ? "bg-red-500/15 text-red-600 hover:bg-red-500/20"
@@ -111,7 +158,9 @@ export default function LinkReactionBar({
         <button
           type="button"
           onClick={handleDislike}
-          disabled={isPending || isLoading}
+          disabled={
+            isPending || isLoading || isReactionLoading || isReactionUnavailable
+          }
           className={`flex items-center gap-2 rounded-full px-3 py-1.5 transition-colors duration-200 ${
             reactionState === "dislike"
               ? "bg-blue-500/15 text-blue-600 hover:bg-blue-500/20"
@@ -123,9 +172,9 @@ export default function LinkReactionBar({
         </button>
       </div>
 
-      {message ? (
+      {statusMessage ? (
         <p className="text-center text-xs font-medium text-muted-foreground">
-          {message}
+          {statusMessage}
         </p>
       ) : null}
     </div>

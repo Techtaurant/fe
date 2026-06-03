@@ -1,4 +1,5 @@
-import {
+import { isLinkLikeStatus } from "./types";
+import type {
   FetchOpenLinksParams,
   LinkContent,
   LinkListResult,
@@ -73,6 +74,7 @@ export function normalizeLinkContent(item: OpenLinkItem): LinkContent {
     updatedAt: normalizeString(item.updatedAt),
     viewCount: normalizeCount(item.viewCount),
     likeCount: normalizeCount(item.likeCount),
+    likeStatus: isLinkLikeStatus(item.likeStatus) ? item.likeStatus : undefined,
   };
 }
 
