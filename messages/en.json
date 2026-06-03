@@ -87,6 +87,27 @@
     "likes": "Likes",
     "comments": "Comments"
   },
+  "LinkCard": {
+    "source": "Source",
+    "publishedAt": "Published"
+  },
+  "LinksPage": {
+    "title": "Links",
+    "empty": "No links to display.",
+    "loadMore": "Load more",
+    "reachedEnd": "You reached the last link."
+  },
+  "LinkDetail": {
+    "back": "Links",
+    "summaryFallback": "No summary is available for this link.",
+    "sourceUrl": "Original",
+    "openOriginal": "Open original",
+    "ariaLike": "Like",
+    "ariaDislike": "Dislike",
+    "loginRequired": "Sign in to react.",
+    "reactionSaved": "Reaction saved.",
+    "reactionFailed": "Failed to update reaction."
+  },
   "PostDetail": {
     "back": "Back",
     "follow": "Follow",

@@ -87,6 +87,27 @@
     "likes": "点赞",
     "comments": "评论"
   },
+  "LinkCard": {
+    "source": "来源",
+    "publishedAt": "发布时间"
+  },
+  "LinksPage": {
+    "title": "链接",
+    "empty": "暂无可显示的链接。",
+    "loadMore": "加载更多",
+    "reachedEnd": "已加载到最后一个链接。"
+  },
+  "LinkDetail": {
+    "back": "链接列表",
+    "summaryFallback": "此链接暂无摘要。",
+    "sourceUrl": "原文",
+    "openOriginal": "打开原文",
+    "ariaLike": "点赞",
+    "ariaDislike": "点踩",
+    "loginRequired": "登录后才能互动。",
+    "reactionSaved": "互动已保存。",
+    "reactionFailed": "互动更新失败。"
+  },
   "PostDetail": {
     "back": "返回",
     "follow": "关注",

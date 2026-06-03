@@ -87,6 +87,27 @@
     "likes": "좋아요",
     "comments": "댓글"
   },
+  "LinkCard": {
+    "source": "출처",
+    "publishedAt": "발행일"
+  },
+  "LinksPage": {
+    "title": "링크",
+    "empty": "표시할 링크가 없습니다.",
+    "loadMore": "더보기",
+    "reachedEnd": "마지막 링크까지 모두 불러왔습니다."
+  },
+  "LinkDetail": {
+    "back": "링크 목록",
+    "summaryFallback": "요약이 제공되지 않은 링크입니다.",
+    "sourceUrl": "원문",
+    "openOriginal": "원문 열기",
+    "ariaLike": "좋아요",
+    "ariaDislike": "싫어요",
+    "loginRequired": "로그인 후 반응할 수 있습니다.",
+    "reactionSaved": "반응이 저장되었습니다.",
+    "reactionFailed": "반응 처리에 실패했습니다."
+  },
   "PostDetail": {
     "back": "돌아가기",
     "follow": "팔로우",

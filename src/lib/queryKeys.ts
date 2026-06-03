@@ -42,6 +42,11 @@ export const queryKeys = {
     draftDetail: (postId: string) =>
       [...queryKeys.posts.all, "draft-detail", postId] as const,
   },
+  links: {
+    all: ["links"] as const,
+    reaction: (linkId: string) =>
+      [...queryKeys.links.all, "reaction", linkId] as const,
+  },
   comments: {
     all: ["comments"] as const,
     list: (params: { postId: string; sort: string; size: number }) =>

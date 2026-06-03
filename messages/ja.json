@@ -87,6 +87,27 @@
     "likes": "いいね",
     "comments": "コメント"
   },
+  "LinkCard": {
+    "source": "出典",
+    "publishedAt": "公開日"
+  },
+  "LinksPage": {
+    "title": "リンク",
+    "empty": "表示できるリンクがありません。",
+    "loadMore": "もっと見る",
+    "reachedEnd": "最後のリンクまで読み込みました。"
+  },
+  "LinkDetail": {
+    "back": "リンク一覧",
+    "summaryFallback": "このリンクには概要がありません。",
+    "sourceUrl": "元記事",
+    "openOriginal": "元記事を開く",
+    "ariaLike": "いいね",
+    "ariaDislike": "よくない",
+    "loginRequired": "リアクションするにはログインが必要です。",
+    "reactionSaved": "リアクションを保存しました。",
+    "reactionFailed": "リアクションの更新に失敗しました。"
+  },
   "PostDetail": {
     "back": "戻る",
     "follow": "フォロー",
