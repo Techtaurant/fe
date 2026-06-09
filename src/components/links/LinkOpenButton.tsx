@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import { getSafeExternalUrl } from "../../lib/safeExternalUrl";
 import { createLinkViewLog } from "../../services/links/client";
 
 const openButtonBaseClassName =
@@ -11,19 +12,6 @@ interface LinkOpenButtonProps {
   linkId: string;
   url: string;
   label: string;
-}
-
-function getSafeExternalUrl(value: string): string | undefined {
-  try {
-    const parsedUrl = new URL(value.trim());
-    if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
-      return parsedUrl.href;
-    }
-  } catch {
-    return undefined;
-  }
-
-  return undefined;
 }
 
 export default function LinkOpenButton({

@@ -1,6 +1,10 @@
+"use client";
+
 import { CalendarDays, ExternalLink } from "lucide-react";
 import { Link } from "../../i18n/navigation";
-import { LinkContent } from "../../services/links/types";
+import { getSafeExternalUrl } from "../../lib/safeExternalUrl";
+import { createLinkViewLog } from "../../services/links/client";
+import type { LinkContent } from "../../services/links/types";
 import { formatDisplayTime } from "../../utils";
 
 interface LinkCardProps {
@@ -31,9 +35,16 @@ export default function LinkCard({ link, locale }: LinkCardProps) {
   const hiddenTagCount = Math.max(link.tags.length - previewTags.length, 0);
   const displayTime = resolveDisplayTime(link);
   const detailPath = `/links/${encodeURIComponent(link.id)}`;
+  const sourceUrl = getSafeExternalUrl(link.url);
+
+  const handleSourceClick = () => {
+    void createLinkViewLog(link.id).catch(() => {
+      // View logs are best-effort and should not block opening the source link.
+    });
+  };
 
   return (
-    <article className="group py-4 md:py-6 border-b border-border">
+    <article className="py-4 md:py-6 border-b border-border">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {link.sourceCompanyUserId ? (
@@ -52,20 +63,34 @@ export default function LinkCard({ link, locale }: LinkCardProps) {
           ) : null}
         </div>
 
-        <Link
-          href={detailPath}
-          className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          <h2 className="text-lg md:text-xl font-bold text-foreground mb-2 md:mb-3 line-clamp-2 font-kr-serif group-hover:text-foreground">
+        {sourceUrl ? (
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleSourceClick}
+            className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-comment-submit-button focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <h2 className="text-lg md:text-xl font-bold text-comment-submit-button mb-2 md:mb-3 line-clamp-2 font-kr-serif transition-colors duration-200 hover:text-comment-submit-button-hover">
+              {link.title}
+            </h2>
+          </a>
+        ) : (
+          <h2 className="text-lg md:text-xl font-bold text-comment-submit-button mb-2 md:mb-3 line-clamp-2 font-kr-serif">
             {link.title}
           </h2>
+        )}
 
-          {link.summary ? (
+        {link.summary ? (
+          <Link
+            href={detailPath}
+            className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-comment-submit-button focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-normal line-clamp-2 md:line-clamp-3">
               {link.summary}
             </p>
-          ) : null}
-        </Link>
+          </Link>
+        ) : null}
 
         <div className="flex items-center gap-3 md:gap-4 flex-wrap">
           {previewTags.length > 0 ? (
