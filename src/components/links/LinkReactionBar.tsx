@@ -33,9 +33,17 @@ function getNextLikeCount(
     return undefined;
   }
 
-  const previousLikeOffset = previousStatus === "LIKE" ? -1 : 0;
-  const nextLikeOffset = nextStatus === "LIKE" ? 1 : 0;
-  return Math.max(0, currentCount + previousLikeOffset + nextLikeOffset);
+  const reactionScore = {
+    LIKE: 1,
+    DISLIKE: -1,
+    NONE: 0,
+  } satisfies Record<LinkLikeStatus, number>;
+
+  return (
+    currentCount -
+    reactionScore[previousStatus] +
+    reactionScore[nextStatus]
+  );
 }
 
 export default function LinkReactionBar({
