@@ -10,6 +10,7 @@ import { formatDisplayTime } from "../../utils";
 interface LinkCardProps {
   link: LinkContent;
   locale: string;
+  summaryFallback: string;
 }
 
 function buildTagPath(tagName: string): string {
@@ -28,7 +29,11 @@ function resolveDisplayTime(link: LinkContent): string {
   return link.publishedAt || link.createdAt || link.updatedAt || "";
 }
 
-export default function LinkCard({ link, locale }: LinkCardProps) {
+export default function LinkCard({
+  link,
+  locale,
+  summaryFallback,
+}: LinkCardProps) {
   const previewTags = link.tags.slice(0, 3);
   const hiddenTagCount = Math.max(link.tags.length - previewTags.length, 0);
   const displayTime = resolveDisplayTime(link);
@@ -82,16 +87,14 @@ export default function LinkCard({ link, locale }: LinkCardProps) {
           </h2>
         )}
 
-        {link.summary ? (
-          <Link
-            href={detailPath}
-            className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-comment-submit-button focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-normal line-clamp-2 md:line-clamp-3">
-              {link.summary}
-            </p>
-          </Link>
-        ) : null}
+        <Link
+          href={detailPath}
+          className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-comment-submit-button focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-normal line-clamp-2 md:line-clamp-3">
+            {link.summary || summaryFallback}
+          </p>
+        </Link>
 
         <div className="flex items-center gap-3 md:gap-4 flex-wrap">
           {previewTags.length > 0 ? (

@@ -5,8 +5,8 @@ import { getSafeExternalUrl } from "../../lib/safeExternalUrl";
 import { createLinkViewLog } from "../../services/links/client";
 
 const openButtonBaseClassName =
-  "inline-flex h-11 items-center justify-center gap-2 rounded-md bg-foreground px-4 text-sm font-semibold text-background transition-opacity";
-const openButtonLinkClassName = `${openButtonBaseClassName} hover:opacity-85`;
+  "inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors duration-200";
+const openButtonLinkClassName = `${openButtonBaseClassName} hover:text-foreground`;
 
 interface LinkOpenButtonProps {
   linkId: string;
@@ -33,9 +33,11 @@ export default function LinkOpenButton({
         type="button"
         disabled
         className={`${openButtonBaseClassName} cursor-not-allowed opacity-50`}
+        aria-label={label}
+        title={label}
       >
-        <ExternalLink className="h-4 w-4" aria-hidden="true" />
-        {label}
+        <ExternalLink className="h-6 w-6" aria-hidden="true" />
+        <span className="sr-only">{label}</span>
       </button>
     );
   }
@@ -47,9 +49,11 @@ export default function LinkOpenButton({
       rel="noopener noreferrer"
       onClick={handleClick}
       className={openButtonLinkClassName}
+      aria-label={label}
+      title={label}
     >
-      <ExternalLink className="h-4 w-4" aria-hidden="true" />
-      {label}
+      <ExternalLink className="h-6 w-6" aria-hidden="true" />
+      <span className="sr-only">{label}</span>
     </a>
   );
 }

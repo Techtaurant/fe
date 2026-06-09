@@ -30,7 +30,7 @@ export default async function LinkDetailPage({ params }: LinkDetailPageProps) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="mx-auto w-full max-w-[728px] px-4 pb-16 pt-8 md:px-6 md:pt-12">
+      <main className="mx-auto w-full max-w-[728px] px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-8 md:px-6 md:pb-16 md:pt-12">
         <LinkDetailHeader
           link={publicLink}
           locale={locale}
@@ -42,13 +42,15 @@ export default async function LinkDetailPage({ params }: LinkDetailPageProps) {
           summaryFallback={t("summaryFallback")}
           urlLabel={t("sourceUrl")}
         />
-        <section className="flex flex-col items-stretch gap-4 border-t border-border py-4 sm:flex-row sm:items-start sm:justify-between">
-          <LinkReactionBar
-            linkId={link.id}
-            initialLikeCount={link.likeCount}
-            initialLikeStatus={link.likeStatus}
-          />
-          <div className="flex flex-col gap-3 sm:items-end">
+        <section className="mb-3 flex flex-col gap-3 border-t border-border py-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-4">
+            <LinkReactionBar
+              linkId={link.id}
+              initialLikeCount={link.likeCount}
+              initialLikeStatus={link.likeStatus}
+            />
+          </div>
+          <div className="flex items-start gap-3 sm:justify-end">
             <LinkViewerStateBar
               linkId={link.id}
               initialIsSaved={link.isSaved}

@@ -5,6 +5,7 @@ interface LinkListProps {
   links: LinkContent[];
   locale: string;
   emptyMessage: string;
+  summaryFallback: string;
 }
 
 function getPublicLink(link: LinkContent): LinkContent {
@@ -17,6 +18,7 @@ export default function LinkList({
   links,
   locale,
   emptyMessage,
+  summaryFallback,
 }: LinkListProps) {
   if (links.length === 0) {
     return (
@@ -29,7 +31,12 @@ export default function LinkList({
   return (
     <div className="flex flex-col gap-6">
       {links.map((link) => (
-        <LinkCard key={link.id} link={getPublicLink(link)} locale={locale} />
+        <LinkCard
+          key={link.id}
+          link={getPublicLink(link)}
+          locale={locale}
+          summaryFallback={summaryFallback}
+        />
       ))}
     </div>
   );

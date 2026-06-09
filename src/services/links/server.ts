@@ -203,14 +203,15 @@ export async function fetchOpenLinks(
 
   const result = await fetchOpenApi<OpenLinkListResponse>("/open-api/links", searchParams);
   const links = result.data.content.map(normalizeLinkContent).filter((link) => link.id && link.url);
+  const nextCursor = result.data.nextCursor ?? undefined;
   const profileMap = await fetchSourceCompanyProfileMap(
     getUniqueSourceCompanyUserIds(links),
   );
 
   return {
     links: applySourceCompanyProfiles(links, profileMap),
-    nextCursor: result.data.nextCursor ?? undefined,
-    hasNext: Boolean(result.data.hasNext),
+    nextCursor,
+    hasNext: result.data.hasNext ?? Boolean(nextCursor),
     size: result.data.size ?? params.size ?? 20,
   };
 }

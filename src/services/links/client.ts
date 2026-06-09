@@ -213,6 +213,7 @@ export async function fetchCompanyLinks(params: {
 
   const result = (await response.json()) as CompanyLinkListResponse;
   const content = result.data.content ?? [];
+  const nextCursor = result.data.nextCursor ?? undefined;
 
   return {
     links: content
@@ -250,8 +251,8 @@ export async function fetchCompanyLinks(params: {
         isRead: typeof item.isRead === "boolean" ? item.isRead : undefined,
       }))
       .filter((link) => link.id && link.url),
-    nextCursor: result.data.nextCursor ?? undefined,
-    hasNext: Boolean(result.data.hasNext),
+    nextCursor,
+    hasNext: result.data.hasNext ?? Boolean(nextCursor),
     size: result.data.size ?? params.size ?? 20,
   };
 }

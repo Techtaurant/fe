@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, CheckCircle2 } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUser } from "../../hooks/useUser";
 import { queryKeys } from "../../lib/queryKeys";
@@ -13,6 +13,7 @@ import {
   unsaveLink,
 } from "../../services/links/client";
 import type { LinkViewerState } from "../../services/links/types";
+import ReadStatusToggleButton from "../ui/ReadStatusToggleButton";
 
 interface LinkViewerStateBarProps {
   linkId: string;
@@ -112,7 +113,7 @@ export default function LinkViewerStateBar({
     }
   };
 
-  const handleToggleRead = async () => {
+  const handleToggleRead = async (nextRead: boolean) => {
     if (isLoading || pendingAction || isStateUnavailable) return;
 
     if (!user) {
@@ -121,7 +122,6 @@ export default function LinkViewerStateBar({
     }
 
     const previousRead = isRead;
-    const nextRead = !isRead;
 
     setPendingAction("read");
     setMessage(null);
@@ -130,7 +130,7 @@ export default function LinkViewerStateBar({
 
     try {
       await setLinkReadLog(linkId, nextRead);
-      setMessage(nextRead ? t("markReadSucceeded") : t("markUnreadSucceeded"));
+      setMessage(null);
     } catch (error) {
       setIsRead(previousRead);
       setViewerStateCache(isSaved, previousRead);
@@ -144,41 +144,49 @@ export default function LinkViewerStateBar({
     }
   };
 
+  const handleReadToggleRequest = (nextRead: boolean): boolean => {
+    if (!user) {
+      setMessage(t("loginRequired"));
+      return false;
+    }
+
+    void handleToggleRead(nextRead);
+    return true;
+  };
+
+  const readLabel = isRead ? t("markRead") : t("markUnread");
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={handleToggleSave}
           disabled={isLoading || pendingAction !== null || isStateUnavailable}
-          className={`inline-flex h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${
             isSaved
-              ? "bg-comment-submit-button text-white hover:bg-comment-submit-button-hover"
-              : "bg-muted text-muted-foreground hover:text-foreground"
+              ? "bg-comment-submit-button/15 text-comment-submit-button hover:bg-comment-submit-button/20"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           aria-pressed={isSaved}
+          aria-label={isSaved ? t("saved") : t("save")}
+          title={isSaved ? t("saved") : t("save")}
         >
           <Bookmark className="h-4 w-4" aria-hidden="true" />
-          {isSaved ? t("saved") : t("save")}
+          <span className="sr-only">{isSaved ? t("saved") : t("save")}</span>
         </button>
-        <button
-          type="button"
-          onClick={handleToggleRead}
+        <ReadStatusToggleButton
+          isRead={isRead}
+          label={readLabel}
+          markReadToast={t("markReadToast")}
+          markUnreadToast={t("markUnreadToast")}
+          onToggleRead={handleReadToggleRequest}
           disabled={isLoading || pendingAction !== null || isStateUnavailable}
-          className={`inline-flex h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-            isRead
-              ? "bg-muted text-foreground"
-              : "bg-muted text-muted-foreground hover:text-foreground"
-          }`}
-          aria-pressed={isRead}
-        >
-          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-          {isRead ? t("markUnread") : t("markRead")}
-        </button>
+        />
       </div>
 
       {statusMessage ? (
-        <p className="text-xs font-medium text-muted-foreground">
+        <p className="max-w-48 text-right text-xs font-medium text-muted-foreground">
           {statusMessage}
         </p>
       ) : null}

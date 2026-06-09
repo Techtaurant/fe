@@ -109,6 +109,7 @@ export default async function LinkListPage({
   const { locale } = await params;
   const resolvedSearchParams = (await searchParams) ?? {};
   const t = await getTranslations({ locale, namespace: "LinksPage" });
+  const detailT = await getTranslations({ locale, namespace: "LinkDetail" });
   const filterT = await getTranslations({ locale, namespace: "FilterBar" });
   const size = normalizeSize(resolvedSearchParams.size);
   const cursor = readFirstParam(resolvedSearchParams.cursor);
@@ -173,7 +174,7 @@ export default async function LinkListPage({
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Header />
-      <main className="mx-auto w-full max-w-[728px] px-4 py-6 md:px-6">
+      <main className="mx-auto w-full max-w-[728px] px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-6 md:px-6 md:py-6">
         <section className="mb-5">
           <h1 className="text-2xl font-bold text-foreground md:text-3xl">
             {t("title")}
@@ -203,6 +204,7 @@ export default async function LinkListPage({
           links={result.links}
           locale={locale}
           emptyMessage={t("empty")}
+          summaryFallback={detailT("summaryFallback")}
         />
 
         {result.hasNext && result.nextCursor ? (
