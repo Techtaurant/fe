@@ -188,9 +188,20 @@ export async function fetchOpenLinks(
   params: FetchOpenLinksParams = {},
 ): Promise<LinkListResult> {
   const searchParams = new URLSearchParams();
+  const hasSourceCompanyNameFilter = Boolean(
+    !params.sourceCompanyUserId && normalizeString(params.sourceCompanyName),
+  );
   const sourceCompanyUserId =
     params.sourceCompanyUserId ??
     (await fetchSourceCompanyUserIdByName(params.sourceCompanyName));
+
+  if (hasSourceCompanyNameFilter && !sourceCompanyUserId) {
+    return {
+      links: [],
+      hasNext: false,
+      size: params.size ?? 20,
+    };
+  }
 
   if (params.cursor) searchParams.set("cursor", params.cursor);
   searchParams.set("size", String(params.size ?? 20));

@@ -52,7 +52,11 @@ export default function LinkViewerStateBar({
     queryFn: () => fetchLinkViewerStates([linkId]),
     enabled: Boolean(user),
   });
+  const isViewerStateLoading =
+    Boolean(user) && (viewerStateQuery.isPending || viewerStateQuery.isFetching);
   const isStateUnavailable = Boolean(user) && viewerStateQuery.isError;
+  const isActionDisabled =
+    isLoading || isViewerStateLoading || pendingAction !== null || isStateUnavailable;
   const statusMessage =
     message ?? (isStateUnavailable ? t("viewerStateFailed") : null);
 
@@ -78,7 +82,7 @@ export default function LinkViewerStateBar({
   };
 
   const handleToggleSave = async () => {
-    if (isLoading || pendingAction || isStateUnavailable) return;
+    if (isActionDisabled) return;
 
     if (!user) {
       setMessage(t("loginRequired"));
@@ -114,7 +118,7 @@ export default function LinkViewerStateBar({
   };
 
   const handleToggleRead = async (nextRead: boolean) => {
-    if (isLoading || pendingAction || isStateUnavailable) return;
+    if (isActionDisabled) return;
 
     if (!user) {
       setMessage(t("loginRequired"));
@@ -162,7 +166,7 @@ export default function LinkViewerStateBar({
         <button
           type="button"
           onClick={handleToggleSave}
-          disabled={isLoading || pendingAction !== null || isStateUnavailable}
+          disabled={isActionDisabled}
           className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${
             isSaved
               ? "bg-comment-submit-button/15 text-comment-submit-button hover:bg-comment-submit-button/20"
@@ -181,7 +185,7 @@ export default function LinkViewerStateBar({
           markReadToast={t("markReadToast")}
           markUnreadToast={t("markUnreadToast")}
           onToggleRead={handleReadToggleRequest}
-          disabled={isLoading || pendingAction !== null || isStateUnavailable}
+          disabled={isActionDisabled}
         />
       </div>
 
