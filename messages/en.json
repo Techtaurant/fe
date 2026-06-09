@@ -91,6 +91,7 @@
     "comments": "Comments"
   },
   "LinkCard": {
+    "author": "Author",
     "source": "Source",
     "publishedAt": "Published"
   },
@@ -98,13 +99,27 @@
     "title": "Links",
     "empty": "No links to display.",
     "loadMore": "Load more",
-    "reachedEnd": "You reached the last link."
+    "reachedEnd": "You reached the last link.",
+    "authorFilterActive": "Author: {name}",
+    "authorFilterGeneric": "Author filter"
   },
   "LinkDetail": {
     "back": "Links",
     "summaryFallback": "No summary is available for this link.",
     "sourceUrl": "Original",
-    "openOriginal": "Open original",
+    "sourceCompany": "Author",
+    "openOriginal": "View original",
+    "save": "Save",
+    "saved": "Saved",
+    "saveSucceeded": "Link saved.",
+    "unsaveSucceeded": "Link removed from saved items.",
+    "saveFailed": "Failed to update saved state.",
+    "markRead": "Read",
+    "markUnread": "Unread",
+    "markReadSucceeded": "Marked as read.",
+    "markUnreadSucceeded": "Marked as unread.",
+    "readFailed": "Failed to update read state.",
+    "viewerStateFailed": "Failed to load saved/read state.",
     "ariaLike": "Like",
     "ariaDislike": "Dislike",
     "loginRequired": "Sign in to react.",

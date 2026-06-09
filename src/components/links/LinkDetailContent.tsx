@@ -1,5 +1,9 @@
+"use client";
+
 import { ExternalLink } from "lucide-react";
-import { LinkContent } from "../../services/links/types";
+import { getSafeExternalUrl } from "../../lib/safeExternalUrl";
+import { createLinkViewLog } from "../../services/links/client";
+import type { LinkContent } from "../../services/links/types";
 
 interface LinkDetailContentProps {
   link: LinkContent;
@@ -20,6 +24,14 @@ export default function LinkDetailContent({
   summaryFallback,
   urlLabel,
 }: LinkDetailContentProps) {
+  const sourceUrl = getSafeExternalUrl(link.url);
+
+  const handleSourceClick = () => {
+    void createLinkViewLog(link.id).catch(() => {
+      // View logs are best-effort and should not block opening the source link.
+    });
+  };
+
   return (
     <article className="mb-10">
       <div className="mb-8 border-y border-border py-6">
@@ -32,10 +44,23 @@ export default function LinkDetailContent({
         <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
           {urlLabel}
         </p>
-        <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground">
-          <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="truncate">{getHostname(link.url)}</span>
-        </div>
+        {sourceUrl ? (
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleSourceClick}
+            className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-comment-submit-button"
+          >
+            <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="truncate">{getHostname(sourceUrl)}</span>
+          </a>
+        ) : (
+          <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground">
+            <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="truncate">{getHostname(link.url)}</span>
+          </div>
+        )}
       </div>
     </article>
   );

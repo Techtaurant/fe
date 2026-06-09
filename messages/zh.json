@@ -91,6 +91,7 @@
     "comments": "评论"
   },
   "LinkCard": {
+    "author": "作者",
     "source": "来源",
     "publishedAt": "发布时间"
   },
@@ -98,13 +99,27 @@
     "title": "链接",
     "empty": "暂无可显示的链接。",
     "loadMore": "加载更多",
-    "reachedEnd": "已加载到最后一个链接。"
+    "reachedEnd": "已加载到最后一个链接。",
+    "authorFilterActive": "作者：{name}",
+    "authorFilterGeneric": "作者筛选"
   },
   "LinkDetail": {
     "back": "链接列表",
     "summaryFallback": "此链接暂无摘要。",
     "sourceUrl": "原文",
-    "openOriginal": "打开原文",
+    "sourceCompany": "作者",
+    "openOriginal": "查看原文",
+    "save": "保存",
+    "saved": "已保存",
+    "saveSucceeded": "链接已保存。",
+    "unsaveSucceeded": "已取消保存链接。",
+    "saveFailed": "保存状态更新失败。",
+    "markRead": "已读",
+    "markUnread": "未读",
+    "markReadSucceeded": "已标记为已读。",
+    "markUnreadSucceeded": "已标记为未读。",
+    "readFailed": "阅读状态更新失败。",
+    "viewerStateFailed": "无法加载保存/阅读状态。",
     "ariaLike": "点赞",
     "ariaDislike": "点踩",
     "loginRequired": "登录后才能互动。",

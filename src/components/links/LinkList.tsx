@@ -7,6 +7,12 @@ interface LinkListProps {
   emptyMessage: string;
 }
 
+function getPublicLink(link: LinkContent): LinkContent {
+  const publicLink = { ...link };
+  delete publicLink.sourceCompanyUserId;
+  return publicLink;
+}
+
 export default function LinkList({
   links,
   locale,
@@ -23,7 +29,7 @@ export default function LinkList({
   return (
     <div className="flex flex-col gap-6">
       {links.map((link) => (
-        <LinkCard key={link.id} link={link} locale={locale} />
+        <LinkCard key={link.id} link={getPublicLink(link)} locale={locale} />
       ))}
     </div>
   );

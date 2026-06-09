@@ -46,6 +46,15 @@ export const queryKeys = {
     all: ["links"] as const,
     reaction: (linkId: string) =>
       [...queryKeys.links.all, "reaction", linkId] as const,
+    viewerStates: (linkIds: string[]) =>
+      [...queryKeys.links.all, "viewer-states", [...linkIds].sort()] as const,
+    companyList: (params: {
+      companyUserId: string;
+      cursor?: string;
+      size: number;
+      tag?: string;
+    }) =>
+      [...queryKeys.links.all, "company", params] as const,
   },
   comments: {
     all: ["comments"] as const,

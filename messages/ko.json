@@ -91,6 +91,7 @@
     "comments": "댓글"
   },
   "LinkCard": {
+    "author": "작성자",
     "source": "출처",
     "publishedAt": "발행일"
   },
@@ -98,13 +99,27 @@
     "title": "링크",
     "empty": "표시할 링크가 없습니다.",
     "loadMore": "더보기",
-    "reachedEnd": "마지막 링크까지 모두 불러왔습니다."
+    "reachedEnd": "마지막 링크까지 모두 불러왔습니다.",
+    "authorFilterActive": "작성자: {name}",
+    "authorFilterGeneric": "작성자 필터"
   },
   "LinkDetail": {
     "back": "링크 목록",
     "summaryFallback": "요약이 제공되지 않은 링크입니다.",
     "sourceUrl": "원문",
-    "openOriginal": "원문 열기",
+    "sourceCompany": "작성자",
+    "openOriginal": "원문 보기",
+    "save": "저장",
+    "saved": "저장됨",
+    "saveSucceeded": "링크를 저장했습니다.",
+    "unsaveSucceeded": "링크 저장을 취소했습니다.",
+    "saveFailed": "저장 상태 변경에 실패했습니다.",
+    "markRead": "읽음",
+    "markUnread": "읽지않음",
+    "markReadSucceeded": "읽음으로 표시했습니다.",
+    "markUnreadSucceeded": "읽지않음으로 표시했습니다.",
+    "readFailed": "읽음 상태 변경에 실패했습니다.",
+    "viewerStateFailed": "저장/읽음 상태를 불러오지 못했습니다.",
     "ariaLike": "좋아요",
     "ariaDislike": "싫어요",
     "loginRequired": "로그인 후 반응할 수 있습니다.",

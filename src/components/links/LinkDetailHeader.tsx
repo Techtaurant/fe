@@ -7,6 +7,7 @@ interface LinkDetailHeaderProps {
   link: LinkContent;
   locale: string;
   backLabel: string;
+  sourceCompanyLabel: string;
 }
 
 function buildTagPath(tagName: string): string {
@@ -15,9 +16,9 @@ function buildTagPath(tagName: string): string {
   return `/links?${searchParams.toString()}`;
 }
 
-function buildSourceCompanyPath(sourceCompanyUserId: string): string {
+function buildSourceCompanyPath(sourceCompanyName: string): string {
   const searchParams = new URLSearchParams();
-  searchParams.set("sourceCompanyUserId", sourceCompanyUserId);
+  searchParams.set("sourceCompanyName", sourceCompanyName);
   return `/links?${searchParams.toString()}`;
 }
 
@@ -29,8 +30,13 @@ export default function LinkDetailHeader({
   link,
   locale,
   backLabel,
+  sourceCompanyLabel,
 }: LinkDetailHeaderProps) {
   const displayTime = resolveDisplayTime(link);
+  const sourceLabel = link.sourceCompanyName ?? sourceCompanyLabel;
+  const sourceCompanyPath = link.sourceCompanyName
+    ? buildSourceCompanyPath(link.sourceCompanyName)
+    : undefined;
 
   return (
     <header className="mb-8">
@@ -42,12 +48,12 @@ export default function LinkDetailHeader({
         <span className="text-sm font-medium">{backLabel}</span>
       </Link>
 
-      {link.sourceCompanyUserId ? (
+      {sourceCompanyPath ? (
         <Link
-          href={buildSourceCompanyPath(link.sourceCompanyUserId)}
+          href={sourceCompanyPath}
           className="mb-3 inline-flex max-w-full rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/90 hover:text-foreground"
         >
-          <span className="truncate">{link.sourceCompanyUserId}</span>
+          <span>{sourceLabel}</span>
         </Link>
       ) : null}
 

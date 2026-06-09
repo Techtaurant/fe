@@ -5,6 +5,7 @@ import LinkDetailContent from "../components/links/LinkDetailContent";
 import LinkDetailHeader from "../components/links/LinkDetailHeader";
 import LinkOpenButton from "../components/links/LinkOpenButton";
 import LinkReactionBar from "../components/links/LinkReactionBar";
+import LinkViewerStateBar from "../components/links/LinkViewerStateBar";
 import { fetchOpenLinkDetail } from "../services/links/server";
 
 interface LinkDetailPageProps {
@@ -23,18 +24,21 @@ export default async function LinkDetailPage({ params }: LinkDetailPageProps) {
     }
     throw error;
   });
+  const publicLink = { ...link };
+  delete publicLink.sourceCompanyUserId;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="mx-auto w-full max-w-[728px] px-4 pb-16 pt-8 md:px-6 md:pt-12">
         <LinkDetailHeader
-          link={link}
+          link={publicLink}
           locale={locale}
           backLabel={t("back")}
+          sourceCompanyLabel={t("sourceCompany")}
         />
         <LinkDetailContent
-          link={link}
+          link={publicLink}
           summaryFallback={t("summaryFallback")}
           urlLabel={t("sourceUrl")}
         />
@@ -44,11 +48,18 @@ export default async function LinkDetailPage({ params }: LinkDetailPageProps) {
             initialLikeCount={link.likeCount}
             initialLikeStatus={link.likeStatus}
           />
-          <LinkOpenButton
-            linkId={link.id}
-            url={link.url}
-            label={t("openOriginal")}
-          />
+          <div className="flex flex-col gap-3 sm:items-end">
+            <LinkViewerStateBar
+              linkId={link.id}
+              initialIsSaved={link.isSaved}
+              initialIsRead={link.isRead}
+            />
+            <LinkOpenButton
+              linkId={link.id}
+              url={link.url}
+              label={t("openOriginal")}
+            />
+          </div>
         </section>
       </main>
     </div>

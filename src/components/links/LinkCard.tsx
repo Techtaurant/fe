@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ExternalLink } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { Link } from "../../i18n/navigation";
 import { getSafeExternalUrl } from "../../lib/safeExternalUrl";
 import { createLinkViewLog } from "../../services/links/client";
@@ -18,16 +18,14 @@ function buildTagPath(tagName: string): string {
   return `/links?${searchParams.toString()}`;
 }
 
-function resolveDisplayTime(link: LinkContent): string {
-  return link.publishedAt || link.createdAt || link.updatedAt || "";
+function buildSourceCompanyPath(sourceCompanyName: string): string {
+  const searchParams = new URLSearchParams();
+  searchParams.set("sourceCompanyName", sourceCompanyName);
+  return `/links?${searchParams.toString()}`;
 }
 
-function getHostname(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
+function resolveDisplayTime(link: LinkContent): string {
+  return link.publishedAt || link.createdAt || link.updatedAt || "";
 }
 
 export default function LinkCard({ link, locale }: LinkCardProps) {
@@ -47,11 +45,14 @@ export default function LinkCard({ link, locale }: LinkCardProps) {
     <article className="py-4 md:py-6 border-b border-border">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {link.sourceCompanyUserId ? (
+          {link.sourceCompanyName ? (
             <>
-              <span className="font-medium text-foreground">
-                {link.sourceCompanyUserId}
-              </span>
+              <Link
+                href={buildSourceCompanyPath(link.sourceCompanyName)}
+                className="font-medium text-foreground transition-colors hover:text-comment-submit-button"
+              >
+                {link.sourceCompanyName}
+              </Link>
               <span>•</span>
             </>
           ) : null}
@@ -112,10 +113,6 @@ export default function LinkCard({ link, locale }: LinkCardProps) {
             </div>
           ) : null}
 
-          <span className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium text-muted-foreground">
-            <ExternalLink className="h-4 w-4" aria-hidden="true" />
-            {getHostname(link.url)}
-          </span>
         </div>
       </div>
     </article>

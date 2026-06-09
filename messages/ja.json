@@ -91,6 +91,7 @@
     "comments": "コメント"
   },
   "LinkCard": {
+    "author": "投稿者",
     "source": "出典",
     "publishedAt": "公開日"
   },
@@ -98,13 +99,27 @@
     "title": "リンク",
     "empty": "表示できるリンクがありません。",
     "loadMore": "もっと見る",
-    "reachedEnd": "最後のリンクまで読み込みました。"
+    "reachedEnd": "最後のリンクまで読み込みました。",
+    "authorFilterActive": "投稿者: {name}",
+    "authorFilterGeneric": "投稿者フィルター"
   },
   "LinkDetail": {
     "back": "リンク一覧",
     "summaryFallback": "このリンクには概要がありません。",
     "sourceUrl": "元記事",
-    "openOriginal": "元記事を開く",
+    "sourceCompany": "投稿者",
+    "openOriginal": "元記事を見る",
+    "save": "保存",
+    "saved": "保存済み",
+    "saveSucceeded": "リンクを保存しました。",
+    "unsaveSucceeded": "リンクの保存を解除しました。",
+    "saveFailed": "保存状態の更新に失敗しました。",
+    "markRead": "既読",
+    "markUnread": "未読",
+    "markReadSucceeded": "既読にしました。",
+    "markUnreadSucceeded": "未読にしました。",
+    "readFailed": "既読状態の更新に失敗しました。",
+    "viewerStateFailed": "保存/既読状態の読み込みに失敗しました。",
     "ariaLike": "いいね",
     "ariaDislike": "よくない",
     "loginRequired": "リアクションするにはログインが必要です。",
