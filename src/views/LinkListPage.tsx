@@ -135,15 +135,16 @@ export default async function LinkListPage({
         (link) => link.sourceCompanyUserId === sourceCompanyUserId,
       )?.sourceCompanyName
     : sourceCompanyName;
-  const filterSourceCompanyName = activeSourceCompanyName ?? sourceCompanyName;
-  const filterSourceCompanyUserId = filterSourceCompanyName
+  const authorFilterLabel = activeSourceCompanyName ?? sourceCompanyName;
+  const filterSourceCompanyUserId = sourceCompanyUserId;
+  const filterSourceCompanyName = sourceCompanyUserId
     ? undefined
-    : sourceCompanyUserId;
+    : sourceCompanyName;
   const filterLabels = [
     tag ? `#${tag}` : null,
     sourceCompanyUserId || sourceCompanyName
-      ? filterSourceCompanyName
-        ? t("authorFilterActive", { name: filterSourceCompanyName })
+      ? authorFilterLabel
+        ? t("authorFilterActive", { name: authorFilterLabel })
         : t("authorFilterGeneric")
       : null,
   ].filter((label): label is string => Boolean(label));
