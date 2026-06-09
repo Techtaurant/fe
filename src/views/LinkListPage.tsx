@@ -110,6 +110,7 @@ export default async function LinkListPage({
   const resolvedSearchParams = (await searchParams) ?? {};
   const t = await getTranslations({ locale, namespace: "LinksPage" });
   const detailT = await getTranslations({ locale, namespace: "LinkDetail" });
+  const cardT = await getTranslations({ locale, namespace: "LinkCard" });
   const filterT = await getTranslations({ locale, namespace: "FilterBar" });
   const size = normalizeSize(resolvedSearchParams.size);
   const cursor = readFirstParam(resolvedSearchParams.cursor);
@@ -205,6 +206,8 @@ export default async function LinkListPage({
           locale={locale}
           emptyMessage={t("empty")}
           summaryFallback={detailT("summaryFallback")}
+          readLabel={cardT("read")}
+          unreadLabel={cardT("unread")}
         />
 
         {result.hasNext && result.nextCursor ? (

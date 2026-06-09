@@ -93,7 +93,9 @@
   "LinkCard": {
     "author": "Author",
     "source": "Source",
-    "publishedAt": "Published"
+    "publishedAt": "Published",
+    "read": "Read",
+    "unread": "Unread"
   },
   "LinksPage": {
     "title": "Links",

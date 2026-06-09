@@ -93,7 +93,9 @@
   "LinkCard": {
     "author": "作者",
     "source": "来源",
-    "publishedAt": "发布时间"
+    "publishedAt": "发布时间",
+    "read": "已读",
+    "unread": "未读"
   },
   "LinksPage": {
     "title": "链接",

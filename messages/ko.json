@@ -93,7 +93,9 @@
   "LinkCard": {
     "author": "작성자",
     "source": "출처",
-    "publishedAt": "발행일"
+    "publishedAt": "발행일",
+    "read": "읽음",
+    "unread": "읽지않음"
   },
   "LinksPage": {
     "title": "링크",

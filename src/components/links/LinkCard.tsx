@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Check, Circle } from "lucide-react";
 import { Link } from "../../i18n/navigation";
 import { getSafeExternalUrl } from "../../lib/safeExternalUrl";
 import { createLinkViewLog } from "../../services/links/client";
@@ -11,6 +11,9 @@ interface LinkCardProps {
   link: LinkContent;
   locale: string;
   summaryFallback: string;
+  readStatus?: boolean;
+  readLabel: string;
+  unreadLabel: string;
 }
 
 function buildTagPath(tagName: string): string {
@@ -33,6 +36,9 @@ export default function LinkCard({
   link,
   locale,
   summaryFallback,
+  readStatus,
+  readLabel,
+  unreadLabel,
 }: LinkCardProps) {
   const previewTags = link.tags.slice(0, 3);
   const hiddenTagCount = Math.max(link.tags.length - previewTags.length, 0);
@@ -65,6 +71,22 @@ export default function LinkCard({
             <span className="inline-flex items-center gap-1">
               <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
               {formatDisplayTime(displayTime, locale)}
+            </span>
+          ) : null}
+          {readStatus !== undefined ? (
+            <span
+              className={`ml-auto inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium md:ml-2 ${
+                readStatus
+                  ? "bg-muted text-muted-foreground"
+                  : "bg-comment-author-badge-background text-comment-author-badge-foreground"
+              }`}
+            >
+              {readStatus ? (
+                <Check className="h-3 w-3" aria-hidden="true" />
+              ) : (
+                <Circle className="h-3 w-3" aria-hidden="true" />
+              )}
+              {readStatus ? readLabel : unreadLabel}
             </span>
           ) : null}
         </div>

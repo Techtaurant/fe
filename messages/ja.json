@@ -93,7 +93,9 @@
   "LinkCard": {
     "author": "投稿者",
     "source": "出典",
-    "publishedAt": "公開日"
+    "publishedAt": "公開日",
+    "read": "既読",
+    "unread": "未読"
   },
   "LinksPage": {
     "title": "リンク",
