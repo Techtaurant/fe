@@ -228,7 +228,9 @@ async function fetchLinkStatsMap(linkIds: string[]): Promise<Map<string, LinkSta
   const result = await fetchOpenApi<OpenLinkStatsResponse>(
     "/open-api/links/stats",
     searchParams,
-  );
+  ).catch(() => null);
+
+  if (!result?.data) return new Map();
 
   return createLinkStatsMap(result.data);
 }
