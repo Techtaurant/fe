@@ -6,7 +6,7 @@ import { useUser } from "../../hooks/useUser";
 import { queryKeys } from "../../lib/queryKeys";
 import { fetchLinkViewerStates } from "../../services/links/client";
 import type { LinkContent } from "../../services/links/types";
-import LinkCard from "./LinkCard";
+import LinkCard, { LinkCountLabels } from "./LinkCard";
 
 interface LinkListProps {
   links: LinkContent[];
@@ -15,6 +15,7 @@ interface LinkListProps {
   summaryFallback: string;
   readLabel: string;
   unreadLabel: string;
+  countLabels: LinkCountLabels;
 }
 
 function getPublicLink(link: LinkContent): LinkContent {
@@ -30,6 +31,7 @@ export default function LinkList({
   summaryFallback,
   readLabel,
   unreadLabel,
+  countLabels,
 }: LinkListProps) {
   const { user } = useUser();
   const linkIds = useMemo(() => links.map((link) => link.id), [links]);
@@ -72,6 +74,7 @@ export default function LinkList({
           }
           readLabel={readLabel}
           unreadLabel={unreadLabel}
+          countLabels={countLabels}
         />
       ))}
     </div>

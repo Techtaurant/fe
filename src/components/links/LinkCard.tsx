@@ -1,11 +1,17 @@
 "use client";
 
-import { CalendarDays, Check, Circle } from "lucide-react";
+import { Bookmark, CalendarDays, Check, Circle, Eye, ThumbsUp } from "lucide-react";
 import { Link } from "../../i18n/navigation";
 import { getSafeExternalUrl } from "../../lib/safeExternalUrl";
 import { createLinkViewLog } from "../../services/links/client";
 import type { LinkContent } from "../../services/links/types";
 import { formatDisplayTime } from "../../utils";
+
+export interface LinkCountLabels {
+  views: string;
+  likes: string;
+  saves: string;
+}
 
 interface LinkCardProps {
   link: LinkContent;
@@ -14,6 +20,7 @@ interface LinkCardProps {
   readStatus?: boolean;
   readLabel: string;
   unreadLabel: string;
+  countLabels: LinkCountLabels;
 }
 
 function buildTagPath(tagName: string): string {
@@ -32,6 +39,10 @@ function resolveDisplayTime(link: LinkContent): string {
   return link.publishedAt || link.createdAt || link.updatedAt || "";
 }
 
+function formatCount(value: number | undefined, locale: string): string {
+  return new Intl.NumberFormat(locale).format(value ?? 0);
+}
+
 export default function LinkCard({
   link,
   locale,
@@ -39,12 +50,18 @@ export default function LinkCard({
   readStatus,
   readLabel,
   unreadLabel,
+  countLabels,
 }: LinkCardProps) {
   const previewTags = link.tags.slice(0, 3);
   const hiddenTagCount = Math.max(link.tags.length - previewTags.length, 0);
   const displayTime = resolveDisplayTime(link);
   const detailPath = `/links/${encodeURIComponent(link.id)}`;
   const sourceUrl = getSafeExternalUrl(link.url);
+  const countItems = [
+    { key: "views", label: countLabels.views, value: link.viewCount, icon: Eye },
+    { key: "likes", label: countLabels.likes, value: link.likeCount, icon: ThumbsUp },
+    { key: "saves", label: countLabels.saves, value: link.saveCount, icon: Bookmark },
+  ];
 
   const handleSourceClick = () => {
     void createLinkViewLog(link.id).catch(() => {
@@ -138,6 +155,24 @@ export default function LinkCard({
             </div>
           ) : null}
 
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
+            {countItems.map((item) => {
+              const Icon = item.icon;
+              const formattedCount = formatCount(item.value, locale);
+
+              return (
+                <span
+                  key={item.key}
+                  className="inline-flex items-center gap-1"
+                  aria-label={`${item.label}: ${formattedCount}`}
+                  title={`${item.label}: ${formattedCount}`}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {formattedCount}
+                </span>
+              );
+            })}
+          </div>
         </div>
       </div>
     </article>

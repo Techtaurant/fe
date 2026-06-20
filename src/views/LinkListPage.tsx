@@ -14,7 +14,7 @@ import type {
 type SearchParamValue = string | string[] | undefined;
 
 const DATE_RANGE_OPTIONS: LinkDateRange[] = ["7d", "30d", "365d", "all"];
-const SORT_OPTIONS: LinkSortOption[] = ["views", "likes", "latest", "comments"];
+const SORT_OPTIONS: LinkSortOption[] = ["latest", "likes", "saves"];
 
 const DATE_RANGE_TO_PERIOD: Record<LinkDateRange, LinkListPeriod> = {
   "7d": "WEEK",
@@ -24,10 +24,9 @@ const DATE_RANGE_TO_PERIOD: Record<LinkDateRange, LinkListPeriod> = {
 };
 
 const SORT_OPTION_TO_SORT: Record<LinkSortOption, LinkListSort> = {
-  views: "VIEW",
+  latest: "PUBLISHED",
   likes: "LIKE",
-  latest: "LATEST",
-  comments: "COMMENT",
+  saves: "SAVE",
 };
 
 interface LinkListPageProps {
@@ -63,9 +62,9 @@ function normalizeDateRange(value: SearchParamValue): LinkDateRange {
 
 function normalizeSortOption(value: SearchParamValue): LinkSortOption {
   const rawValue = readFirstParam(value)?.toLowerCase();
-  if (rawValue === "view") return "views";
+  if (rawValue === "published") return "latest";
   if (rawValue === "like") return "likes";
-  if (rawValue === "comment") return "comments";
+  if (rawValue === "save") return "saves";
   if (rawValue && SORT_OPTIONS.includes(rawValue as LinkSortOption)) {
     return rawValue as LinkSortOption;
   }
@@ -172,6 +171,11 @@ export default async function LinkListPage({
       sortBy: value,
     }),
   }));
+  const countLabels = {
+    views: cardT("views"),
+    likes: cardT("likes"),
+    saves: cardT("saves"),
+  };
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -209,6 +213,7 @@ export default async function LinkListPage({
           summaryFallback={detailT("summaryFallback")}
           readLabel={cardT("read")}
           unreadLabel={cardT("unread")}
+          countLabels={countLabels}
         />
 
         {result.hasNext && result.nextCursor ? (

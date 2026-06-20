@@ -77,7 +77,8 @@
       "latest": "最新",
       "comments": "评论",
       "views": "浏览",
-      "likes": "点赞"
+      "likes": "点赞",
+      "saves": "保存"
     }
   },
   "PostList": {
@@ -95,7 +96,10 @@
     "source": "来源",
     "publishedAt": "发布时间",
     "read": "已读",
-    "unread": "未读"
+    "unread": "未读",
+    "views": "浏览",
+    "likes": "点赞",
+    "saves": "保存"
   },
   "LinksPage": {
     "title": "链接",

@@ -77,7 +77,8 @@
       "latest": "최신순",
       "comments": "댓글순",
       "views": "조회순",
-      "likes": "추천순"
+      "likes": "추천순",
+      "saves": "저장순"
     }
   },
   "PostList": {
@@ -95,7 +96,10 @@
     "source": "출처",
     "publishedAt": "발행일",
     "read": "읽음",
-    "unread": "읽지않음"
+    "unread": "읽지않음",
+    "views": "조회수",
+    "likes": "좋아요",
+    "saves": "저장"
   },
   "LinksPage": {
     "title": "링크",
