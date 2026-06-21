@@ -77,7 +77,8 @@
       "latest": "新着順",
       "comments": "コメント順",
       "views": "閲覧順",
-      "likes": "いいね順"
+      "likes": "いいね順",
+      "saves": "保存順"
     }
   },
   "PostList": {
@@ -95,7 +96,10 @@
     "source": "出典",
     "publishedAt": "公開日",
     "read": "既読",
-    "unread": "未読"
+    "unread": "未読",
+    "views": "閲覧数",
+    "likes": "いいね",
+    "saves": "保存"
   },
   "LinksPage": {
     "title": "リンク",

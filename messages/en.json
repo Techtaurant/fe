@@ -77,7 +77,8 @@
       "latest": "Latest",
       "comments": "Comments",
       "views": "Views",
-      "likes": "Likes"
+      "likes": "Likes",
+      "saves": "Saves"
     }
   },
   "PostList": {
@@ -95,7 +96,10 @@
     "source": "Source",
     "publishedAt": "Published",
     "read": "Read",
-    "unread": "Unread"
+    "unread": "Unread",
+    "views": "Views",
+    "likes": "Likes",
+    "saves": "Saves"
   },
   "LinksPage": {
     "title": "Links",

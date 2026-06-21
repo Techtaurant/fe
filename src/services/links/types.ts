@@ -1,8 +1,8 @@
 export type LinkLikeStatus = "LIKE" | "DISLIKE" | "NONE";
-export type LinkListSort = "LATEST" | "VIEW" | "LIKE" | "COMMENT";
+export type LinkListSort = "PUBLISHED" | "LIKE" | "SAVE";
 export type LinkListPeriod = "WEEK" | "MONTH" | "YEAR" | "ALL";
 export type LinkDateRange = "7d" | "30d" | "365d" | "all";
-export type LinkSortOption = "views" | "likes" | "latest" | "comments";
+export type LinkSortOption = "latest" | "likes" | "saves";
 
 export function isLinkLikeStatus(value: unknown): value is LinkLikeStatus {
   return value === "LIKE" || value === "DISLIKE" || value === "NONE";
@@ -27,6 +27,7 @@ export interface LinkContent {
   updatedAt?: string;
   viewCount?: number;
   likeCount?: number;
+  saveCount?: number;
   likeStatus?: LinkLikeStatus;
   isSaved?: boolean;
   isRead?: boolean;
@@ -46,6 +47,12 @@ export interface OpenLinkListResponse {
 export interface OpenLinkDetailResponse {
   status: number;
   data: OpenLinkItem;
+  message?: string;
+}
+
+export interface OpenLinkStatsResponse {
+  status: number;
+  data: LinkStatsItem[];
   message?: string;
 }
 
@@ -112,9 +119,17 @@ export interface OpenLinkItem {
   updatedAt?: string | null;
   viewCount?: number | null;
   likeCount?: number | null;
+  saveCount?: number | null;
   likeStatus?: LinkLikeStatus | null;
   isSaved?: boolean | null;
   isRead?: boolean | null;
+}
+
+export interface LinkStatsItem {
+  linkId?: string | null;
+  viewCount?: number | null;
+  likeCount?: number | null;
+  saveCount?: number | null;
 }
 
 export interface UserProfileImageItem {
