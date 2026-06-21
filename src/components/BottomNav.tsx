@@ -1,7 +1,8 @@
 "use client";
 
-import { Link, usePathname } from "../i18n/navigation";
+import { Link as LinkIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link as LocaleLink, usePathname } from "../i18n/navigation";
 
 interface MobileBottomNavProps {
   onMyPostsClick: () => void;
@@ -15,13 +16,14 @@ export default function MobileBottomNav({
   const t = useTranslations("BottomNav");
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isLinksPage = pathname.startsWith("/links");
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[350] pb-[env(safe-area-inset-bottom)]">
       <div className="w-full">
         <div className="bg-background/95 backdrop-blur border-t border-border shadow-lg px-3 py-2">
           <div className="mx-auto max-w-[520px] flex items-center justify-between">
-            <Link
+            <LocaleLink
               href="/"
               className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
                 isHome
@@ -45,7 +47,21 @@ export default function MobileBottomNav({
                 />
               </svg>
               <span>{t("community")}</span>
-            </Link>
+            </LocaleLink>
+
+            <LocaleLink
+              href="/links"
+              className={`flex flex-col items-center gap-1 px-2 py-1 text-[11px] transition-colors ${
+                isLinksPage
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-current={isLinksPage ? "page" : undefined}
+              aria-label={t("links")}
+            >
+              <LinkIcon className="h-5 w-5" aria-hidden="true" />
+              <span>{t("links")}</span>
+            </LocaleLink>
 
             <button
               type="button"
@@ -70,7 +86,7 @@ export default function MobileBottomNav({
               </div>
             </button>
 
-            <Link
+            <LocaleLink
               href="/search"
               className="flex flex-col items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               aria-label={t("search")}
@@ -89,7 +105,7 @@ export default function MobileBottomNav({
                 />
               </svg>
               <span>{t("search")}</span>
-            </Link>
+            </LocaleLink>
 
             <button
               type="button"

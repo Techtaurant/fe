@@ -42,6 +42,20 @@ export const queryKeys = {
     draftDetail: (postId: string) =>
       [...queryKeys.posts.all, "draft-detail", postId] as const,
   },
+  links: {
+    all: ["links"] as const,
+    reaction: (linkId: string) =>
+      [...queryKeys.links.all, "reaction", linkId] as const,
+    viewerStates: (linkIds: string[]) =>
+      [...queryKeys.links.all, "viewer-states", [...linkIds].sort()] as const,
+    companyList: (params: {
+      companyUserId: string;
+      cursor?: string;
+      size: number;
+      tag?: string;
+    }) =>
+      [...queryKeys.links.all, "company", params] as const,
+  },
   comments: {
     all: ["comments"] as const,
     list: (params: { postId: string; sort: string; size: number }) =>
