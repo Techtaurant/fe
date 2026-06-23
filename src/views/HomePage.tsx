@@ -46,7 +46,7 @@ function HomeContent() {
     initialMode: FEED_MODES.USER,
     initialSelectedTags: selectedTagIdsFromUrl,
     initialDateRange: "7d",
-    initialSortBy: "views",
+    initialSortBy: "latest",
   });
 
   const syncTagsToUrl = useCallback(
