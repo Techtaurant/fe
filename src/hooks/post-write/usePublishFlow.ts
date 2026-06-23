@@ -126,13 +126,20 @@ export function usePublishFlow({
       setAutoSaveNotice(null);
       setFieldErrors({ title: false, content: false, category: false });
     },
-    onSuccess: async ({ result, status, requestedDraftId, source }) => {
+    onSuccess: async ({ result, status, requestedDraftId, source }, variables) => {
       if (source === "resume") {
         setAutoSaveNotice(tNotice("resumedPublish"));
       }
-      setTitle(result.data.title ?? "");
-      setContent(result.data.content ?? "");
-      setTags(result.data.tags ?? []);
+
+      if (status === "DRAFT") {
+        setTitle(variables.payload.title ?? "");
+        setContent(variables.payload.content ?? "");
+        setTags(variables.payload.tags ?? []);
+      } else {
+        setTitle(result.data.title ?? "");
+        setContent(result.data.content ?? "");
+        setTags(result.data.tags ?? []);
+      }
       setTagInput("");
 
       if (status === "DRAFT") {
