@@ -1,5 +1,9 @@
 import { Post } from "../../types";
 import { buildCommunityPostPath } from "../../lib/communityPostRoute";
+import {
+  normalizeEditablePostContent,
+  normalizeEditablePostText,
+} from "../../lib/post-write/editableContent";
 import { PostDetailResponse, PostListItem } from "./types";
 
 const API_BASE_URL =
@@ -24,6 +28,13 @@ function resolvePublishedAt(
   return publishedAt || updatedAt || createdAt || "";
 }
 
+function normalizePostTags(tags?: { id: string; name: string }[]) {
+  return (tags ?? []).map((tag) => ({
+    ...tag,
+    name: normalizeEditablePostText(tag.name),
+  }));
+}
+
 export function mapListItemToPost(item: PostListItem): Post {
   const resolvedPublishedAt = resolvePublishedAt(
     item.status,
@@ -31,21 +42,23 @@ export function mapListItemToPost(item: PostListItem): Post {
     item.updatedAt,
     item.createdAt,
   );
-  const categoryPath = item.categoryPath ?? item.category?.path;
-
+  const rawCategoryPath = item.categoryPath ?? item.category?.path;
+  const categoryPath = rawCategoryPath
+    ? normalizeEditablePostText(rawCategoryPath)
+    : undefined;
   const authorId = item.authorId ?? item.id;
 
   return {
     id: item.id,
     type: "community",
     status: item.status ?? "PUBLISHED",
-    title: item.title,
-    content: item.content,
+    title: normalizeEditablePostText(item.title),
+    content: item.content ? normalizeEditablePostContent(item.content) : undefined,
     categoryId: item.category?.id,
     viewCount: item.viewCount,
     likeCount: item.likeCount ?? 0,
     commentCount: item.commentCount,
-    tags: item.tags,
+    tags: normalizePostTags(item.tags),
     author: {
       id: authorId,
       name: item.authorName,
@@ -74,19 +87,21 @@ export function mapDetailToPost(detail: PostDetailResponse["data"]): Post {
     detail.updatedAt,
     detail.createdAt,
   );
-  const categoryPath = detail.category?.path;
+  const categoryPath = detail.category?.path
+    ? normalizeEditablePostText(detail.category.path)
+    : undefined;
 
   return {
     id: detail.id,
     type: "community",
     status: detail.status ?? "PUBLISHED",
-    title: detail.title || "새 게시물",
-    content: detail.content || "",
+    title: detail.title ? normalizeEditablePostText(detail.title) : "새 게시물",
+    content: normalizeEditablePostContent(detail.content || ""),
     viewCount: detail.viewCount ?? 0,
     likeCount: detail.likeCount ?? 0,
     likeStatus: detail.likeStatus ?? "NONE",
     commentCount: detail.commentCount ?? 0,
-    tags: detail.tags ?? [],
+    tags: normalizePostTags(detail.tags),
     author: {
       id: detail.author.id,
       name: detail.author.name,

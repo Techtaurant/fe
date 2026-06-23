@@ -7,7 +7,11 @@ import {
   fetchDraftPostList,
   fetchPostDetailWithMeta,
 } from "../../services/posts";
-import { normalizeEditablePostContent } from "../../lib/post-write/editableContent";
+import {
+  normalizeEditablePostContent,
+  normalizeEditablePostText,
+  normalizeEditablePostTextList,
+} from "../../lib/post-write/editableContent";
 
 interface UseDraftBootstrapParams {
   draftId: string | null;
@@ -99,10 +103,13 @@ export function useDraftBootstrap({
     if (hydratedDraftIdRef.current === activeId) return;
 
     if (draftId && draftDetailQuery.data) {
-      setTitle(draftDetailQuery.data.post.title || "");
-      setContent(normalizeEditablePostContent(draftDetailQuery.data.post.content || ""));
-      setCategoryPath(draftDetailQuery.data.categoryPath || "");
-      setTags(draftDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
+      const post = draftDetailQuery.data.post;
+      const tagNames = post.tags?.map((tag) => tag.name) ?? [];
+
+      setTitle(normalizeEditablePostText(post.title || ""));
+      setContent(normalizeEditablePostContent(post.content || ""));
+      setCategoryPath(normalizeEditablePostText(draftDetailQuery.data.categoryPath || ""));
+      setTags(normalizeEditablePostTextList(tagNames));
       clearThumbnailPreview();
       setThumbnail(draftDetailQuery.data.thumbnailAttachmentId ?? null);
       hydratedDraftIdRef.current = activeId;
@@ -110,10 +117,13 @@ export function useDraftBootstrap({
     }
 
     if (!draftId && postId && postDetailQuery.data) {
-      setTitle(postDetailQuery.data.post.title || "");
-      setContent(normalizeEditablePostContent(postDetailQuery.data.post.content || ""));
-      setCategoryPath(postDetailQuery.data.post.categoryPath || "");
-      setTags(postDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
+      const post = postDetailQuery.data.post;
+      const tagNames = post.tags?.map((tag) => tag.name) ?? [];
+
+      setTitle(normalizeEditablePostText(post.title || ""));
+      setContent(normalizeEditablePostContent(post.content || ""));
+      setCategoryPath(normalizeEditablePostText(post.categoryPath || ""));
+      setTags(normalizeEditablePostTextList(tagNames));
       clearThumbnailPreview();
       setThumbnail(postDetailQuery.data.thumbnailAttachmentId ?? null);
       hydratedDraftIdRef.current = activeId;
