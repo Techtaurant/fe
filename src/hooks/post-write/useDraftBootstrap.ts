@@ -7,6 +7,7 @@ import {
   fetchDraftPostList,
   fetchPostDetailWithMeta,
 } from "../../services/posts";
+import { normalizeEditablePostContent } from "../../lib/post-write/editableContent";
 
 interface UseDraftBootstrapParams {
   draftId: string | null;
@@ -99,7 +100,7 @@ export function useDraftBootstrap({
 
     if (draftId && draftDetailQuery.data) {
       setTitle(draftDetailQuery.data.post.title || "");
-      setContent(draftDetailQuery.data.post.content || "");
+      setContent(normalizeEditablePostContent(draftDetailQuery.data.post.content || ""));
       setCategoryPath(draftDetailQuery.data.categoryPath || "");
       setTags(draftDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
       clearThumbnailPreview();
@@ -110,7 +111,7 @@ export function useDraftBootstrap({
 
     if (!draftId && postId && postDetailQuery.data) {
       setTitle(postDetailQuery.data.post.title || "");
-      setContent(postDetailQuery.data.post.content || "");
+      setContent(normalizeEditablePostContent(postDetailQuery.data.post.content || ""));
       setCategoryPath(postDetailQuery.data.post.categoryPath || "");
       setTags(postDetailQuery.data.post.tags?.map((tag) => tag.name) ?? []);
       clearThumbnailPreview();
