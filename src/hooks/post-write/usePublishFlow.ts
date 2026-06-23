@@ -15,6 +15,11 @@ import {
   readPendingPublishSnapshot,
   writePendingPublishSnapshot,
 } from "../../lib/post-write/storage";
+import {
+  normalizeEditablePostContent,
+  normalizeEditablePostText,
+  normalizeEditablePostTextList,
+} from "../../lib/post-write/editableContent";
 import { FieldErrors, SavePostResult, SavePostVariables } from "../../lib/post-write/types";
 
 interface UsePublishFlowParams {
@@ -136,9 +141,9 @@ export function usePublishFlow({
         setContent(variables.payload.content ?? "");
         setTags(variables.payload.tags ?? []);
       } else {
-        setTitle(result.data.title ?? "");
-        setContent(result.data.content ?? "");
-        setTags(result.data.tags ?? []);
+        setTitle(normalizeEditablePostText(result.data.title ?? ""));
+        setContent(normalizeEditablePostContent(result.data.content ?? ""));
+        setTags(normalizeEditablePostTextList(result.data.tags ?? []));
       }
       setTagInput("");
 
