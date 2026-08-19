@@ -527,19 +527,16 @@ Access to fetch at 'http://localhost:8080/api/users/me' from origin
 
 2. **자동 토큰 갱신**
    - 401 에러 발생 시 응답 body의 Custom Status 확인
-   - Custom Status가 3003 (AccessToken 만료)일 때만 토큰 갱신 시도
-   - 3008 (인증 필요) 등 다른 에러는 토큰 갱신하지 않고 바로 반환
+   - Custom Status가 3003 (AccessToken 만료) 또는 3008 (인증 필요)일 때 토큰 갱신 시도
    - refreshToken은 쿠키에 자동 포함 (credentials: 'include')
    - 갱신 성공 시 원래 요청 자동 재시도
 
 3. **중복 갱신 방지**
-   - 토큰 갱신 중 플래그(`isRefreshing`)로 중복 방지
-   - 갱신 중인 다른 요청들은 대기 큐에 추가
-   - 갱신 완료 후 대기 중인 요청들 자동 실행
+   - 갱신 Promise(`isRefreshing`)를 공유해 중복 방지
+   - 갱신 완료 후 대기 중인 요청들 자동 재시도
 
 4. **에러 처리**
-   - 갱신 실패 시 홈으로 리다이렉트
-   - 대기 중인 모든 요청에 에러 전파
+   - 갱신 실패 시 원래 401 응답 반환
 
 #### API 함수
 
@@ -553,8 +550,6 @@ httpPost<T>(url: string, data?: unknown): Promise<T>
 httpPut<T>(url: string, data?: unknown): Promise<T>
 httpDelete<T>(url: string): Promise<T>
 
-// 토큰 갱신 함수
-refreshTokens(): Promise<boolean>
 ```
 
 #### 사용 예시
@@ -594,7 +589,10 @@ const user = await httpGet<User>('/api/users/me');
          ↓
    Check Custom Status (3008 확인)
          ↓
-   Return Response (토큰 갱신하지 않음)
+   Refresh API
+         ↓
+   Success → Retry Original Request
+   Failure → Return Original 401 Response
    ```
 
 4. **토큰 갱신 실패 시**
@@ -603,7 +601,7 @@ const user = await httpGet<User>('/api/users/me');
          ↓
    Refresh API → Failed
          ↓
-   Redirect to /
+   Return Original 401 Response
    ```
 
 #### RefreshToken 저장 방식
@@ -688,8 +686,8 @@ interface UseUserResult {
 |------|------|------|
 | 0 | 성공 | 정상 처리 |
 | 3003 | AccessToken 만료 | 자동 토큰 갱신 시도 |
-| 3008 | 인증 필요 | 에러 반환 (갱신하지 않음) |
-| 기타 | 토큰 갱신 실패 | 홈으로 리다이렉트 |
+| 3008 | 인증 필요 | 자동 토큰 갱신 시도 |
+| 기타 | 토큰 갱신 실패 | 원래 401 응답 반환 |
 
 ---
 
